@@ -29,26 +29,24 @@ skinparam shadowing false
 !define WarningColor Business
 !define LeadColor Technology
 
+agent Participant
+agent FCC as "Federated\nCatalog Crawler"
+agent FCN as "Federated\nCatalog Node"
+agent IDP as "Identity\nProvider"
+agent Dataspace
+agent DataspaceAuthority as "Dataspace\nAuthority"
+agent Registry as "Dataspace \nRegistry"
 
-class ResourceManifest
-class ProvisionedResourceSet
-class ContractAgreement
-
-class Asset {
-    id
-    name
-    properties
-}
-
-class TransferProcess {
-    id
-    state
-    dataRequest
-}
-
-TransferProcess --> ContractAgreement : associated with 1..1
-TransferProcess *--> ResourceManifest : 1..1
-TransferProcess *--> ProvisionedResourceSet : 1..1
-ContractAgreement --> Asset : 1..1
+Participant -down-> FCC : runs\n1..n
+Participant -down-> FCN : runs\n1..n
+Participant --> Participant : establishes relationships with
+FCC --> FCN: Crawls
+FCC -left-> IDP : trusts\n1..n
+FCN -left-> IDP : trusts\n1..n
+FCC --> Dataspace : participates in\n1..n
+FCC --> Registry : looks up\n0..n
+Dataspace --> DataspaceAuthority : managed by\n0..n
+DataspaceAuthority -right-> Registry : approves
+DataspaceAuthority -up-> IDP: approves\n0..n
 
 @enduml

@@ -29,26 +29,21 @@ skinparam shadowing false
 !define WarningColor Business
 !define LeadColor Technology
 
+agent Participant
+agent PA as "Participant\nAgent"
+agent IDP as "Identity\nProvider"
+agent Dataspace
+agent DataspaceAuthority as "Dataspace\nAuthority"
+agent Registry as "Dataspace \nRegistry"
 
-class ResourceManifest
-class ProvisionedResourceSet
-class ContractAgreement
-
-class Asset {
-    id
-    name
-    properties
-}
-
-class TransferProcess {
-    id
-    state
-    dataRequest
-}
-
-TransferProcess --> ContractAgreement : associated with 1..1
-TransferProcess *--> ResourceManifest : 1..1
-TransferProcess *--> ProvisionedResourceSet : 1..1
-ContractAgreement --> Asset : 1..1
+Participant -down-> PA : runs\n1..n
+Participant --> Participant : establishes relationships with
+PA --> PA: Interacts with
+PA -left-> IDP : trusts\n1..n
+PA --> Dataspace : participates in\n1..n
+PA --> Registry : looks up\n0..n
+Dataspace --> DataspaceAuthority : managed by\n0..n
+DataspaceAuthority -right-> Registry : approves
+DataspaceAuthority -up-> IDP: approves\n0..n
 
 @enduml

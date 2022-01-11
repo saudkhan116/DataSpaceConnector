@@ -1,0 +1,89 @@
+'
+'  Copyright (c) 2022 Microsoft Corporation
+'
+'  This program and the accompanying materials are made available under the
+'  terms of the Apache License, Version 2.0 which is available at
+'  https://www.apache.org/licenses/LICENSE-2.0
+'
+'  SPDX-License-Identifier: Apache-2.0
+'
+'  Contributors:
+'       Microsoft - Initial Draft
+'
+'
+
+@startuml
+
+!pragma layout smetana
+
+skinParam NoteBackgroundColor WhiteSmoke
+skinParam NoteFontColor Black
+skinParam ParticipantBackgroundColor WhiteSmoke
+skinParam ActorBackgroundColor WhiteSmoke
+skinParam AgentBackgroundColor White
+skinParam AgentBorderColor SkyBlue
+skinparam shadowing false
+
+!define ConsumerColor f8f2ff
+!define ProviderColor d9edff
+!define WarningColor Business
+!define LeadColor Technology
+
+class ContractDefinition {
+    id
+    accessPolicy
+    contractPolicy
+    assetSelector
+}
+
+class Policy {
+  id
+  permissions
+  prohibitions
+  obligations
+}
+
+class  AssetSelectorExpression
+
+class Asset {
+    id
+    name
+    properties
+}
+
+class ContractOffer {
+    id
+    asset
+    provider
+    consumer
+}
+
+class ContractAgreement {
+    id
+    asset
+    provider
+    consumer
+}
+
+class ContractNegotiation {
+    id
+    state
+    provider
+    consumer
+    contractOffers
+    contractAgreement
+}
+
+ContractDefinition *-->  AssetSelectorExpression
+ContractDefinition -->  Policy : Access\nPolicy 1..1
+ContractDefinition -->  Policy : Contract\nPolicy 1..1
+AssetSelectorExpression -->Asset : Selects 0..N
+ContractOffer -[dashed]-> ContractDefinition : <<instantiated from>>
+ContractOffer --> Asset : Offers 1..1
+
+ContractNegotiation *-->ContractAgreement: 0..1
+ContractNegotiation --> ContractOffer : 0..N
+ContractAgreement  -[dashed]-> ContractOffer : <<derived from>>
+ContractAgreement --> Asset : 1..1
+
+@enduml

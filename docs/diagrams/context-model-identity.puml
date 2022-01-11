@@ -14,6 +14,8 @@
 
 @startuml
 
+!pragma layout smetana
+
 skinParam NoteBackgroundColor WhiteSmoke
 skinParam NoteFontColor Black
 skinParam ParticipantBackgroundColor WhiteSmoke
@@ -31,25 +33,25 @@ skinparam shadowing false
 !define B_Color F5F9FF
 
 agent ParticipantA as "Participant\nA" #A_Color
-agent ConnectorA as "Connector\nA.1" #A_Color
+agent ParticipantAgentA as "Participant Agent\nA.1" #A_Color
 agent IDP1 as "Identity Provider /\ntrust anchor" #A_Color
 agent IDP2 as "Identity Provider /\ntrust anchor" #B_Color
-agent ConnectorB as "Connector\nB.1" #B_Color
+agent ParticipantAgentB as "Participant Agent\nB.1" #B_Color
 agent ParticipantB as "Participant\nB" #B_Color
 
 
-ParticipantA -down-> ConnectorA : runs\n1..n
+ParticipantA -down-> ParticipantAgentA : runs\n1..n
 IDP1 -> ParticipantA : validates
-IDP1 --> ConnectorA : validates\n1..n
-ConnectorA -up-> IDP2 : trusts
+IDP1 --> ParticipantAgentA : validates\n1..n
+ParticipantAgentA -up-> IDP2 : trusts
 
 
-ParticipantB -down-> ConnectorB: runs\n1..n
+ParticipantB -down-> ParticipantAgentB: runs\n1..n
 IDP2 -> ParticipantB : validates
-IDP2 --> ConnectorB : validates\n1..n
-ConnectorB -up-> IDP1: trusts
+IDP2 --> ParticipantAgentB : validates\n1..n
+ParticipantAgentB -up-> IDP1: trusts
 
 ' STYLING
-ConnectorA -[hidden]right-> ConnectorB
+ParticipantAgentA -[hidden]right-> ParticipantAgentB
 
 @enduml

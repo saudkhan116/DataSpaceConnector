@@ -29,26 +29,17 @@ skinparam shadowing false
 !define WarningColor Business
 !define LeadColor Technology
 
+agent PA as "Participant\nAgent"
+agent Connector as "Connector"
+agent FCC as "Federated\nCatalog Crawler"
+agent FCN as "Federated\nCatalog Node"
+agent Application
 
-class ResourceManifest
-class ProvisionedResourceSet
-class ContractAgreement
-
-class Asset {
-    id
-    name
-    properties
-}
-
-class TransferProcess {
-    id
-    state
-    dataRequest
-}
-
-TransferProcess --> ContractAgreement : associated with 1..1
-TransferProcess *--> ResourceManifest : 1..1
-TransferProcess *--> ProvisionedResourceSet : 1..1
-ContractAgreement --> Asset : 1..1
+PA <|-- Connector
+PA <|-- FCC
+PA <|-- FCN
+PA <|-- Application
+Connector --> Connector : Interacts with
+FCC -right-> FCN : Crawls
 
 @enduml
