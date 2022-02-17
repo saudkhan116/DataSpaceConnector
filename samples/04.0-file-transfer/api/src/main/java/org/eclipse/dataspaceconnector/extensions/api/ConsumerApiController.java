@@ -14,6 +14,31 @@
 
 package org.eclipse.dataspaceconnector.extensions.api;
 
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static java.lang.String.format;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.eclipse.dataspaceconnector.spi.contract.negotiation.ConsumerContractNegotiationManager;
+import org.eclipse.dataspaceconnector.spi.contract.negotiation.response.NegotiationResult;
+import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
+import org.eclipse.dataspaceconnector.spi.transfer.TransferProcessManager;
+import org.eclipse.dataspaceconnector.spi.transfer.store.TransferProcessStore;
+import org.eclipse.dataspaceconnector.spi.types.domain.DataAddress;
+import org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractOfferRequest;
+import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.Battery;
+import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.ContractOffer;
+import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.ProviderMetadata;
+import org.eclipse.dataspaceconnector.spi.types.domain.transfer.DataRequest;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -23,22 +48,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.dataspaceconnector.spi.contract.negotiation.ConsumerContractNegotiationManager;
-import org.eclipse.dataspaceconnector.spi.contract.negotiation.response.NegotiationResult;
-import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
-import org.eclipse.dataspaceconnector.spi.transfer.TransferProcessManager;
-import org.eclipse.dataspaceconnector.spi.transfer.store.TransferProcessStore;
-import org.eclipse.dataspaceconnector.spi.types.domain.DataAddress;
-import org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractOfferRequest;
-import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.ContractOffer;
-import org.eclipse.dataspaceconnector.spi.types.domain.transfer.DataRequest;
-
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-
-import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
-import static java.lang.String.format;
 
 @Consumes({MediaType.APPLICATION_JSON})
 @Produces({MediaType.APPLICATION_JSON})
@@ -123,4 +132,40 @@ public class ConsumerApiController {
                         Response.status(NOT_FOUND).build()
                 );
     }
+    
+    @GET
+    @Path("Provider/Metadata/{selectedProvider}")
+    public Response getProviderAccessInformation(@PathParam("selectedProvider") String selectedProvider,
+    		                                     @QueryParam("role") String role) {
+
+        var result = "";
+        if (selectedProvider == null && role == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        String currentDir = System.getProperty("user.dir") + "/samples/04.0-file-transfer/registry/metadata";
+        String fileName = currentDir + "/" + selectedProvider + "_" + role + ".json";
+        
+        try {
+        	File file = new File(fileName);
+            ProviderMetadata metadata = objectMapper.readValue(file, ProviderMetadata.class);
+
+            System.out.println("Provider: " + metadata.getProvider());
+            System.out.println("id: " + metadata.getId());
+            System.out.println("Role: " + metadata.getRole());
+            List<Battery> batteries = metadata.getBatteries();
+            for (Battery battery : batteries) {
+            	System.out.println(battery.getId() +"_"+ battery.getName() + "_" + battery.getType() );
+			}
+            
+            ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+            result = objectWriter.writeValueAsString(metadata);
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Response.ok(result).build();
+        
+    }
+    
 }

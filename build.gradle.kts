@@ -63,15 +63,15 @@ buildscript {
 
 allprojects {
     apply(plugin = "maven-publish")
-    apply(plugin = "checkstyle")
+    //apply(plugin = "checkstyle")
     apply(plugin = "java")
 
-    checkstyle {
+    /*checkstyle {
         toolVersion = "9.0"
         configFile = rootProject.file("resources/edc-checkstyle-config.xml")
         maxErrors = 0 // does not tolerate errors ...
         maxWarnings = 0 // ... or warnings
-    }
+    }*/
 
     java {
         toolchain {
@@ -156,13 +156,13 @@ allprojects {
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
     }
-    tasks.withType<Checkstyle> {
+    /*tasks.withType<Checkstyle> {
         reports {
             // lets not generate any reports because that is done from within the Github Actions workflow
             html.required.set(false)
             xml.required.set(false)
         }
-    }
+    }*/
 
     tasks.jar {
         metaInf {
