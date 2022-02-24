@@ -156,6 +156,8 @@ include(":samples:04.0-file-transfer:consumer")
 include(":samples:04.0-file-transfer:provider")
 include(":samples:04.0-file-transfer:api")
 include(":samples:04.0-file-transfer:transfer-file")
+include(":samples:04.0-file-transfer:listener")
+include(":samples:04.0-file-transfer:materialpass.webclient")
 include(":samples:04.0-file-transfer:integration-tests")
 
 include(":samples:04.1-file-transfer-listener:consumer")

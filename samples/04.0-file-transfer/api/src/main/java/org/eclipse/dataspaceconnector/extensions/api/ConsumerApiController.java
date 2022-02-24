@@ -19,7 +19,8 @@ import static java.lang.String.format;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,9 +32,9 @@ import org.eclipse.dataspaceconnector.spi.transfer.TransferProcessManager;
 import org.eclipse.dataspaceconnector.spi.transfer.store.TransferProcessStore;
 import org.eclipse.dataspaceconnector.spi.types.domain.DataAddress;
 import org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractOfferRequest;
-import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.Battery;
 import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.ContractOffer;
-import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.ProviderMetadata;
+import org.eclipse.dataspaceconnector.spi.types.domain.material.battery.BatteryPassport;
+import org.eclipse.dataspaceconnector.spi.types.domain.material.battery.ProviderMetadata;
 import org.eclipse.dataspaceconnector.spi.types.domain.transfer.DataRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,6 +59,9 @@ public class ConsumerApiController {
     private final TransferProcessManager processManager;
     private final ConsumerContractNegotiationManager consumerNegotiationManager;
     private final TransferProcessStore transferProcessStore;
+    private static final String REGISTRY_PATH = "/samples/04.0-file-transfer/registry";
+    private static final String DATA_PATH = "/samples/04.0-file-transfer/data";
+    private static final String METADATA_PATH = REGISTRY_PATH + "/metadata";
 
     public ConsumerApiController(Monitor monitor, TransferProcessManager processManager,
                                  ConsumerContractNegotiationManager consumerNegotiationManager, TransferProcessStore transferProcessStore) {
@@ -134,38 +138,99 @@ public class ConsumerApiController {
     }
     
     @GET
-    @Path("Provider/Metadata/{selectedProvider}")
+    @Path("provider/metadata/{selectedProvider}")
     public Response getProviderAccessInformation(@PathParam("selectedProvider") String selectedProvider,
     		                                     @QueryParam("role") String role) {
 
-        var result = "";
+        String result = "";
         if (selectedProvider == null && role == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        ObjectMapper objectMapper = new ObjectMapper();
-        String currentDir = System.getProperty("user.dir") + "/samples/04.0-file-transfer/registry/metadata";
-        String fileName = currentDir + "/" + selectedProvider + "_" + role + ".json";
-        
-        try {
-        	File file = new File(fileName);
-            ProviderMetadata metadata = objectMapper.readValue(file, ProviderMetadata.class);
+        String currentDir = System.getProperty("user.dir") + METADATA_PATH;
+        String filename = currentDir + "/" + selectedProvider + "_" + role + ".json";
+        ProviderMetadata metadata = new ProviderMetadata(); 
+        result = readFile(filename);
+        if (result == "")
+        	return Response.status(Response.Status.NO_CONTENT).build();
+        else
+            return Response.ok(result).build();
+    }
+    
+    @GET
+    @Path("/")
+    public Response helloWorld() {
 
-            System.out.println("Provider: " + metadata.getProvider());
-            System.out.println("id: " + metadata.getId());
-            System.out.println("Role: " + metadata.getRole());
-            List<Battery> batteries = metadata.getBatteries();
-            for (Battery battery : batteries) {
-            	System.out.println(battery.getId() +"_"+ battery.getName() + "_" + battery.getType() );
-			}
-            
-            ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
-            result = objectWriter.writeValueAsString(metadata);
-            
-        } catch (IOException e) {
-            e.printStackTrace();
+        return Response.ok("Hello World..!!").build();
+        
+    }
+    
+    @GET
+    @Path("/login")
+    public Response isUserAuthenticated() {
+
+        return Response.ok("User has been authenticated successfully..!!").build();
+        
+    }
+    
+    @GET
+    @Path("passport/display/{filename}")
+    public Response printProductPassport(@PathParam("filename") String filename) {
+    	
+    	 String result = "";
+    	if (filename == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
+        String filePath = System.getProperty("user.dir") + DATA_PATH + "/" + filename;
+        result = readFile(filePath);
+        
         return Response.ok(result).build();
         
     }
     
+    private String getJsonData(Object object, String filename) {
+    	
+    	String result = "";
+    	ObjectMapper objectMapper = new ObjectMapper();
+    	File file = new File(filename);
+    	try {
+    		if (object instanceof ProviderMetadata) {
+    			ProviderMetadata metadata = objectMapper.readValue(file, ProviderMetadata.class);
+    			ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+                result = objectWriter.writeValueAsString(metadata);
+//                System.out.println("Id: " + metadata.getId()  + "_Provider: " + metadata.getProvider() + "_Role: " +metadata.getRole());
+//                List<Battery> batteries = metadata.getBatteries();
+//        		for (Battery battery : batteries) {
+//        			System.out.println(battery.getId() +"_"+ battery.getName() + "_" + battery.getType() );
+//        		}
+    			}
+    		else if (object instanceof BatteryPassport) {
+    			BatteryPassport batteryPass = objectMapper.readValue(file, BatteryPassport.class);
+    			ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+                result = objectWriter.writeValueAsString(batteryPass);
+    		}
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Something went wrong..!!");
+        }
+    	
+    	return result;
+    }
+    
+    
+    private String readFile(String filename) {
+    	
+    	String result = "";
+    	try
+    	 {
+    		var list = Files.readAllLines(Paths.get(filename));
+    		result = String.join("", list);
+    		System.out.println(result);
+    	 }
+    	 catch(Exception ex)
+    	 {
+    	     ex.printStackTrace();
+    	 }
+    	return result;
+    }
 }

@@ -12,7 +12,7 @@
  *
  */
 
-package org.eclipse.dataspaceconnector.spi.types.domain.contract.offer;
+package org.eclipse.dataspaceconnector.spi.types.domain.material.battery;
 
 import java.util.List;
 import java.util.Objects;

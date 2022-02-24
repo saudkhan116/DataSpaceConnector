@@ -23,6 +23,18 @@ val rsApi: String by project
 dependencies {
     api(project(":spi"))
     implementation(project(":common:util"))
-
+    implementation("javax.servlet:javax.servlet-api:4.0.0")
+    implementation("org.keycloak:keycloak-core:17.0.0")
+	implementation("org.keycloak:keycloak-adapter-core:17.0.0")
+	implementation("org.keycloak:keycloak-adapter-spi:17.0.0")
+	implementation("org.keycloak:keycloak-admin-client:17.0.0")
+	implementation("org.keycloak:keycloak-common:17.0.0")
+	compileOnly("org.keycloak:keycloak-server-spi:17.0.0")
+	implementation("org.keycloak:keycloak-authz-client:17.0.0")
+	implementation ("org.keycloak.bom:keycloak-adapter-bom:16.1.1")
+	implementation("org.apache.poi:poi-ooxml:5.2.0")
+//	implementation("org.apache.logging.log4j:log4j-to-slf4j:2.17.1")
+    implementation("javax.ws.rs:javax.ws.rs-api:2.1")
+    
     api("jakarta.ws.rs:jakarta.ws.rs-api:${rsApi}")
 }

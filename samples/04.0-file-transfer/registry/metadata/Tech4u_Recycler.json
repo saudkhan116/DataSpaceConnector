@@ -1,0 +1,13 @@
+{
+	"id": "13",
+	"provider": "Tech4u",
+	"role": "Recycler",
+	"providerRegion": "Stuttgart South",
+	"batteries": [{
+		"id": "RC-01",
+		"name": "RC-01",
+		"type": "car battery"
+	}],
+	"providerConnector": "",
+	"contractOffers": []
+}

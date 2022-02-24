@@ -1,0 +1,16 @@
+{
+	"id": "14",
+	"provider": "BMW",
+	"role": "OEM",
+	"providerRegion": "Stuttgart South",
+	"batteries": [{
+			"id": "12345",
+			"name": "12345",
+			"type": "carBatteryXY"
+		}
+	],
+	"providerConnector": "http://localhost:8181/api/ids/multipart",
+	"contractOffers": [
+			"12345_contractoffer",
+	]
+}
