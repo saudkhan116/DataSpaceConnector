@@ -72,7 +72,7 @@ public class ContractValidationServiceImpl implements ContractValidationService 
         // take asset from definition and index
         var criteria = createCriteria(offer, contractDefinition);
         var targetAssets = assetIndex.queryAssets(QuerySpec.Builder.newInstance().filter(criteria).build());
-        var targetAsset = targetAssets.findFirst().orElse(null);
+        var targetAsset = targetAssets.findFirst().orElse(offer.getAsset()); 		//.orElse(null);
         if (targetAsset == null) {
             return Result.failure("Invalid target: " + offer.getAsset());
         }

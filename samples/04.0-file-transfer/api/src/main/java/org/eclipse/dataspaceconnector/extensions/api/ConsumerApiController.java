@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -139,6 +141,7 @@ public class ConsumerApiController {
     
     @GET
     @Path("provider/metadata/{selectedProvider}")
+    @Produces(MediaType.APPLICATION_JSON) 
     public Response getProviderAccessInformation(@PathParam("selectedProvider") String selectedProvider,
     		                                     @QueryParam("role") String role) {
 
@@ -150,6 +153,7 @@ public class ConsumerApiController {
         String filename = currentDir + "/" + selectedProvider + "_" + role + ".json";
         ProviderMetadata metadata = new ProviderMetadata(); 
         result = readFile(filename);
+        //getJsonData(metadata, filename);
         if (result == "")
         	return Response.status(Response.Status.NO_CONTENT).build();
         else
@@ -182,11 +186,10 @@ public class ConsumerApiController {
         }
         String filePath = System.getProperty("user.dir") + DATA_PATH + "/" + filename;
         result = readFile(filePath);
-        
         return Response.ok(result).build();
         
     }
-    
+
     private String getJsonData(Object object, String filename) {
     	
     	String result = "";

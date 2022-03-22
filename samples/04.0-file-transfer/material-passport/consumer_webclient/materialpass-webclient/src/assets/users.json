@@ -24,6 +24,7 @@
     {
       "email": "john@abc.com",
       "password": "john",
+	  "role": "Recycler",
       "name": "John Doe",
       "id": 4
     },
@@ -32,6 +33,13 @@
       "password": "cgi",
       "name": "musterman",
       "id": 5
+    },
+    {
+      "email": "musterman@lrp.de",
+      "password": "lrp",
+	  "role": "Dismantler",
+      "name": "lrp",
+      "id": 6
     }
   ]
 }

@@ -124,10 +124,10 @@ export default {
   methods:{
     getBatteriesByProvider(event) {
       this.selectedProvider = event.target.value
-      let user = localStorage.getItem("user-info")
-      let role = JSON.parse(user).role
+       let user = localStorage.getItem("user-info")
+       let role = JSON.parse(user).role
       //alert(role)
-      axios.get('/api/provider/metadata/' + this.selectedProvider + '?role=Raw Material Supplier')
+      axios.get('/api/provider/metadata/' + this.selectedProvider + '?role=' + role)
       .then(response => {
           this.provider = response.data
       })
@@ -199,19 +199,29 @@ export default {
       }
       
       // Initiate transfer request //
-      var res = await this.getProductPassport('test-document', destinationPath, contractId)
-      console.log(res)
-      if (res != null)
-        this.contractStatus = "Finalizing product passport..."
+      let asset = ''
+      let user = localStorage.getItem("user-info")
+      let role = JSON.parse(user).role
+      if (role == "Dismantler")
+        asset = "test-document_dismantler"
       else
-        this.contractStatus = "Something went wrong in finalizing product process..."
+        asset = "test-document_oem"
 
-      // Display the product passport //
-      var productPass = await this.displayProductPassport('test-document.json', destinationPath)
-      this.productPassport = productPass
-      this.isPassportVisible = true;
-      this.isLoading = false;
-      this.isDisabled = false;
+      var res = await this.getProductPassport(asset, destinationPath, contractId)
+      console.log(res)
+      if (res == null)
+        this.contractStatus = "Something went wrong in finalizing product process..."
+      else {
+        this.contractStatus = "Finalizing product passport..."
+
+        // Display the product passport //
+        var productPass = await this.displayProductPassport(asset+ '.json')
+    
+        this.productPassport = productPass
+        this.isPassportVisible = true;
+        this.isLoading = false;
+        this.isDisabled = false;
+      } 
     },
     negotiateContract(){
 
@@ -268,8 +278,8 @@ export default {
     })    
     
   },
-  displayProductPassport(filename, path){
-        
+  displayProductPassport(filename){
+
      return new Promise(resolve => {
 
       axios.get('/api/passport/display/' + filename)
