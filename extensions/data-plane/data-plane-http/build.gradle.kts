@@ -14,9 +14,13 @@
 
 val okHttpVersion: String by project
 val jodahFailsafeVersion: String by project
+val rsApi: String by project
+val faker: String by project
+val restAssured: String by project
 
 plugins {
     `java-library`
+    `java-test-fixtures`
 }
 
 dependencies {
@@ -24,6 +28,10 @@ dependencies {
     implementation(project(":common:util"))
     implementation("com.squareup.okhttp3:okhttp:${okHttpVersion}")
     implementation("net.jodah:failsafe:${jodahFailsafeVersion}")
+    testImplementation(testFixtures(project(":common:util")))
+    testFixturesImplementation("com.github.javafaker:javafaker:${faker}")
+    testFixturesImplementation("com.squareup.okhttp3:okhttp:${okHttpVersion}")
+    testImplementation("io.rest-assured:rest-assured:${restAssured}")
 }
 
 publishing {

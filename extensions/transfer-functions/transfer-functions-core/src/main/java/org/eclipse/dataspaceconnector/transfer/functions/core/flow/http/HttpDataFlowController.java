@@ -11,12 +11,14 @@
  *       Microsoft Corporation - initial API and implementation
  *
  */
+
 package org.eclipse.dataspaceconnector.transfer.functions.core.flow.http;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import org.eclipse.dataspaceconnector.policy.model.Policy;
 import org.eclipse.dataspaceconnector.spi.asset.DataAddressResolver;
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
 import org.eclipse.dataspaceconnector.spi.transfer.flow.DataFlowController;
@@ -65,7 +67,7 @@ public class HttpDataFlowController implements DataFlowController {
     }
 
     @Override
-    public @NotNull DataFlowInitiateResult initiateFlow(DataRequest dataRequest) {
+    public @NotNull DataFlowInitiateResult initiateFlow(DataRequest dataRequest, Policy policy) {
         var dataFlowRequest = createRequest(dataRequest);
         var requestBody = RequestBody.create(typeManager.writeValueAsString(dataFlowRequest), JSON);
         var request = new Request.Builder().url(transferEndpoint).post(requestBody).build();

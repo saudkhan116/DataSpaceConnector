@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2021 Fraunhofer Institute for Software and Systems Engineering
+ *  Copyright (c) 2021 Fraunhofer Institute for Software and Systems Engineering, Daimler TSS GmbH
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -9,6 +9,7 @@
  *
  *  Contributors:
  *       Fraunhofer Institute for Software and Systems Engineering - initial API and implementation
+ *       Daimler TSS GmbH - introduce factory to create RequestInProcessMessage
  *
  */
 
@@ -18,12 +19,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fraunhofer.iais.eis.ContractRequest;
 import de.fraunhofer.iais.eis.ContractRequestMessage;
 import de.fraunhofer.iais.eis.Message;
+import de.fraunhofer.iais.eis.RequestInProcessMessage;
 import org.eclipse.dataspaceconnector.ids.api.multipart.message.MultipartRequest;
 import org.eclipse.dataspaceconnector.ids.api.multipart.message.MultipartResponse;
+import org.eclipse.dataspaceconnector.ids.api.multipart.message.ids.IdsResponseMessageFactory;
+import org.eclipse.dataspaceconnector.ids.api.multipart.message.ids.exceptions.InvalidCorrelationMessageException;
 import org.eclipse.dataspaceconnector.ids.spi.IdsIdParser;
 import org.eclipse.dataspaceconnector.ids.spi.Protocols;
 import org.eclipse.dataspaceconnector.ids.spi.transform.ContractTransformerInput;
-import org.eclipse.dataspaceconnector.ids.spi.transform.TransformerRegistry;
+import org.eclipse.dataspaceconnector.ids.spi.transform.IdsTransformerRegistry;
 import org.eclipse.dataspaceconnector.spi.asset.AssetIndex;
 import org.eclipse.dataspaceconnector.spi.contract.negotiation.ProviderContractNegotiationManager;
 import org.eclipse.dataspaceconnector.spi.iam.ClaimToken;
@@ -38,6 +42,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 import static org.eclipse.dataspaceconnector.ids.api.multipart.util.RejectionMessageUtil.badParameters;
+import static org.eclipse.dataspaceconnector.ids.spi.IdsConstants.IDS_WEBHOOK_ADDRESS_PROPERTY;
 
 /**
  * This class handles and processes incoming IDS {@link ContractRequestMessage}s.
@@ -48,15 +53,17 @@ public class ContractRequestHandler implements Handler {
     private final ObjectMapper objectMapper;
     private final String connectorId;
     private final ProviderContractNegotiationManager negotiationManager;
-    private final TransformerRegistry transformerRegistry;
+    private final IdsTransformerRegistry transformerRegistry;
     private final AssetIndex assetIndex;
+    private final IdsResponseMessageFactory responseMessageFactory;
 
     public ContractRequestHandler(
             @NotNull Monitor monitor,
             @NotNull String connectorId,
             @NotNull ObjectMapper objectMapper,
             @NotNull ProviderContractNegotiationManager negotiationManager,
-            @NotNull TransformerRegistry transformerRegistry,
+            @NotNull IdsResponseMessageFactory responseMessageFactory,
+            @NotNull IdsTransformerRegistry transformerRegistry,
             @NotNull AssetIndex assetIndex) {
         this.monitor = Objects.requireNonNull(monitor);
         this.connectorId = Objects.requireNonNull(connectorId);
@@ -64,6 +71,7 @@ public class ContractRequestHandler implements Handler {
         this.negotiationManager = Objects.requireNonNull(negotiationManager);
         this.transformerRegistry = Objects.requireNonNull(transformerRegistry);
         this.assetIndex = Objects.requireNonNull(assetIndex);
+        this.responseMessageFactory = Objects.requireNonNull(responseMessageFactory);
     }
 
     @Override
@@ -74,9 +82,9 @@ public class ContractRequestHandler implements Handler {
     }
 
     @Override
-    public @Nullable MultipartResponse handleRequest(@NotNull MultipartRequest multipartRequest, @NotNull Result<ClaimToken> verificationResult) {
+    public @Nullable MultipartResponse handleRequest(@NotNull MultipartRequest multipartRequest, @NotNull ClaimToken claimToken) {
         Objects.requireNonNull(multipartRequest);
-        Objects.requireNonNull(verificationResult);
+        Objects.requireNonNull(claimToken);
 
         var message = (ContractRequestMessage) multipartRequest.getHeader();
 
@@ -88,7 +96,7 @@ public class ContractRequestHandler implements Handler {
             return createBadParametersErrorMultipartResponse(message);
         }
 
-        var idsWebhookAddress = message.getProperties().get("idsWebhookAddress");
+        var idsWebhookAddress = message.getProperties().get(IDS_WEBHOOK_ADDRESS_PROPERTY);
         if (idsWebhookAddress == null || idsWebhookAddress.toString().isBlank()) {
             var msg = "Ids webhook address is invalid";
             monitor.debug(String.format("ContractRequestHandler: %s", msg));
@@ -140,11 +148,27 @@ public class ContractRequestHandler implements Handler {
                 .contractOffer(contractOffer)
                 .build();
 
-        // Start negotiation process
-        negotiationManager.requested(verificationResult.getContent(), requestObj);
+        Message response;
+
+        try {
+            response = responseMessageFactory.createRequestInProcessMessage(message);
+        } catch (Exception e) {
+            if (e instanceof InvalidCorrelationMessageException) {
+                monitor.debug(String.format("Rejecting invalid IDS contract request message [Msg-ID: %s]", message.getId()), e);
+            } else {
+                monitor.severe(String.format("Exception while creating IDS RequestInProcessMessage to answer contract request [Msg-ID: %s]", message.getId()), e);
+            }
+
+            response = responseMessageFactory.createRejectionMessage(message, e);
+        }
+
+        if (response instanceof RequestInProcessMessage) {
+            // Start negotiation process
+            negotiationManager.requested(claimToken, requestObj);
+        }
 
         return MultipartResponse.Builder.newInstance()
-                .header(ResponseMessageUtil.createRequestInProcessMessage(connectorId, message))
+                .header(response)
                 .build();
     }
 

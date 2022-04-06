@@ -24,10 +24,12 @@ dependencies {
     api(project(":spi"))
     api(project(":data-protocols:ids:ids-spi"))
     implementation(project(":common:util"))
+    api(project(":data-protocols:ids:ids-core"))
 
     api("de.fraunhofer.iais.eis.ids.infomodel:java:${infoModelVersion}")
 
     implementation("jakarta.ws.rs:jakarta.ws.rs-api:${rsApi}")
+    testImplementation(testFixtures(project(":launchers:junit")))
 
 }
 

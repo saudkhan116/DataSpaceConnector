@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2021 Daimler TSS GmbH
+ *  Copyright (c) 2021 - 2022 Daimler TSS GmbH, Fraunhofer Institute for Software and Systems Engineering
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -10,6 +10,7 @@
  *  Contributors:
  *       Daimler TSS GmbH - Initial API and Implementation
  *       Fraunhofer Institute for Software and Systems Engineering - add methods
+ *       Daimler TSS GmbH - introduce factory to create RequestInProcessMessage
  *
  */
 
@@ -44,6 +45,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.eclipse.dataspaceconnector.ids.api.multipart.controller.MultipartController;
 import org.eclipse.dataspaceconnector.ids.api.multipart.message.MultipartResponse;
+import org.eclipse.dataspaceconnector.ids.core.policy.IdsConstraintImpl;
 import org.eclipse.dataspaceconnector.ids.spi.IdsId;
 import org.eclipse.dataspaceconnector.ids.spi.IdsIdParser;
 import org.eclipse.dataspaceconnector.junit.launcher.EdcExtension;
@@ -64,6 +66,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.eclipse.dataspaceconnector.common.testfixtures.TestUtils.getFreePort;
+import static org.eclipse.dataspaceconnector.ids.spi.IdsConstants.IDS_WEBHOOK_ADDRESS_PROPERTY;
 
 @ExtendWith(EdcExtension.class)
 abstract class AbstractMultipartControllerIntegrationTest {
@@ -73,6 +76,7 @@ abstract class AbstractMultipartControllerIntegrationTest {
     //      once https://github.com/eclipse-dataspaceconnector/DataSpaceConnector/issues/236 is done
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final AtomicReference<Integer> PORT = new AtomicReference<>();
+    private static final AtomicReference<Integer> IDS_PORT = new AtomicReference<>();
     private static final List<Asset> ASSETS = new LinkedList<>();
 
     static {
@@ -82,6 +86,7 @@ abstract class AbstractMultipartControllerIntegrationTest {
         OBJECT_MAPPER.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         OBJECT_MAPPER.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        OBJECT_MAPPER.registerSubtypes(IdsConstraintImpl.class);
     }
 
     @AfterEach
@@ -93,11 +98,13 @@ abstract class AbstractMultipartControllerIntegrationTest {
         }
 
         PORT.set(null);
+        IDS_PORT.set(null);
     }
 
     @BeforeEach
     protected void before(EdcExtension extension) {
         PORT.set(getFreePort());
+        IDS_PORT.set(getFreePort());
 
         for (Map.Entry<String, String> entry : getSystemProperties().entrySet()) {
             System.setProperty(entry.getKey(), entry.getValue());
@@ -114,8 +121,12 @@ abstract class AbstractMultipartControllerIntegrationTest {
         return PORT.get();
     }
 
+    protected int getIdsPort() {
+        return IDS_PORT.get();
+    }
+
     protected String getUrl() {
-        return String.format("http://localhost:%s/api%s", getPort(), MultipartController.PATH);
+        return String.format("http://localhost:%s/api/v1/ids%s", getIdsPort(), MultipartController.PATH);
     }
 
     protected abstract Map<String, String> getSystemProperties();
@@ -138,7 +149,8 @@ abstract class AbstractMultipartControllerIntegrationTest {
 
     protected DescriptionRequestMessage getDescriptionRequestMessage(IdsId idsId) {
         DescriptionRequestMessageBuilder builder = new DescriptionRequestMessageBuilder()
-                ._securityToken_(getDynamicAttributeToken());
+                ._securityToken_(getDynamicAttributeToken())
+                ._issuerConnector_(URI.create("issuerConnector"));
 
         if (idsId != null) {
             builder._requestedElement_(
@@ -151,8 +163,10 @@ abstract class AbstractMultipartControllerIntegrationTest {
         var message = new ContractRequestMessageBuilder()
                 ._correlationMessage_(URI.create("correlationId"))
                 ._securityToken_(getDynamicAttributeToken())
+                ._senderAgent_(URI.create("sender"))
+                ._issuerConnector_(URI.create("issuerConnector"))
                 .build();
-        message.setProperty("idsWebhookAddress", "http://someUrl");
+        message.setProperty(IDS_WEBHOOK_ADDRESS_PROPERTY, "http://someUrl");
         return message;
     }
 
@@ -160,6 +174,7 @@ abstract class AbstractMultipartControllerIntegrationTest {
         return new ContractAgreementMessageBuilder()
                 ._correlationMessage_(URI.create("correlationId"))
                 ._securityToken_(getDynamicAttributeToken())
+                ._issuerConnector_(URI.create("issuerConnector"))
                 .build();
     }
 
@@ -168,13 +183,16 @@ abstract class AbstractMultipartControllerIntegrationTest {
                 ._correlationMessage_(URI.create("correlationId"))
                 ._transferContract_(URI.create("contractId"))
                 ._securityToken_(getDynamicAttributeToken())
+                ._issuerConnector_(URI.create("issuerConnector"))
                 .build();
     }
 
     protected ContractOfferMessage getContractOfferMessage() {
         return new ContractOfferMessageBuilder()
                 ._correlationMessage_(URI.create("correlationId"))
+                ._senderAgent_(URI.create("sender"))
                 ._securityToken_(getDynamicAttributeToken())
+                ._issuerConnector_(URI.create("issuerConnector"))
                 .build();
     }
 

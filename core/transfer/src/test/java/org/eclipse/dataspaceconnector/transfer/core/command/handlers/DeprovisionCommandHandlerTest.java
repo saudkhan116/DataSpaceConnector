@@ -1,6 +1,5 @@
-
 /*
- *  Copyright (c) 2020-2022 Microsoft Corporation
+ *  Copyright (c) 2020 - 2022 Microsoft Corporation
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -12,13 +11,14 @@
  *       Microsoft Corporation - initial API and implementation
  *
  */
+
 package org.eclipse.dataspaceconnector.transfer.core.command.handlers;
 
 import org.eclipse.dataspaceconnector.spi.EdcException;
 import org.eclipse.dataspaceconnector.spi.transfer.store.TransferProcessStore;
 import org.eclipse.dataspaceconnector.spi.types.domain.transfer.TransferProcess;
 import org.eclipse.dataspaceconnector.spi.types.domain.transfer.TransferProcessStates;
-import org.eclipse.dataspaceconnector.transfer.core.command.commands.DeprovisionRequest;
+import org.eclipse.dataspaceconnector.spi.types.domain.transfer.command.DeprovisionRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +48,7 @@ class DeprovisionCommandHandlerTest {
         when(storeMock.find(anyString())).thenReturn(tp);
         handler.handle(cmd);
 
-        assertThat(tp.getState()).isEqualTo(TransferProcessStates.DEPROVISIONING_REQ.code());
+        assertThat(tp.getState()).isEqualTo(TransferProcessStates.DEPROVISIONING.code());
         assertThat(tp.getErrorDetail()).isNull();
     }
 
@@ -67,7 +67,7 @@ class DeprovisionCommandHandlerTest {
                 .type(TransferProcess.Type.CONSUMER).build();
 
         when(storeMock.find(anyString())).thenReturn(tp);
-        assertThatThrownBy(() -> handler.handle(cmd)).isInstanceOf(IllegalStateException.class).hasMessage("Cannot transition from state IN_PROGRESS to DEPROVISIONING_REQ");
+        assertThatThrownBy(() -> handler.handle(cmd)).isInstanceOf(IllegalStateException.class).hasMessage("Cannot transition from state IN_PROGRESS to DEPROVISIONING");
     }
 
     @Test

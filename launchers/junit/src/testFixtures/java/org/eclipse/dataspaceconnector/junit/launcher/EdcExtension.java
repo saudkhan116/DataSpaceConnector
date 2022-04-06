@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020, 2021 Microsoft Corporation
+ *  Copyright (c) 2020 - 2022 Microsoft Corporation
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -9,23 +9,26 @@
  *
  *  Contributors:
  *       Microsoft Corporation - initial API and implementation
+ *       Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
  *
  */
 
 package org.eclipse.dataspaceconnector.junit.launcher;
 
 import org.eclipse.dataspaceconnector.boot.system.DefaultServiceExtensionContext;
-import org.eclipse.dataspaceconnector.boot.system.ExtensionLoader;
 import org.eclipse.dataspaceconnector.boot.system.ServiceLocator;
 import org.eclipse.dataspaceconnector.boot.system.ServiceLocatorImpl;
 import org.eclipse.dataspaceconnector.boot.system.runtime.BaseRuntime;
 import org.eclipse.dataspaceconnector.spi.EdcException;
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
 import org.eclipse.dataspaceconnector.spi.security.Vault;
-import org.eclipse.dataspaceconnector.spi.system.InjectionContainer;
+import org.eclipse.dataspaceconnector.spi.system.ConfigurationExtension;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtension;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtensionContext;
 import org.eclipse.dataspaceconnector.spi.system.SystemExtension;
+import org.eclipse.dataspaceconnector.spi.system.configuration.ConfigFactory;
+import org.eclipse.dataspaceconnector.spi.system.injection.InjectionContainer;
+import org.eclipse.dataspaceconnector.spi.telemetry.Telemetry;
 import org.eclipse.dataspaceconnector.spi.types.TypeManager;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
@@ -38,20 +41,24 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import static org.eclipse.dataspaceconnector.common.types.Cast.cast;
 
 /**
  * A JUnit extension for running an embedded EDC runtime as part of a test fixture.
- * This extension attaches a EDC runtime to the {@link BeforeTestExecutionCallback} and {@link AfterTestExecutionCallback} lifecycle hooks. Parameter injection of runtime services is supported.
+ * This extension attaches an EDC runtime to the {@link BeforeTestExecutionCallback} and {@link AfterTestExecutionCallback} lifecycle hooks. Parameter injection of runtime services is supported.
+ * <p>
+ * If only basic dependency injection is needed, use {@link DependencyInjectionExtension} instead.
  */
 public class EdcExtension extends BaseRuntime implements BeforeTestExecutionCallback, AfterTestExecutionCallback, ParameterResolver {
     private final LinkedHashMap<Class<?>, Object> serviceMocks = new LinkedHashMap<>();
-    private final LinkedHashMap<Class<? extends SystemExtension>, List<SystemExtension>> systemExtensions = new LinkedHashMap<>();
     private List<ServiceExtension> runningServiceExtensions;
     private DefaultServiceExtensionContext context;
-    private Monitor monitor;
+
+    public EdcExtension() {
+        super(new MultiSourceServiceLocator());
+    }
 
     /**
      * Registers a mock service with the runtime.
@@ -66,47 +73,42 @@ public class EdcExtension extends BaseRuntime implements BeforeTestExecutionCall
      * Registers a service extension with the runtime.
      */
     public <T extends SystemExtension> void registerSystemExtension(Class<T> type, SystemExtension extension) {
-        systemExtensions.computeIfAbsent(type, k -> new ArrayList<>()).add(extension);
+        ((MultiSourceServiceLocator) serviceLocator).registerSystemExtension(type, extension);
     }
 
     @Override
     public void beforeTestExecution(ExtensionContext extensionContext) throws Exception {
-        boot();
+        bootWithoutShutdownHook();
     }
 
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
-        if (runningServiceExtensions != null) {
-            shutdown(runningServiceExtensions, monitor);
-        }
-
+        shutdown();
         // clear the systemExtensions map to prevent it from piling up between subsequent runs
-        systemExtensions.clear();
+        ((MultiSourceServiceLocator) serviceLocator).clearSystemExtensions();
     }
 
     @Override
     protected void bootExtensions(ServiceExtensionContext context, List<InjectionContainer<ServiceExtension>> serviceExtensions) {
-        this.runningServiceExtensions = serviceExtensions.stream().map(InjectionContainer::getInjectionTarget).collect(Collectors.toList());
         super.bootExtensions(context, serviceExtensions);
     }
 
     @Override
-    protected @NotNull ServiceExtensionContext createContext(TypeManager typeManager, Monitor monitor) {
-        this.context = new DefaultServiceExtensionContext(typeManager, monitor, new MultiSourceServiceLocator());
+    protected @NotNull ServiceExtensionContext createContext(TypeManager typeManager, Monitor monitor, Telemetry telemetry) {
+        this.context = new DefaultServiceExtensionContext(typeManager, monitor, telemetry, loadConfigurationExtensions());
         return this.context;
     }
 
     @Override
     protected void initializeContext(ServiceExtensionContext context) {
         serviceMocks.forEach((key, value) -> context.registerService(cast(key), value));
-        this.monitor = context.getMonitor();
         super.initializeContext(context);
     }
 
     @Override
     protected void initializeVault(ServiceExtensionContext context) {
         if (!serviceMocks.containsKey(Vault.class)) {
-            ExtensionLoader.loadVault(context);
+            super.initializeVault(context);
         }
     }
 
@@ -132,12 +134,21 @@ public class EdcExtension extends BaseRuntime implements BeforeTestExecutionCall
         return null;
     }
 
+    public void setConfiguration(Map<String, String> configuration) {
+        registerSystemExtension(ConfigurationExtension.class, (ConfigurationExtension) () -> ConfigFactory.fromMap(configuration));
+    }
+
     /**
      * A service locator that allows additional extensions to be manually loaded by a test fixture. This locator return the union of registered extensions and extensions loaded
      * by the delegate.
      */
-    private class MultiSourceServiceLocator implements ServiceLocator {
+    private static class MultiSourceServiceLocator implements ServiceLocator {
         private final ServiceLocator delegate = new ServiceLocatorImpl();
+        private final LinkedHashMap<Class<? extends SystemExtension>, List<SystemExtension>> systemExtensions;
+
+        public MultiSourceServiceLocator() {
+            this.systemExtensions  = new LinkedHashMap<>();
+        }
 
         @Override
         public <T> List<T> loadImplementors(Class<T> type, boolean required) {
@@ -158,6 +169,14 @@ public class EdcExtension extends BaseRuntime implements BeforeTestExecutionCall
                 throw new EdcException("Multiple extensions were registered for type: " + type.getName());
             }
             return type.cast(extensions.get(0));
+        }
+
+        public <T extends SystemExtension> void registerSystemExtension(Class<T> type, SystemExtension extension) {
+            systemExtensions.computeIfAbsent(type, k -> new ArrayList<>()).add(extension);
+        }
+
+        public void clearSystemExtensions() {
+            systemExtensions.clear();
         }
     }
 

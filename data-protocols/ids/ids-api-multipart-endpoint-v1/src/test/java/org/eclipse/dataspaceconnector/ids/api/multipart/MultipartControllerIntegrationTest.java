@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2021 Daimler TSS GmbH
+ *  Copyright (c) 2021 - 2022 Daimler TSS GmbH, Fraunhofer Institute for Software and Systems Engineering
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -10,6 +10,7 @@
  *  Contributors:
  *       Daimler TSS GmbH - Initial API and Implementation
  *       Fraunhofer Institute for Software and Systems Engineering - add tests
+ *       Daimler TSS GmbH - introduce factory to create RequestInProcessMessage
  *
  */
 
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.dataspaceconnector.common.testfixtures.TestUtils.testOkHttpClient;
 
 public class MultipartControllerIntegrationTest extends AbstractMultipartControllerIntegrationTest {
     private static final String CONNECTOR_ID = UUID.randomUUID().toString();
@@ -47,8 +49,7 @@ public class MultipartControllerIntegrationTest extends AbstractMultipartControl
 
     @BeforeAll
     static void setUp() {
-        httpClient = new OkHttpClient.Builder()
-                .build();
+        httpClient = testOkHttpClient();
     }
 
     @Test
@@ -512,7 +513,6 @@ public class MultipartControllerIntegrationTest extends AbstractMultipartControl
         jsonHeader.inPath("$.@type").isString().isEqualTo("ids:RequestInProcessMessage");
         jsonHeader.inPath("$.@id").isString().matches("urn:message:.*");
         jsonHeader.inPath("$.ids:modelVersion").isString().isEqualTo("4.2.7");
-        jsonHeader.inPath("$.ids:contentVersion").isString().isEqualTo("4.2.7");
         //jsonHeader.inPath("$.ids:issued").isString().matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}UTC$");
         jsonHeader.inPath("$.ids:issuerConnector").isString().isEqualTo("urn:connector:" + CONNECTOR_ID);
         jsonHeader.inPath("$.ids:senderAgent").isString().isEqualTo("urn:connector:" + CONNECTOR_ID);
@@ -547,7 +547,6 @@ public class MultipartControllerIntegrationTest extends AbstractMultipartControl
         jsonHeader.inPath("$.@type").isString().isEqualTo("ids:RequestInProcessMessage");
         jsonHeader.inPath("$.@id").isString().matches("urn:message:.*");
         jsonHeader.inPath("$.ids:modelVersion").isString().isEqualTo("4.2.7");
-        jsonHeader.inPath("$.ids:contentVersion").isString().isEqualTo("4.2.7");
         //jsonHeader.inPath("$.ids:issued").isString().matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}UTC$");
         jsonHeader.inPath("$.ids:issuerConnector").isString().isEqualTo("urn:connector:" + CONNECTOR_ID);
         jsonHeader.inPath("$.ids:senderAgent").isString().isEqualTo("urn:connector:" + CONNECTOR_ID);
@@ -638,6 +637,9 @@ public class MultipartControllerIntegrationTest extends AbstractMultipartControl
         return new HashMap<>() {
             {
                 put("web.http.port", String.valueOf(getPort()));
+                put("web.http.path", "/api");
+                put("web.http.ids.port", String.valueOf(getIdsPort()));
+                put("web.http.ids.path", "/api/v1/ids");
                 put("edc.ids.id", "urn:connector:" + CONNECTOR_ID);
                 put("edc.ids.catalog.id", "urn:catalog:" + CATALOG_ID);
             }

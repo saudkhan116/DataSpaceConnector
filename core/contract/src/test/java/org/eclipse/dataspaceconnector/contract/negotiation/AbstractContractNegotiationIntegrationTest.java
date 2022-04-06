@@ -11,6 +11,7 @@
  *       Fraunhofer Institute for Software and Systems Engineering - initial API and implementation
  *
  */
+
 package org.eclipse.dataspaceconnector.contract.negotiation;
 
 import org.eclipse.dataspaceconnector.contract.common.ContractId;
@@ -92,7 +93,9 @@ public abstract class AbstractContractNegotiationIntegrationTest {
         // Create CommandRunner mock
         CommandRunner<ContractNegotiationCommand> runner = (CommandRunner<ContractNegotiationCommand>) mock(CommandRunner.class);
 
-        // Create the provider contract negotiation manager
+        providerStore = new InMemoryContractNegotiationStore();
+        consumerStore = new InMemoryContractNegotiationStore();
+
         providerManager = ProviderContractNegotiationManagerImpl.Builder.newInstance()
                 .dispatcherRegistry(new FakeProviderDispatcherRegistry())
                 .monitor(monitor)
@@ -101,10 +104,9 @@ public abstract class AbstractContractNegotiationIntegrationTest {
                 .commandQueue(queue)
                 .commandRunner(runner)
                 .observable(providerObservable)
+                .store(providerStore)
                 .build();
-        providerStore = new InMemoryContractNegotiationStore();
 
-        // Create the consumer contract negotiation manager
         consumerManager = ConsumerContractNegotiationManagerImpl.Builder.newInstance()
                 .dispatcherRegistry(new FakeConsumerDispatcherRegistry())
                 .monitor(monitor)
@@ -113,9 +115,9 @@ public abstract class AbstractContractNegotiationIntegrationTest {
                 .commandQueue(queue)
                 .commandRunner(runner)
                 .observable(consumerObservable)
+                .store(consumerStore)
                 .build();
-        consumerStore = new InMemoryContractNegotiationStore();
-        
+
         countDownLatch = new CountDownLatch(2);
     }
     
@@ -132,7 +134,7 @@ public abstract class AbstractContractNegotiationIntegrationTest {
         }
         
         @Override
-        public void confirmed(ContractNegotiation negotiation) {
+        public void preConfirmed(ContractNegotiation negotiation) {
             countDownLatch.countDown();
         }
     }
@@ -150,7 +152,7 @@ public abstract class AbstractContractNegotiationIntegrationTest {
         }
         
         @Override
-        public void declined(ContractNegotiation negotiation) {
+        public void preDeclined(ContractNegotiation negotiation) {
             countDownLatch.countDown();
         }
     }

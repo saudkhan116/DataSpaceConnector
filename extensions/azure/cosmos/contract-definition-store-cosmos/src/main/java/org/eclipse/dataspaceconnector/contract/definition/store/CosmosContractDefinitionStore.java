@@ -1,10 +1,29 @@
+/*
+ *  Copyright (c) 2020 - 2022 Microsoft Corporation
+ *
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Contributors:
+ *       Microsoft Corporation - initial API and implementation
+ *       Fraunhofer Institute for Software and Systems Engineering - added method
+ *
+ */
+
 package org.eclipse.dataspaceconnector.contract.definition.store;
 
 import net.jodah.failsafe.RetryPolicy;
 import net.jodah.failsafe.function.CheckedSupplier;
-import org.eclipse.dataspaceconnector.contract.definition.store.model.ContractDefinitionDocument;
-import org.eclipse.dataspaceconnector.cosmos.azure.CosmosDbApi;
+import org.eclipse.dataspaceconnector.azure.cosmos.CosmosDbApi;
+import org.eclipse.dataspaceconnector.common.concurrency.LockManager;
+import org.eclipse.dataspaceconnector.cosmos.policy.store.model.ContractDefinitionDocument;
 import org.eclipse.dataspaceconnector.spi.contract.offer.store.ContractDefinitionStore;
+import org.eclipse.dataspaceconnector.spi.query.QueryResolver;
+import org.eclipse.dataspaceconnector.spi.query.QuerySpec;
+import org.eclipse.dataspaceconnector.spi.query.ReflectionBasedQueryResolver;
 import org.eclipse.dataspaceconnector.spi.types.TypeManager;
 import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.ContractDefinition;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static net.jodah.failsafe.Failsafe.with;
 
@@ -28,15 +48,18 @@ public class CosmosContractDefinitionStore implements ContractDefinitionStore {
     private final CosmosDbApi cosmosDbApi;
     private final TypeManager typeManager;
     private final RetryPolicy<Object> retryPolicy;
-    private final ReentrantReadWriteLock lock; //used to synchronize write operations to the cache and the DB
+    private final LockManager lockManager;
+    private final String partitionKey;
+    private final QueryResolver<ContractDefinition> queryResolver;
     private AtomicReference<Map<String, ContractDefinition>> objectCache;
 
-    public CosmosContractDefinitionStore(CosmosDbApi cosmosDbApi, TypeManager typeManager, RetryPolicy<Object> retryPolicy) {
+    public CosmosContractDefinitionStore(CosmosDbApi cosmosDbApi, TypeManager typeManager, RetryPolicy<Object> retryPolicy, String partitionKey) {
         this.cosmosDbApi = cosmosDbApi;
         this.typeManager = typeManager;
         this.retryPolicy = retryPolicy;
-
-        lock = new ReentrantReadWriteLock(true);
+        this.partitionKey = partitionKey;
+        lockManager = new LockManager(new ReentrantReadWriteLock(true));
+        queryResolver = new ReflectionBasedQueryResolver<>(ContractDefinition.class);
     }
 
     @Override
@@ -45,47 +68,51 @@ public class CosmosContractDefinitionStore implements ContractDefinitionStore {
     }
 
     @Override
+    public @NotNull Stream<ContractDefinition> findAll(QuerySpec spec) {
+        return lockManager.readLock(() -> queryResolver.query(getCache().values().stream(), spec));
+    }
+    
+    @Override
+    public ContractDefinition findById(String definitionId) {
+        return lockManager.readLock(() -> getCache().get(definitionId));
+    }
+    
+    @Override
     public void save(Collection<ContractDefinition> definitions) {
-        lock.writeLock().lock();
-        try {
+        lockManager.writeLock(() -> {
             with(retryPolicy).run(() -> cosmosDbApi.saveItems(definitions.stream().map(this::convertToDocument).collect(Collectors.toList())));
             definitions.forEach(this::storeInCache);
-        } finally {
-            lock.writeLock().unlock();
-        }
+            return null;
+        });
     }
 
     @Override
     public void save(ContractDefinition definition) {
-        lock.writeLock().lock();
-        try {
+        lockManager.writeLock(() -> {
             with(retryPolicy).run(() -> cosmosDbApi.saveItem(convertToDocument(definition)));
             storeInCache(definition);
-        } finally {
-            lock.writeLock().unlock();
-        }
+            return null;
+        });
     }
 
     @Override
     public void update(ContractDefinition definition) {
-        lock.writeLock().lock();
-        try {
+        lockManager.writeLock(() -> {
             save(definition); //cosmos db api internally uses "upsert" semantics
             storeInCache(definition);
-        } finally {
-            lock.writeLock().unlock();
-        }
+            return null;
+        });
     }
 
     @Override
-    public void delete(String id) {
-        cosmosDbApi.deleteItem(id);
+    public ContractDefinition deleteById(String id) {
+        var deletedItem = cosmosDbApi.deleteItem(id);
+        return deletedItem == null ? null : convert(deletedItem);
     }
 
     @Override
     public void reload() {
-        lock.readLock().lock();
-        try {
+        lockManager.readLock(() -> {
             // this reloads ALL items from the database. We might want something more elaborate in the future, especially
             // if large amounts of ContractDefinitions need to be held in memory
             var databaseObjects = with(retryPolicy)
@@ -98,10 +125,8 @@ public class CosmosContractDefinitionStore implements ContractDefinitionStore {
                 objectCache = new AtomicReference<>(new HashMap<>());
             }
             objectCache.set(databaseObjects);
-        } finally {
-            lock.readLock().unlock();
-        }
-
+            return null;
+        });
     }
 
     private void storeInCache(ContractDefinition definition) {
@@ -110,7 +135,7 @@ public class CosmosContractDefinitionStore implements ContractDefinitionStore {
 
     @NotNull
     private ContractDefinitionDocument convertToDocument(ContractDefinition def) {
-        return new ContractDefinitionDocument(def);
+        return new ContractDefinitionDocument(def, partitionKey);
     }
 
     private Map<String, ContractDefinition> getCache() {

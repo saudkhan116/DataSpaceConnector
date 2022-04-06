@@ -11,6 +11,7 @@
  *       Microsoft Corporation - initial API and implementation
  *
  */
+
 package org.eclipse.dataspaceconnector.transfer.functions.core.flow.http;
 
 import okhttp3.Interceptor;
@@ -18,6 +19,7 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.eclipse.dataspaceconnector.policy.model.Policy;
 import org.eclipse.dataspaceconnector.spi.asset.DataAddressResolver;
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
 import org.eclipse.dataspaceconnector.spi.types.TypeManager;
@@ -30,6 +32,7 @@ import java.util.UUID;
 
 import static okhttp3.Protocol.HTTP_1_1;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.dataspaceconnector.common.testfixtures.TestUtils.testOkHttpClient;
 import static org.eclipse.dataspaceconnector.spi.response.ResponseStatus.ERROR_RETRY;
 import static org.eclipse.dataspaceconnector.spi.response.ResponseStatus.FATAL_ERROR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,11 +67,12 @@ class HttpDataFlowControllerTest {
                 .body(ResponseBody.create("", MediaType.get("application/json"))).message("ok")
                 .build();
 
-        httpClient = new OkHttpClient.Builder().addInterceptor(delegate).build();
+        httpClient = testOkHttpClient().newBuilder().addInterceptor(delegate).build();
 
         var dataRequest = createDataRequest();
+        var policy = Policy.Builder.newInstance().build();
 
-        assertThat(flowController.initiateFlow(dataRequest).succeeded()).isTrue();
+        assertThat(flowController.initiateFlow(dataRequest, policy).succeeded()).isTrue();
     }
 
     @Test
@@ -79,11 +83,12 @@ class HttpDataFlowControllerTest {
                 .body(ResponseBody.create("", MediaType.get("application/json"))).message("ok")
                 .build();
 
-        httpClient = new OkHttpClient.Builder().addInterceptor(delegate).build();
+        httpClient = testOkHttpClient().newBuilder().addInterceptor(delegate).build();
 
         var dataRequest = createDataRequest();
+        var policy = Policy.Builder.newInstance().build();
 
-        assertEquals(ERROR_RETRY, flowController.initiateFlow(dataRequest).getFailure().status());
+        assertEquals(ERROR_RETRY, flowController.initiateFlow(dataRequest, policy).getFailure().status());
     }
 
     @Test
@@ -94,11 +99,12 @@ class HttpDataFlowControllerTest {
                 .body(ResponseBody.create("", MediaType.get("application/json"))).message("ok")
                 .build();
 
-        httpClient = new OkHttpClient.Builder().addInterceptor(delegate).build();
+        httpClient = testOkHttpClient().newBuilder().addInterceptor(delegate).build();
 
         var dataRequest = createDataRequest();
+        var policy = Policy.Builder.newInstance().build();
 
-        assertEquals(FATAL_ERROR, flowController.initiateFlow(dataRequest).getFailure().status());
+        assertEquals(FATAL_ERROR, flowController.initiateFlow(dataRequest, policy).getFailure().status());
     }
 
     private DataRequest createDataRequest() {

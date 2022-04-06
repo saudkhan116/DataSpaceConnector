@@ -9,6 +9,7 @@
  *
  *  Contributors:
  *       Microsoft Corporation - initial API and implementation
+ *       Fraunhofer Institute for Software and Systems Engineering - added method
  *
  */
 
@@ -18,11 +19,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 
@@ -32,15 +32,10 @@ import static java.util.stream.Collectors.joining;
 @JsonDeserialize(builder = Permission.Builder.class)
 @JsonTypeName("dataspaceconnector:permission")
 public class Permission extends Rule {
-    private final List<Duty> duties;
+    private final List<Duty> duties = new ArrayList<>();
 
-    private Permission() {
-        this.duties = new ArrayList<>();
-    }
-
-    @Nullable
     public List<Duty> getDuties() {
-        return Collections.unmodifiableList(duties);
+        return duties;
     }
 
     @Override
@@ -51,6 +46,24 @@ public class Permission extends Rule {
     @Override
     public String toString() {
         return "Permission constraints: [" + getConstraints().stream().map(Object::toString).collect(joining(",")) + "]";
+    }
+    
+    /**
+     * Returns a copy of this permission with the specified target.
+     *
+     * @param target the target.
+     * @return a copy with the specified target.
+     */
+    public Permission withTarget(String target) {
+        return Builder.newInstance()
+                .uid(this.uid)
+                .assigner(this.assigner)
+                .assignee(this.assignee)
+                .action(this.action)
+                .constraints(this.constraints)
+                .duties(this.duties.stream().map(d -> d.withTarget(target)).collect(Collectors.toList()))
+                .target(target)
+                .build();
     }
 
     @JsonPOJOBuilder(withPrefix = "")

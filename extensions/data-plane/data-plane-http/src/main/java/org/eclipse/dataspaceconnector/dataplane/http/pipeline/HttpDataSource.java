@@ -11,12 +11,15 @@
  *       Microsoft Corporation - initial API and implementation
  *
  */
+
 package org.eclipse.dataspaceconnector.dataplane.http.pipeline;
 
 
 import net.jodah.failsafe.RetryPolicy;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import org.eclipse.dataspaceconnector.dataplane.spi.pipeline.DataSource;
 import org.eclipse.dataspaceconnector.spi.EdcException;
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
@@ -24,7 +27,10 @@ import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.lang.String.format;
@@ -36,6 +42,11 @@ import static net.jodah.failsafe.Failsafe.with;
 public class HttpDataSource implements DataSource {
     private String sourceEndpoint;
     private String name;
+    private String queryParams;
+    private MediaType mediaType;
+    private String body;
+    private final Map<String, String> headers = new HashMap<>();
+    private String method;
     private String requestId;
     private RetryPolicy<Object> retryPolicy;
     private OkHttpClient httpClient;
@@ -46,15 +57,37 @@ public class HttpDataSource implements DataSource {
         return Stream.of(getPart());
     }
 
+    private String createUrl() {
+        return sourceEndpoint +
+                Optional.ofNullable(name)
+                        .filter(s -> !s.isBlank())
+                        .map(s -> "/" + name)
+                        .orElse("") +
+                Optional.ofNullable(queryParams)
+                        .filter(qp -> !qp.isBlank())
+                        .map(s -> "?" + queryParams)
+                        .orElse("");
+    }
+
+    private boolean hasValidRequestBody() {
+        return mediaType != null && body != null;
+    }
+
     private HttpPart getPart() {
-        var request = new Request.Builder().url(sourceEndpoint + "/" + name).get().build();
-        try (var response = with(retryPolicy).get(() -> httpClient.newCall(request).execute())) {
+        var url = createUrl();
+        var requestBody = hasValidRequestBody() ? RequestBody.create(body, mediaType) : null;
+        var requestBuilder = new Request.Builder()
+                .url(url)
+                .method(method, requestBody);
+        headers.forEach(requestBuilder::addHeader);
+
+        try (var response = with(retryPolicy).get(() -> httpClient.newCall(requestBuilder.build()).execute())) {
             if (response.isSuccessful()) {
-                var body = response.body();
-                if (body == null) {
+                var responseBody = response.body();
+                if (responseBody == null) {
                     throw new EdcException(format("Received empty response body transferring HTTP data for request %s: %s", requestId, response.code()));
                 }
-                return new HttpPart(name, body.bytes());
+                return new HttpPart(name, responseBody.bytes());
             } else {
                 throw new EdcException(format("Received code transferring HTTP data for request %s: %s", requestId, response.code()));
             }
@@ -67,7 +100,7 @@ public class HttpDataSource implements DataSource {
     }
 
     public static class Builder {
-        private HttpDataSource dataSource;
+        private final HttpDataSource dataSource;
 
         public static Builder newInstance() {
             return new Builder();
@@ -75,6 +108,27 @@ public class HttpDataSource implements DataSource {
 
         public Builder sourceUrl(String sourceUrl) {
             dataSource.sourceEndpoint = sourceUrl;
+            return this;
+        }
+
+        public Builder queryParams(String queryParams) {
+            dataSource.queryParams = queryParams;
+            return this;
+        }
+
+        public Builder method(String method) {
+            dataSource.method = method;
+            return this;
+        }
+
+        public Builder header(String key, String value) {
+            dataSource.headers.put(key, value);
+            return this;
+        }
+
+        public Builder requestBody(MediaType mediaType, String body) {
+            dataSource.mediaType = mediaType;
+            dataSource.body = body;
             return this;
         }
 
@@ -104,7 +158,9 @@ public class HttpDataSource implements DataSource {
         }
 
         public HttpDataSource build() {
+            dataSource.headers.forEach((s, s2) -> Objects.requireNonNull(s2, "value for header: " + s));
             Objects.requireNonNull(dataSource.sourceEndpoint, "sourceEndpoint");
+            Objects.requireNonNull(dataSource.method, "method");
             Objects.requireNonNull(dataSource.requestId, "requestId");
             Objects.requireNonNull(dataSource.httpClient, "httpClient");
             Objects.requireNonNull(dataSource.monitor, "monitor");
@@ -142,5 +198,4 @@ public class HttpDataSource implements DataSource {
         }
 
     }
-
 }

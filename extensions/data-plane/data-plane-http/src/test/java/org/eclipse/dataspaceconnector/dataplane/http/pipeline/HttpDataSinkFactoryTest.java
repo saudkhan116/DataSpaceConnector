@@ -11,12 +11,12 @@
  *       Microsoft Corporation - initial API and implementation
  *
  */
+
 package org.eclipse.dataspaceconnector.dataplane.http.pipeline;
 
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import org.eclipse.dataspaceconnector.dataplane.http.schema.HttpDataSchema;
 import org.eclipse.dataspaceconnector.dataplane.spi.pipeline.InputStreamDataSource;
 import org.eclipse.dataspaceconnector.spi.EdcException;
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
@@ -30,11 +30,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.eclipse.dataspaceconnector.dataplane.http.pipeline.HttpTestFixtures.createHttpResponse;
-import static org.eclipse.dataspaceconnector.dataplane.http.pipeline.HttpTestFixtures.createRequest;
-import static org.eclipse.dataspaceconnector.dataplane.http.schema.HttpDataSchema.AUTHENTICATION_CODE;
-import static org.eclipse.dataspaceconnector.dataplane.http.schema.HttpDataSchema.AUTHENTICATION_KEY;
-import static org.eclipse.dataspaceconnector.dataplane.http.schema.HttpDataSchema.ENDPOINT;
+import static org.eclipse.dataspaceconnector.dataplane.http.HttpTestFixtures.createHttpResponse;
+import static org.eclipse.dataspaceconnector.dataplane.http.HttpTestFixtures.createRequest;
+import static org.eclipse.dataspaceconnector.spi.types.domain.http.HttpDataAddressSchema.AUTHENTICATION_CODE;
+import static org.eclipse.dataspaceconnector.spi.types.domain.http.HttpDataAddressSchema.AUTHENTICATION_KEY;
+import static org.eclipse.dataspaceconnector.spi.types.domain.http.HttpDataAddressSchema.ENDPOINT;
+import static org.eclipse.dataspaceconnector.spi.types.domain.http.HttpDataAddressSchema.TYPE;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
@@ -47,7 +48,7 @@ class HttpDataSinkFactoryTest {
 
     @Test
     void verifyCanHandle() {
-        var httpRequest = createRequest(HttpDataSchema.TYPE).build();
+        var httpRequest = createRequest(TYPE).build();
         var nonHttpRequest = createRequest("Unknown").build();
 
         assertThat(factory.canHandle(httpRequest)).isTrue();
@@ -56,8 +57,8 @@ class HttpDataSinkFactoryTest {
 
     @Test
     void verifyValidation() {
-        var dataAddress = DataAddress.Builder.newInstance().property(ENDPOINT, "http://example.com").type(HttpDataSchema.TYPE).build();
-        var validRequest = createRequest(HttpDataSchema.TYPE).destinationDataAddress(dataAddress).build();
+        var dataAddress = DataAddress.Builder.newInstance().property(ENDPOINT, "http://example.com").type(TYPE).build();
+        var validRequest = createRequest(TYPE).destinationDataAddress(dataAddress).build();
         assertThat(factory.validate(validRequest).succeeded()).isTrue();
 
         var missingEndpointRequest = createRequest("Unknown").build();
@@ -66,8 +67,8 @@ class HttpDataSinkFactoryTest {
 
     @Test
     void verifyCreateSource() {
-        var dataAddress = DataAddress.Builder.newInstance().property(ENDPOINT, "http://example.com").type(HttpDataSchema.TYPE).build();
-        var validRequest = createRequest(HttpDataSchema.TYPE).destinationDataAddress(dataAddress).build();
+        var dataAddress = DataAddress.Builder.newInstance().property(ENDPOINT, "http://example.com").type(TYPE).build();
+        var validRequest = createRequest(TYPE).destinationDataAddress(dataAddress).build();
         var missingEndpointRequest = createRequest("Unknown").build();
 
         assertThat(factory.createSink(validRequest)).isNotNull();
@@ -77,13 +78,13 @@ class HttpDataSinkFactoryTest {
     @Test
     void verifyCreateAuthenticatingSource() throws InterruptedException, ExecutionException, IOException {
         var dataAddress = DataAddress.Builder.newInstance()
-                .type(HttpDataSchema.TYPE)
+                .type(TYPE)
                 .property(ENDPOINT, "http://example.com")
                 .property(AUTHENTICATION_KEY, "x-api-key")
                 .property(AUTHENTICATION_CODE, "123")
                 .build();
 
-        var validRequest = createRequest(HttpDataSchema.TYPE).destinationDataAddress(dataAddress).build();
+        var validRequest = createRequest(TYPE).destinationDataAddress(dataAddress).build();
 
         var call = mock(Call.class);
         when(call.execute()).thenReturn(createHttpResponse().build());

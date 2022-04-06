@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020, 2021 Microsoft Corporation
+ *  Copyright (c) 2020 - 2022 Microsoft Corporation
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -9,26 +9,29 @@
  *
  *  Contributors:
  *       Microsoft Corporation - initial API and implementation
+ *       Bayerische Motoren Werke Aktiengesellschaft (BMW AG) - improvements
  *
  */
 
 package org.eclipse.dataspaceconnector.transfer.core;
 
-import org.eclipse.dataspaceconnector.core.CoreExtension;
-import org.eclipse.dataspaceconnector.core.base.BoundedCommandQueue;
-import org.eclipse.dataspaceconnector.core.base.retry.ExponentialWaitStrategy;
+import org.eclipse.dataspaceconnector.spi.EdcSetting;
+import org.eclipse.dataspaceconnector.spi.asset.DataAddressResolver;
+import org.eclipse.dataspaceconnector.spi.command.BoundedCommandQueue;
 import org.eclipse.dataspaceconnector.spi.command.CommandHandlerRegistry;
-import org.eclipse.dataspaceconnector.spi.command.CommandQueue;
 import org.eclipse.dataspaceconnector.spi.command.CommandRunner;
 import org.eclipse.dataspaceconnector.spi.message.RemoteMessageDispatcherRegistry;
-import org.eclipse.dataspaceconnector.spi.proxy.DataProxyManager;
-import org.eclipse.dataspaceconnector.spi.proxy.ProxyEntryHandlerRegistry;
+import org.eclipse.dataspaceconnector.spi.retry.ExponentialWaitStrategy;
 import org.eclipse.dataspaceconnector.spi.security.Vault;
+import org.eclipse.dataspaceconnector.spi.system.CoreExtension;
+import org.eclipse.dataspaceconnector.spi.system.ExecutorInstrumentation;
 import org.eclipse.dataspaceconnector.spi.system.Inject;
 import org.eclipse.dataspaceconnector.spi.system.Provides;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtension;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtensionContext;
 import org.eclipse.dataspaceconnector.spi.transfer.TransferProcessManager;
+import org.eclipse.dataspaceconnector.spi.transfer.edr.EndpointDataReferenceReceiverRegistry;
+import org.eclipse.dataspaceconnector.spi.transfer.edr.EndpointDataReferenceTransformer;
 import org.eclipse.dataspaceconnector.spi.transfer.flow.DataFlowManager;
 import org.eclipse.dataspaceconnector.spi.transfer.inline.DataOperatorRegistry;
 import org.eclipse.dataspaceconnector.spi.transfer.observe.TransferProcessObservable;
@@ -38,15 +41,18 @@ import org.eclipse.dataspaceconnector.spi.transfer.retry.TransferWaitStrategy;
 import org.eclipse.dataspaceconnector.spi.transfer.store.TransferProcessStore;
 import org.eclipse.dataspaceconnector.spi.types.TypeManager;
 import org.eclipse.dataspaceconnector.spi.types.domain.transfer.DataRequest;
+import org.eclipse.dataspaceconnector.spi.types.domain.transfer.DeprovisionedResource;
+import org.eclipse.dataspaceconnector.spi.types.domain.transfer.ProvisionedContentResource;
 import org.eclipse.dataspaceconnector.spi.types.domain.transfer.StatusCheckerRegistry;
 import org.eclipse.dataspaceconnector.spi.types.domain.transfer.command.TransferProcessCommand;
+import org.eclipse.dataspaceconnector.transfer.core.command.handlers.AddProvisionedResourceCommandHandler;
+import org.eclipse.dataspaceconnector.transfer.core.edr.DefaultEndpointDataReferenceTransformer;
+import org.eclipse.dataspaceconnector.transfer.core.edr.EndpointDataReferenceReceiverRegistryImpl;
 import org.eclipse.dataspaceconnector.transfer.core.flow.DataFlowManagerImpl;
 import org.eclipse.dataspaceconnector.transfer.core.inline.DataOperatorRegistryImpl;
 import org.eclipse.dataspaceconnector.transfer.core.observe.TransferProcessObservableImpl;
 import org.eclipse.dataspaceconnector.transfer.core.provision.ProvisionManagerImpl;
 import org.eclipse.dataspaceconnector.transfer.core.provision.ResourceManifestGeneratorImpl;
-import org.eclipse.dataspaceconnector.transfer.core.synchronous.DataProxyManagerImpl;
-import org.eclipse.dataspaceconnector.transfer.core.transfer.ProxyEntryHandlerRegistryImpl;
 import org.eclipse.dataspaceconnector.transfer.core.transfer.StatusCheckerRegistryImpl;
 import org.eclipse.dataspaceconnector.transfer.core.transfer.TransferProcessManagerImpl;
 
@@ -55,16 +61,25 @@ import org.eclipse.dataspaceconnector.transfer.core.transfer.TransferProcessMana
  */
 @CoreExtension
 @Provides({StatusCheckerRegistry.class, ResourceManifestGenerator.class, TransferProcessManager.class,
-        TransferProcessObservable.class, DataProxyManager.class, ProxyEntryHandlerRegistry.class, DataOperatorRegistry.class, DataFlowManager.class})
+        TransferProcessObservable.class, DataOperatorRegistry.class, DataFlowManager.class, ProvisionManager.class,
+        EndpointDataReferenceReceiverRegistry.class, EndpointDataReferenceTransformer.class})
 public class CoreTransferExtension implements ServiceExtension {
     private static final long DEFAULT_ITERATION_WAIT = 5000; // millis
 
+    @EdcSetting
+    private static final String TRANSFER_STATE_MACHINE_BATCH_SIZE = "edc.transfer.state-machine.batch-size";
+
     @Inject
     private TransferProcessStore transferProcessStore;
+
     @Inject
     private CommandHandlerRegistry registry;
+
     @Inject
     private RemoteMessageDispatcherRegistry dispatcherRegistry;
+
+    @Inject
+    private DataAddressResolver addressResolver;
 
     private TransferProcessManagerImpl processManager;
 
@@ -76,6 +91,8 @@ public class CoreTransferExtension implements ServiceExtension {
     @Override
     public void initialize(ServiceExtensionContext context) {
         var monitor = context.getMonitor();
+
+        var telemetry = context.getTelemetry();
 
         var typeManager = context.getTypeManager();
 
@@ -100,16 +117,16 @@ public class CoreTransferExtension implements ServiceExtension {
 
         var waitStrategy = context.hasService(TransferWaitStrategy.class) ? context.getService(TransferWaitStrategy.class) : new ExponentialWaitStrategy(DEFAULT_ITERATION_WAIT);
 
-        var dataProxyManager = new DataProxyManagerImpl();
-        context.registerService(DataProxyManager.class, dataProxyManager);
+        var endpointDataReferenceReceiverRegistry = new EndpointDataReferenceReceiverRegistryImpl();
+        context.registerService(EndpointDataReferenceReceiverRegistry.class, endpointDataReferenceReceiverRegistry);
 
-        var proxyEntryHandlerRegistry = new ProxyEntryHandlerRegistryImpl();
-        context.registerService(ProxyEntryHandlerRegistry.class, proxyEntryHandlerRegistry);
-    
-        CommandQueue<TransferProcessCommand> commandQueue = new BoundedCommandQueue<>(10);
-        TransferProcessObservable observable = new TransferProcessObservableImpl();
+        // Register a default EndpointDataReferenceTransformer that can be overridden in extensions.
+        var endpointDataReferenceTransformer = new DefaultEndpointDataReferenceTransformer();
+        context.registerService(EndpointDataReferenceTransformer.class, endpointDataReferenceTransformer);
+
+        var commandQueue = new BoundedCommandQueue<TransferProcessCommand>(10);
+        var observable = new TransferProcessObservableImpl();
         context.registerService(TransferProcessObservable.class, observable);
-
 
         processManager = TransferProcessManagerImpl.Builder.newInstance()
                 .waitStrategy(waitStrategy)
@@ -119,23 +136,26 @@ public class CoreTransferExtension implements ServiceExtension {
                 .dispatcherRegistry(dispatcherRegistry)
                 .statusCheckerRegistry(statusCheckerRegistry)
                 .monitor(monitor)
+                .telemetry(telemetry)
+                .executorInstrumentation(context.getService(ExecutorInstrumentation.class))
                 .vault(vault)
                 .typeManager(typeManager)
                 .commandQueue(commandQueue)
                 .commandRunner(new CommandRunner<>(registry, monitor))
-                .dataProxyManager(dataProxyManager)
-                .proxyEntryHandlerRegistry(proxyEntryHandlerRegistry)
                 .observable(observable)
+                .store(transferProcessStore)
+                .batchSize(context.getSetting(TRANSFER_STATE_MACHINE_BATCH_SIZE, 5))
+                .addressResolver(addressResolver)
                 .build();
-
 
         context.registerService(TransferProcessManager.class, processManager);
 
+        registry.register(new AddProvisionedResourceCommandHandler(processManager));
     }
 
     @Override
     public void start() {
-        processManager.start(transferProcessStore);
+        processManager.start();
     }
 
     @Override
@@ -147,6 +167,7 @@ public class CoreTransferExtension implements ServiceExtension {
 
     private void registerTypes(TypeManager typeManager) {
         typeManager.registerTypes(DataRequest.class);
+        typeManager.registerTypes(ProvisionedContentResource.class);
+        typeManager.registerTypes(DeprovisionedResource.class);
     }
-
 }

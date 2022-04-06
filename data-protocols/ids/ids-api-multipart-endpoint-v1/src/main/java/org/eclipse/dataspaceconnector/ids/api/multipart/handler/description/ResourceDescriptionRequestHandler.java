@@ -17,7 +17,7 @@ package org.eclipse.dataspaceconnector.ids.api.multipart.handler.description;
 import de.fraunhofer.iais.eis.Resource;
 import org.eclipse.dataspaceconnector.ids.spi.IdsId;
 import org.eclipse.dataspaceconnector.ids.spi.IdsType;
-import org.eclipse.dataspaceconnector.ids.spi.transform.TransformerRegistry;
+import org.eclipse.dataspaceconnector.ids.spi.transform.IdsTransformerRegistry;
 import org.eclipse.dataspaceconnector.ids.spi.types.container.OfferedAsset;
 import org.eclipse.dataspaceconnector.spi.asset.AssetIndex;
 import org.eclipse.dataspaceconnector.spi.contract.offer.ContractOfferQuery;
@@ -44,7 +44,7 @@ public class ResourceDescriptionRequestHandler extends AbstractDescriptionReques
             @NotNull String connectorId,
             @NotNull AssetIndex assetIndex,
             @NotNull ContractOfferService contractOfferService,
-            @NotNull TransformerRegistry transformerRegistry) {
+            @NotNull IdsTransformerRegistry transformerRegistry) {
         super(
                 connectorId,
                 monitor,
@@ -56,7 +56,8 @@ public class ResourceDescriptionRequestHandler extends AbstractDescriptionReques
         this.contractOfferService = Objects.requireNonNull(contractOfferService);
     }
 
-    protected OfferedAsset retrieveObject(@NotNull IdsId idsId, @NotNull Result<ClaimToken> verificationResult) {
+    @Override
+    protected OfferedAsset retrieveObject(@NotNull IdsId idsId, @NotNull ClaimToken claimToken) {
         String assetId = idsId.getValue();
         Asset asset = assetIndex.findById(assetId);
         if (asset == null) {
@@ -64,7 +65,7 @@ public class ResourceDescriptionRequestHandler extends AbstractDescriptionReques
         }
 
         ContractOfferQuery contractOfferQuery = ContractOfferQuery.Builder.newInstance()
-                .claimToken(verificationResult.getContent())
+                .claimToken(claimToken)
                 .criterion(new Criterion(Asset.PROPERTY_ID, "=", assetId))
                 .build();
 

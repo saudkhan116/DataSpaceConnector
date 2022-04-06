@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2021 Microsoft Corporation
+ *  Copyright (c) 2021 - 2022 Microsoft Corporation and others
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -9,10 +9,13 @@
  *
  *  Contributors:
  *       Microsoft Corporation - initial API and implementation
+ *       Daimler TSS GmbH - wrap and re-throw handled exceptions
  *
  */
+
 package org.eclipse.dataspaceconnector.transaction.local;
 
+import org.eclipse.dataspaceconnector.spi.EdcException;
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
 import org.eclipse.dataspaceconnector.spi.transaction.TransactionContext;
 import org.eclipse.dataspaceconnector.spi.transaction.local.LocalTransactionContextManager;
@@ -24,14 +27,14 @@ import java.util.List;
 /**
  * Implements a transaction context for local resources. The purpose of this implementation is to provide a portable transaction programming model for code that executes in
  * environments where a proper JTA transaction manager is not available.
- *
+ * <p>
  * Note that this transaction context cannot implement atomicity if multiple resources are enlisted for a transaction. The only way to achieve this is to use XA transactions.
  */
 public class LocalTransactionContext implements TransactionContext, LocalTransactionContextManager {
-    private List<LocalTransactionResource> resources = new ArrayList<>();
-    private ThreadLocal<Transaction> transactions = new ThreadLocal<>();
+    private final List<LocalTransactionResource> resources = new ArrayList<>();
+    private final ThreadLocal<Transaction> transactions = new ThreadLocal<>();
 
-    private Monitor monitor;
+    private final Monitor monitor;
 
     public LocalTransactionContext(Monitor monitor) {
         this.monitor = monitor;
@@ -39,6 +42,14 @@ public class LocalTransactionContext implements TransactionContext, LocalTransac
 
     @Override
     public void execute(TransactionBlock block) {
+        execute((ResultTransactionBlock<Void>) () -> {
+            block.execute();
+            return null;
+        });
+    }
+
+    @Override
+    public <T> T execute(ResultTransactionBlock<T> block) {
         var startedTransaction = false;
         var transaction = transactions.get();
 
@@ -49,10 +60,14 @@ public class LocalTransactionContext implements TransactionContext, LocalTransac
                 startedTransaction = true;
                 transactions.set(transaction);
             }
-            block.execute();
+            return block.execute();
         } catch (Exception e) {
             assert transaction != null;
             transaction.setRollbackOnly();
+            if (e instanceof EdcException) {
+                throw (EdcException) e;
+            }
+            throw new EdcException(e.getMessage(), e);
         } finally {
             if (startedTransaction) {
                 if (transaction.isRollbackOnly()) {
@@ -81,6 +96,7 @@ public class LocalTransactionContext implements TransactionContext, LocalTransac
     public void registerResource(LocalTransactionResource resource) {
         resources.add(resource);
     }
+
 
     private static class Transaction {
         private boolean rollbackOnly = false;

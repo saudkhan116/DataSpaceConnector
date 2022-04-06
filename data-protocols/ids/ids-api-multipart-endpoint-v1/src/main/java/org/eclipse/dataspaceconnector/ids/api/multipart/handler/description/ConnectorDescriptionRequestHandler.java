@@ -16,15 +16,13 @@ package org.eclipse.dataspaceconnector.ids.api.multipart.handler.description;
 
 import de.fraunhofer.iais.eis.Connector;
 import de.fraunhofer.iais.eis.DescriptionRequestMessage;
-import de.fraunhofer.iais.eis.DescriptionResponseMessage;
 import org.eclipse.dataspaceconnector.ids.api.multipart.message.MultipartResponse;
 import org.eclipse.dataspaceconnector.ids.spi.IdsIdParser;
 import org.eclipse.dataspaceconnector.ids.spi.IdsType;
 import org.eclipse.dataspaceconnector.ids.spi.service.ConnectorService;
-import org.eclipse.dataspaceconnector.ids.spi.transform.TransformerRegistry;
+import org.eclipse.dataspaceconnector.ids.spi.transform.IdsTransformerRegistry;
 import org.eclipse.dataspaceconnector.spi.iam.ClaimToken;
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
-import org.eclipse.dataspaceconnector.spi.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,13 +37,13 @@ public class ConnectorDescriptionRequestHandler implements DescriptionRequestHan
     private final String connectorId;
     private final Monitor monitor;
     private final ConnectorService connectorService;
-    private final TransformerRegistry transformerRegistry;
+    private final IdsTransformerRegistry transformerRegistry;
 
     public ConnectorDescriptionRequestHandler(
             @NotNull Monitor monitor,
             @NotNull String connectorId,
             @NotNull ConnectorService connectorService,
-            @NotNull TransformerRegistry transformerRegistry) {
+            @NotNull IdsTransformerRegistry transformerRegistry) {
         this.monitor = Objects.requireNonNull(monitor);
         this.connectorService = Objects.requireNonNull(connectorService);
         this.transformerRegistry = Objects.requireNonNull(transformerRegistry);
@@ -54,18 +52,18 @@ public class ConnectorDescriptionRequestHandler implements DescriptionRequestHan
 
     @Override
     public MultipartResponse handle(@NotNull DescriptionRequestMessage descriptionRequestMessage,
-                                    @NotNull Result<ClaimToken> verificationResult,
+                                    @NotNull ClaimToken claimToken,
                                     @Nullable String payload) {
-        Objects.requireNonNull(verificationResult);
+        Objects.requireNonNull(claimToken);
         Objects.requireNonNull(descriptionRequestMessage);
 
         if (!isRequestingCurrentConnectorsDescription(descriptionRequestMessage)) {
             return createErrorMultipartResponse(connectorId, descriptionRequestMessage);
         }
 
-        DescriptionResponseMessage descriptionResponseMessage = createDescriptionResponseMessage(connectorId, descriptionRequestMessage);
+        var descriptionResponseMessage = createDescriptionResponseMessage(connectorId, descriptionRequestMessage);
 
-        Result<Connector> transformResult = transformerRegistry.transform(connectorService.getConnector(verificationResult), Connector.class);
+        var transformResult = transformerRegistry.transform(connectorService.getConnector(claimToken), Connector.class);
         if (transformResult.failed()) {
             monitor.warning(
                     String.format(

@@ -11,11 +11,13 @@
  *       Microsoft Corporation - initial API and implementation
  *
  */
+
 package org.eclipse.dataspaceconnector.transaction.atomikos;
 
-import org.eclipse.dataspaceconnector.core.config.ConfigFactory;
 import org.eclipse.dataspaceconnector.spi.EdcException;
+import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtensionContext;
+import org.eclipse.dataspaceconnector.spi.system.configuration.ConfigFactory;
 import org.eclipse.dataspaceconnector.spi.transaction.TransactionContext;
 import org.eclipse.dataspaceconnector.spi.transaction.datasource.DataSourceRegistry;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +30,7 @@ import java.util.Map;
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.eclipse.dataspaceconnector.transaction.atomikos.JdbcTestFixtures.createAtomikosConfig;
 import static org.eclipse.dataspaceconnector.transaction.atomikos.JdbcTestFixtures.createDataSourceConfig;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
@@ -48,6 +51,9 @@ class AtomikosTransactionExtensionTest {
         when(extensionContext.getConfig()).thenReturn(ConfigFactory.fromMap(Map.of(TransactionManagerConfigurationKeys.LOGGING, "false")));
 
         when(extensionContext.getConfig(isA(String.class))).thenAnswer(a -> createDataSourceConfig());
+        when(extensionContext.getConfig()).thenAnswer(a -> createAtomikosConfig());
+        when(extensionContext.getMonitor()).thenReturn(new Monitor() {
+        });
 
         var dsRegistry = new DataSourceRegistry[1];
         doAnswer(invocation -> {
@@ -91,19 +97,17 @@ class AtomikosTransactionExtensionTest {
 
         // verify rollback on exception in a nested block
 
-        assertThatExceptionOfType(EdcException.class)
-                .isThrownBy(() ->
-                        transactionContext[0].execute(() -> {
-                            try (var conn = dsRegistry[0].resolve("default").getConnection()) {
-                                Statement s1 = conn.createStatement();
-                                s1.execute("INSERT into Foo values (2)");
-                                transactionContext[0].execute(() -> {
-                                    throw new RuntimeException();
-                                });
-                            } catch (SQLException e) {
-                                throw new EdcException(e);
-                            }
-                        }));
+        assertThatExceptionOfType(EdcException.class).isThrownBy(() -> transactionContext[0].execute(() -> {
+            try (var conn = dsRegistry[0].resolve("default").getConnection()) {
+                Statement s1 = conn.createStatement();
+                s1.execute("INSERT into Foo values (2)");
+                transactionContext[0].execute(() -> {
+                    throw new RuntimeException();
+                });
+            } catch (SQLException e) {
+                throw new EdcException(e);
+            }
+        }));
 
         transactionContext[0].execute(() -> {
             try (var conn = dsRegistry[0].resolve("default").getConnection()) {

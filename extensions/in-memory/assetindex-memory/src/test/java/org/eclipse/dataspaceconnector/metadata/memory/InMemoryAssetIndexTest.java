@@ -1,3 +1,17 @@
+/*
+ *  Copyright (c) 2021 Microsoft Corporation
+ *
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Contributors:
+ *       Microsoft Corporation - Initial implementation
+ *
+ */
+
 package org.eclipse.dataspaceconnector.metadata.memory;
 
 import org.eclipse.dataspaceconnector.spi.asset.AssetSelectorExpression;
@@ -23,7 +37,7 @@ class InMemoryAssetIndexTest {
 
     @BeforeEach
     void setUp() {
-        index = new InMemoryAssetIndex(new CriterionToPredicateConverter());
+        index = new InMemoryAssetIndex();
     }
 
     @Test
@@ -251,6 +265,23 @@ class InMemoryAssetIndexTest {
 
         var spec = QuerySpec.Builder.newInstance().sortField(Asset.PROPERTY_ID).sortOrder(SortOrder.ASC).build();
         assertThat(index.queryAssets(spec)).containsAll(assets);
+    }
+
+    @Test
+    void deleteById_whenPresent_deletes() {
+        var asset = createAsset("foobar");
+        index.accept(asset, createDataAddress(asset));
+        var deletedAsset = index.deleteById(asset.getId());
+
+        assertThat(deletedAsset).isEqualTo(asset);
+        var assetSelector = AssetSelectorExpression.Builder.newInstance().whenEquals(Asset.PROPERTY_NAME, asset.getName()).build();
+        var assets = index.queryAssets(assetSelector);
+        assertThat(assets).isEmpty();
+    }
+
+    @Test
+    void deleteById_whenMissing_returnsNull() {
+        assertThat(index.deleteById("not-exists")).isNull();
     }
 
     @NotNull

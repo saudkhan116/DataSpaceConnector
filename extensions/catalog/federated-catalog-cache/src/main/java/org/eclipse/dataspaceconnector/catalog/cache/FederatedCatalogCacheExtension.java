@@ -1,3 +1,17 @@
+/*
+ *  Copyright (c) 2021 Microsoft Corporation
+ *
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Contributors:
+ *       Microsoft Corporation - Initial implementation
+ *
+ */
+
 package org.eclipse.dataspaceconnector.catalog.cache;
 
 import net.jodah.failsafe.RetryPolicy;
@@ -39,6 +53,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -82,7 +97,7 @@ public class FederatedCatalogCacheExtension implements ServiceExtension {
         context.registerService(QueryEngine.class, queryEngine);
         monitor = context.getMonitor();
         var catalogController = new CatalogController(monitor, queryEngine);
-        webService.registerController(catalogController);
+        webService.registerResource(catalogController);
 
         // contribute to the liveness probe
         if (healthCheckService != null) {
@@ -160,7 +175,7 @@ public class FederatedCatalogCacheExtension implements ServiceExtension {
                 .queue(updateQueue)
                 .errorReceiver(getErrorWorkItemConsumer(context, workItems))
                 .protocolAdapters(protocolAdapters)
-                .workQueuePollTimeout(() -> Duration.ofMillis(2000 + new Random().nextInt(3000)))
+                .workQueuePollTimeout(() -> Duration.ofMillis(2000 + ThreadLocalRandom.current().nextInt(3000)))
                 .build();
     }
 
@@ -172,7 +187,7 @@ public class FederatedCatalogCacheExtension implements ServiceExtension {
             } else {
                 var random = new Random();
                 var to = 5 + random.nextInt(20);
-                context.getMonitor().info(format("The following work item has errored out. will re-queue after a small delay (%s)", to));
+                context.getMonitor().info(format("The following work item has errored out. Will re-queue after a small delay: [%s]", workItem));
                 Executors.newSingleThreadScheduledExecutor().schedule(() -> workItems.offer(workItem), to, TimeUnit.SECONDS);
             }
         };

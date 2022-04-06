@@ -1,5 +1,20 @@
+/*
+ *  Copyright (c) 2022 Amadeus
+ *
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Contributors:
+ *       Amadeus - Initial implementation
+ *
+ */
+
 package org.eclipse.dataspaceconnector.core.health;
 
+import org.eclipse.dataspaceconnector.spi.system.ExecutorInstrumentation;
 import org.eclipse.dataspaceconnector.spi.system.health.HealthCheckResult;
 import org.eclipse.dataspaceconnector.spi.system.health.LivenessProvider;
 import org.eclipse.dataspaceconnector.spi.system.health.ReadinessProvider;
@@ -22,7 +37,7 @@ class HealthCheckServiceImplTest {
 
     private static final Duration PERIOD = Duration.ofMillis(500);
     private static final Duration POLL_INTERVAL = Duration.ofMillis(50);
-    private static final Duration AWAIT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration AWAIT_TIMEOUT = Duration.ofSeconds(10);
     private HealthCheckServiceImpl service;
 
     @BeforeEach
@@ -32,7 +47,7 @@ class HealthCheckServiceImplTest {
                 .readinessPeriod(PERIOD)
                 .startupStatusPeriod(PERIOD)
                 .build();
-        service = new HealthCheckServiceImpl(config);
+        service = new HealthCheckServiceImpl(config, ExecutorInstrumentation.noop());
         service.start();
     }
 

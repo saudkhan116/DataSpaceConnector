@@ -1,3 +1,17 @@
+/*
+ *  Copyright (c) 2021 Microsoft Corporation
+ *
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Contributors:
+ *       Microsoft Corporation - Initial implementation
+ *
+ */
+
 package org.eclipse.dataspaceconnector.catalog.cache.loader;
 
 import org.eclipse.dataspaceconnector.catalog.spi.Loader;
@@ -40,7 +54,7 @@ class LoaderManagerImplTest {
     @Test
     @DisplayName("Verify that the loader manager waits one pass when the queue does not yet contain sufficient elements")
     void batchSizeNotReachedWithinTimeframe() throws InterruptedException {
-        range(0, batchSize).forEach(i -> queue.offer(new UpdateResponse()));
+        range(0, batchSize - 1).forEach(i -> queue.offer(new UpdateResponse()));
         var completionSignal = new CountDownLatch(1);
         when(waitStrategyMock.retryInMillis()).thenAnswer(i -> {
             completionSignal.countDown();
@@ -49,7 +63,7 @@ class LoaderManagerImplTest {
 
         loaderManager.start(queue);
 
-        assertThat(completionSignal.await(100L, TimeUnit.MILLISECONDS)).isTrue();
+        assertThat(completionSignal.await(300L, TimeUnit.MILLISECONDS)).isTrue();
         verify(waitStrategyMock, atLeastOnce()).retryInMillis();
     }
 

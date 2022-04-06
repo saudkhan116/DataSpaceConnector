@@ -9,15 +9,19 @@
  *
  *  Contributors:
  *       Microsoft Corporation - initial API and implementation
+ *       Fraunhofer Institute for Software and Systems Engineering - added method
  *
  */
+
 package org.eclipse.dataspaceconnector.spi.contract.offer.store;
 
+import org.eclipse.dataspaceconnector.spi.query.QuerySpec;
 import org.eclipse.dataspaceconnector.spi.system.Feature;
 import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.ContractDefinition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 /**
  * Persists {@link ContractDefinition}s.
@@ -32,6 +36,23 @@ public interface ContractDefinitionStore {
      */
     @NotNull
     Collection<ContractDefinition> findAll();
+
+    /**
+     * Returns all the definitions in the store that are covered by a given {@link QuerySpec}.
+     * <p>
+     * Note: supplying a sort field that does not exist on the {@link ContractDefinition} may cause some implementations
+     * to return an empty Stream, others will return an unsorted Stream, depending on the backing storage implementation.
+     */
+    @NotNull
+    Stream<ContractDefinition> findAll(QuerySpec spec);
+    
+    /**
+     * Returns the definition with the given id, if it exists.
+     *
+     * @param definitionId the id.
+     * @return the definition with with the given id, or null.
+     */
+    ContractDefinition findById(String definitionId);
 
     /**
      * Persists the definitions.
@@ -51,11 +72,11 @@ public interface ContractDefinitionStore {
     /**
      * Deletes the definition with the given id.
      */
-    void delete(String id);
+    ContractDefinition deleteById(String id);
 
     /**
-     * Signals the store should reload its internal cache if updates were may. If the implementation does not implement caching, this method will do nothing.
+     * Signals the store should reload its internal cache if updates were made. If the implementation does not implement caching, this method will do nothing.
      */
-    void reload();
+    default void reload() {}
 
 }

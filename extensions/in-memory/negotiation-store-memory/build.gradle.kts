@@ -12,15 +12,17 @@
  *
  */
 
+val openTelemetryVersion: String by project
+
 plugins {
     `java-library`
 }
 
-
 dependencies {
     api(project(":spi"))
+    implementation(project(":common:util"))
 
-
+    testImplementation(project(":core:contract"))
 }
 publishing {
     publications {

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020, 2021 Microsoft Corporation
+ *  Copyright (c) 2022 Microsoft Corporation
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -16,7 +16,10 @@ plugins {
     `java-library`
     `maven-publish`
     checkstyle
+    jacoco
     id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4"
+    id ("org.eclipse.dataspaceconnector.dependency-rules") apply(false)
+    id("com.autonomousapps.dependency-analysis") version "1.0.0-rc05" apply (false)
 }
 
 repositories {
@@ -29,8 +32,10 @@ val jacksonVersion: String by project
 val javaVersion: String by project
 val jupiterVersion: String by project
 val mockitoVersion: String by project
+val assertj: String by project
 val rsApi: String by project
-val swaggerJaxrs2Version: String by project
+val swagger: String by project
+val faker: String by project
 
 val groupId: String = "org.eclipse.dataspaceconnector"
 var edcVersion: String = "0.0.1-SNAPSHOT"
@@ -53,11 +58,12 @@ subprojects {
     }
 
     tasks.register<DependencyReportTask>("allDependencies") {}
+
 }
 
 buildscript {
     dependencies {
-        classpath("io.swagger.core.v3:swagger-gradle-plugin:2.1.12")
+        classpath("io.swagger.core.v3:swagger-gradle-plugin:2.1.13")
     }
 }
 
@@ -66,7 +72,11 @@ allprojects {
     //apply(plugin = "checkstyle")
     apply(plugin = "java")
 
-    /*checkstyle {
+    if (System.getenv("JACOCO") == "true") {
+        apply(plugin = "jacoco")
+    }
+
+    checkstyle {
         toolVersion = "9.0"
         configFile = rootProject.file("resources/edc-checkstyle-config.xml")
         maxErrors = 0 // does not tolerate errors ...
@@ -77,12 +87,18 @@ allprojects {
         toolchain {
             languageVersion.set(JavaLanguageVersion.of(javaVersion))
         }
+
+        tasks.withType(JavaCompile::class.java) {
+            // making sure the code does not use any APIs from a more recent version.
+            // Ref: https://docs.gradle.org/current/userguide/building_java_projects.html#sec:java_cross_compilation
+            options.release.set(javaVersion.toInt())
+        }
     }
 
     // EdcRuntimeExtension uses this to determine the runtime classpath of the module to run.
     tasks.register("printClasspath") {
         doLast {
-            println(sourceSets["main"].runtimeClasspath.asPath);
+            println(sourceSets["main"].runtimeClasspath.asPath)
         }
     }
 
@@ -101,8 +117,8 @@ allprojects {
             testImplementation("org.junit.jupiter:junit-jupiter-params:${jupiterVersion}")
             testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}")
             testImplementation("org.mockito:mockito-core:${mockitoVersion}")
-            testImplementation("org.assertj:assertj-core:3.19.0")
-            testImplementation("com.github.javafaker:javafaker:1.0.2")
+            testImplementation("org.assertj:assertj-core:${assertj}")
+            testImplementation("com.github.javafaker:javafaker:${faker}")
         }
 
         publishing {
@@ -124,7 +140,7 @@ allprojects {
 
         dependencies {
             // this is used to scan the classpath and generate an openapi yaml file
-            implementation("io.swagger.core.v3:swagger-jaxrs2-jakarta:${swaggerJaxrs2Version}")
+            implementation("io.swagger.core.v3:swagger-jaxrs2-jakarta:${swagger}")
             implementation("jakarta.ws.rs:jakarta.ws.rs-api:${rsApi}")
         }
 // this is used to scan the classpath and generate an openapi yaml file
@@ -144,19 +160,39 @@ allprojects {
         }
     }
 
-
-
     tasks.withType<Test> {
-        useJUnitPlatform()
-    }
-    tasks.withType<Test> {
+        // Target all type of test e.g. -DrunAllTests="true"
+        val runAllTests: String = System.getProperty("runAllTests", "false");
+        if (runAllTests == "true") {
+            useJUnitPlatform()
+        } else {
+            // Target specific set of tests by specifying junit tags on command-line e.g. -DincludeTags="tag-name1,tag-name2"
+            val includeTagProperty = System.getProperty("includeTags");
+            val includeTags: Array<String> = includeTagProperty?.split(",")?.toTypedArray() ?: emptyArray();
+
+            if (includeTags.isNotEmpty()) {
+                useJUnitPlatform {
+                    includeTags(*includeTags)
+                }
+            } else {
+                useJUnitPlatform {
+                    excludeTags("IntegrationTest")
+                }
+            }
+        }
+
         testLogging {
-            events("failed")
+            if (project.hasProperty("verboseTest")) {
+                events("started", "passed", "skipped", "failed", "standard_out", "standard_error")
+            } else {
+                events("failed")
+            }
             showStackTraces = true
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
     }
-    /*tasks.withType<Checkstyle> {
+
+    tasks.withType<Checkstyle> {
         reports {
             // lets not generate any reports because that is done from within the Github Actions workflow
             html.required.set(false)
@@ -168,6 +204,15 @@ allprojects {
         metaInf {
             from("${rootProject.projectDir.path}/LICENSE")
             from("${rootProject.projectDir.path}/NOTICE.md")
+        }
+    }
+
+    // Generate XML reports for Codecov
+    if (System.getenv("JACOCO") == "true") {
+        tasks.jacocoTestReport {
+            reports {
+                xml.required.set(true)
+            }
         }
     }
 }
@@ -195,6 +240,56 @@ openApiMerger {
     }
 }
 
-val test by tasks.getting(Test::class) {
-    useJUnitPlatform()
+// Dependency analysis active if property "dependency.analysis" is set. Possible values are <'fail'|'warn'|'ignore'>.
+if (project.hasProperty("dependency.analysis")) {
+    apply(plugin = "org.eclipse.dataspaceconnector.dependency-rules")
+    configure<org.eclipse.dataspaceconnector.gradle.DependencyRulesPluginExtension> {
+        severity.set(project.property("dependency.analysis").toString())
+    }
+    apply(plugin = "com.autonomousapps.dependency-analysis")
+    configure<com.autonomousapps.DependencyAnalysisExtension> {
+        // See https://github.com/autonomousapps/dependency-analysis-android-gradle-plugin
+        issues {
+            all { // all projects
+                onAny {
+                    severity(project.property("dependency.analysis").toString())
+                    exclude(
+                        // dependencies declared at the root level for all modules
+                        "org.jetbrains:annotations",
+                        "com.fasterxml.jackson.datatype:jackson-datatype-jsr310",
+                        "com.fasterxml.jackson.core:jackson-core",
+                        "com.fasterxml.jackson.core:jackson-annotations",
+                        "com.fasterxml.jackson.core:jackson-databind",
+                    )
+                }
+                onUnusedDependencies {
+                    exclude(
+                        // dependencies declared at the root level for all modules
+                        "com.github.javafaker:javafaker",
+                        "org.assertj:assertj-core",
+                        "org.junit.jupiter:junit-jupiter-api",
+                        "org.junit.jupiter:junit-jupiter-params",
+                        "org.mockito:mockito-core",
+                    )
+                }
+                onIncorrectConfiguration {
+                    exclude(
+                        // some common dependencies are intentionally exported by core:base for simplicity
+                        "com.squareup.okhttp3:okhttp",
+                        "net.jodah:failsafe",
+                    )
+                }
+                onUsedTransitiveDependencies {
+                    severity("ignore")
+                }
+            }
+        }
+        abi {
+            exclusions {
+                excludeAnnotations(
+                        "io\\.opentelemetry\\.extension\\.annotations\\.WithSpan",
+                )
+            }
+        }
+    }
 }

@@ -15,6 +15,8 @@
 package org.eclipse.dataspaceconnector.extensions.api;
 
 import org.eclipse.dataspaceconnector.dataloading.AssetLoader;
+import org.eclipse.dataspaceconnector.dataplane.spi.pipeline.DataTransferExecutorServiceContainer;
+import org.eclipse.dataspaceconnector.dataplane.spi.pipeline.PipelineService;
 import org.eclipse.dataspaceconnector.policy.model.Action;
 import org.eclipse.dataspaceconnector.policy.model.AtomicConstraint;
 import org.eclipse.dataspaceconnector.policy.model.Constraint;
@@ -26,19 +28,13 @@ import org.eclipse.dataspaceconnector.policy.model.Policy;
 import org.eclipse.dataspaceconnector.policy.model.Prohibition;
 import org.eclipse.dataspaceconnector.policy.model.Expression.Visitor;
 import org.eclipse.dataspaceconnector.spi.asset.AssetSelectorExpression;
-import org.eclipse.dataspaceconnector.spi.asset.DataAddressResolver;
 import org.eclipse.dataspaceconnector.spi.contract.offer.store.ContractDefinitionStore;
-import org.eclipse.dataspaceconnector.spi.security.Vault;
 import org.eclipse.dataspaceconnector.spi.system.Inject;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtension;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtensionContext;
-import org.eclipse.dataspaceconnector.spi.transfer.flow.DataFlowController;
-import org.eclipse.dataspaceconnector.spi.transfer.flow.DataFlowManager;
-import org.eclipse.dataspaceconnector.spi.transfer.inline.DataOperatorRegistry;
 import org.eclipse.dataspaceconnector.spi.types.domain.DataAddress;
 import org.eclipse.dataspaceconnector.spi.types.domain.asset.Asset;
 import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.ContractDefinition;
-import org.eclipse.dataspaceconnector.transfer.core.inline.InlineDataFlowController;
 
 import java.nio.file.Path;
 
@@ -47,23 +43,23 @@ public class FileTransferExtension implements ServiceExtension {
     public static final String USE_POLICY = "use-eu";
     private static final String EDC_ASSET_PATH = "edc.samples.04.asset.path";
     @Inject
-    private DataFlowManager dataFlowMgr;
-    @Inject
-    private DataAddressResolver dataAddressResolver;
-    @Inject
-    private DataOperatorRegistry dataOperatorRegistry;
-    @Inject
     private ContractDefinitionStore contractStore;
     @Inject
     private AssetLoader loader;
+    @Inject
+    private PipelineService pipelineService;
+    @Inject
+    private DataTransferExecutorServiceContainer executorContainer;
 
     @Override
     public void initialize(ServiceExtensionContext context) {
-        var vault = context.getService(Vault.class);
-        dataOperatorRegistry.registerStreamPublisher(new FileTransferDataStreamPublisher(context.getMonitor(), dataAddressResolver));
+        var monitor = context.getMonitor();
 
-        DataFlowController dataFlowController = new InlineDataFlowController(vault, context.getMonitor(), dataOperatorRegistry, dataAddressResolver);
-        dataFlowMgr.register(dataFlowController);
+        var sourceFactory = new FileTransferDataSourceFactory();
+        pipelineService.registerFactory(sourceFactory);
+
+        var sinkFactory = new FileTransferDataSinkFactory(monitor, executorContainer.getExecutorService(), 5);
+        pipelineService.registerFactory(sinkFactory);
 
         var policy = createPolicy("test-document_dismantler");
         var policy2 = createPolicy("test-document_oem");
@@ -85,8 +81,8 @@ public class FileTransferExtension implements ServiceExtension {
 //                .action(Action.Builder.newInstance().type("idsc:USE").constraint(atomicConstraint).build())
 //                .build();
     	
-    	var usePermission = Permission.Builder.newInstance()
-                .action(Action.Builder.newInstance().type("idsc:USE").build())
+        var usePermission = Permission.Builder.newInstance()
+                .action(Action.Builder.newInstance().type("USE").build())
                 .build();
         
 //        var useProhibition = Prohibition.Builder.newInstance()
@@ -110,7 +106,7 @@ public class FileTransferExtension implements ServiceExtension {
         String assetPathSetting = context.getSetting(EDC_ASSET_PATH, "/tmp/provider/test-document_dismantler.json");
         Path assetPath = Path.of(assetPathSetting);
 
-        DataAddress dataAddress = DataAddress.Builder.newInstance()
+        var dataAddress = DataAddress.Builder.newInstance()
                 .property("type", "File")
                 .property("path", assetPath.toString())
                 .property("filename", "test-document_dismantler.json")

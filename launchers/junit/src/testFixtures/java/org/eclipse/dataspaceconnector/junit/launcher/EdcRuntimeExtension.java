@@ -9,13 +9,14 @@
  *
  *  Contributors:
  *       Microsoft Corporation - initial API and implementation
+ *       Bayerische Motoren Werke Aktiengesellschaft (BMW AG) - improvements
  *
  */
+
 package org.eclipse.dataspaceconnector.junit.launcher;
 
-import org.eclipse.dataspaceconnector.core.monitor.ConsoleMonitor;
-import org.eclipse.dataspaceconnector.core.monitor.ConsoleMonitor.Level;
 import org.eclipse.dataspaceconnector.spi.EdcException;
+import org.eclipse.dataspaceconnector.spi.monitor.ConsoleMonitor;
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
@@ -45,10 +46,6 @@ import static org.eclipse.dataspaceconnector.boot.system.ExtensionLoader.loadMon
  * This extension attaches a EDC runtime to the {@link BeforeTestExecutionCallback} and {@link AfterTestExecutionCallback} lifecycle hooks. Parameter injection of runtime services is supported.
  */
 public class EdcRuntimeExtension extends EdcExtension {
-    private final String moduleName;
-    private final String logPrefix;
-    private final Map<String, String> properties;
-    private Thread runtimeThread;
     private static final String GRADLE_WRAPPER_UNIX = "gradlew";
     private static final String GRADLE_WRAPPER_WINDOWS = "gradlew.bat";
     private static final String GRADLE_WRAPPER;
@@ -58,15 +55,15 @@ public class EdcRuntimeExtension extends EdcExtension {
         GRADLE_WRAPPER = (System.getProperty("os.name").toLowerCase().contains("win")) ? GRADLE_WRAPPER_WINDOWS : GRADLE_WRAPPER_UNIX;
     }
 
+    private final String moduleName;
+    private final String logPrefix;
+    private final Map<String, String> properties;
+    private Thread runtimeThread;
+
     public EdcRuntimeExtension(String moduleName, String logPrefix, Map<String, String> properties) {
         this.moduleName = moduleName;
         this.logPrefix = logPrefix;
         this.properties = Map.copyOf(properties);
-    }
-
-    @Override
-    protected @NotNull Monitor createMonitor() {
-        return new ConsoleMonitor(logPrefix, Level.DEBUG);
     }
 
     @Override
@@ -100,8 +97,7 @@ public class EdcRuntimeExtension extends EdcExtension {
 
         // Create a ClassLoader that only has the target module class path, and is not
         // parented with the current ClassLoader.
-        var classLoader = URLClassLoader.newInstance(classPathEntries,
-                ClassLoader.getSystemClassLoader());
+        var classLoader = URLClassLoader.newInstance(classPathEntries, ClassLoader.getSystemClassLoader());
 
         // Temporarily inject system properties.
         var savedProperties = (Properties) System.getProperties().clone();
@@ -129,7 +125,7 @@ public class EdcRuntimeExtension extends EdcExtension {
         // Start thread and wait for EDC to start up.
         runtimeThread.start();
 
-        if (!latch.await(10, SECONDS)) {
+        if (!latch.await(20, SECONDS)) {
             throw new EdcException("Failed to start EDC runtime");
         }
 
@@ -138,13 +134,53 @@ public class EdcRuntimeExtension extends EdcExtension {
         System.setProperties(savedProperties);
     }
 
-
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
         if (runtimeThread != null) {
             runtimeThread.join();
         }
         super.afterTestExecution(context);
+    }
+
+    @Override
+    protected @NotNull Monitor createMonitor() {
+        // disable logs when "quiet" log level is set
+        if (System.getProperty("org.gradle.logging.level") != null) {
+            return new Monitor() {
+            };
+        } else {
+            return new ConsoleMonitor(logPrefix, ConsoleMonitor.Level.DEBUG);
+        }
+    }
+
+    /**
+     * Replace Gradle subproject JAR entries with subproject build directories in classpath.
+     * This ensures modified classes are picked up without needing to rebuild dependent JARs.
+     *
+     * @param root           project root directory.
+     * @param classPathEntry class path entry to resolve.
+     * @return resolved class path entries for the input argument.
+     */
+    private Stream<URL> resolveClassPathEntry(File root, String classPathEntry) {
+        try {
+            File f = new File(classPathEntry).getCanonicalFile();
+
+            // If class path entry is not a JAR under the root (i.e. a sub-project), do not transform it
+            boolean isUnderRoot = f.getCanonicalPath().startsWith(root.getCanonicalPath() + File.separator);
+            if (!classPathEntry.toLowerCase(Locale.ROOT).endsWith(".jar") || !isUnderRoot) {
+                var sanitizedClassPathEntry = classPathEntry.replace("build/resources/main", "src/main/resources");
+                return Stream.of(new File(sanitizedClassPathEntry).toURI().toURL());
+            }
+
+            // Replace JAR entry with the resolved classes and resources folder
+            var buildDir = f.getParentFile().getParentFile();
+            return Stream.of(
+                    new File(buildDir, "/classes/java/main").toURI().toURL(),
+                    new File(buildDir, "../src/main/resources").toURI().toURL()
+            );
+        } catch (IOException e) {
+            throw new EdcException(e);
+        }
     }
 
     /**
@@ -163,35 +199,6 @@ public class EdcRuntimeExtension extends EdcExtension {
             return findRoot(parent);
         }
         return null;
-    }
-
-    /**
-     * Replace Gradle subproject JAR entries with subproject build directories in classpath.
-     * This ensures modified classes are picked up without needing to rebuild dependent JARs.
-     *
-     * @param root           project root directory.
-     * @param classPathEntry class path entry to resolve.
-     * @return resolved class path entries for the input argument.
-     */
-    private static Stream<URL> resolveClassPathEntry(File root, String classPathEntry) {
-        try {
-            File f = new File(classPathEntry).getCanonicalFile();
-
-            // If class path entry is not a JAR under the root (i.e. a sub-project), do not transform it
-            boolean isUnderRoot = f.getCanonicalPath().startsWith(root.getCanonicalPath() + File.separator);
-            if (!classPathEntry.toLowerCase(Locale.ROOT).endsWith(".jar") || !isUnderRoot) {
-                return Stream.of(new File(classPathEntry).toURI().toURL());
-            }
-
-            // Replace JAR entry with the resolved classes and resources folder
-            var buildDir = f.getParentFile().getParentFile();
-            return Stream.of(
-                    new File(buildDir, "/classes/java/main").toURI().toURL(),
-                    new File(buildDir, "/resources/main").toURI().toURL()
-            );
-        } catch (IOException e) {
-            throw new EdcException(e);
-        }
     }
 
 }

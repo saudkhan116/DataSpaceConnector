@@ -10,6 +10,7 @@
  *  Contributors:
  *       Daimler TSS GmbH - Initial API and Implementation
  *       Fraunhofer Institute for Software and Systems Engineering - extend tests
+ *       Daimler TSS GmbH - fixed contract dates to epoch seconds
  *
  */
 
@@ -22,6 +23,7 @@ import org.eclipse.dataspaceconnector.policy.model.Policy;
 import org.eclipse.dataspaceconnector.policy.model.PolicyType;
 import org.eclipse.dataspaceconnector.spi.asset.AssetIndex;
 import org.eclipse.dataspaceconnector.spi.asset.AssetSelectorExpression;
+import org.eclipse.dataspaceconnector.spi.asset.DataAddressResolver;
 import org.eclipse.dataspaceconnector.spi.contract.negotiation.ConsumerContractNegotiationManager;
 import org.eclipse.dataspaceconnector.spi.contract.negotiation.ProviderContractNegotiationManager;
 import org.eclipse.dataspaceconnector.spi.contract.negotiation.response.NegotiationResult;
@@ -42,6 +44,7 @@ import org.eclipse.dataspaceconnector.spi.system.Provides;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtension;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtensionContext;
 import org.eclipse.dataspaceconnector.spi.transfer.store.TransferProcessStore;
+import org.eclipse.dataspaceconnector.spi.types.domain.DataAddress;
 import org.eclipse.dataspaceconnector.spi.types.domain.asset.Asset;
 import org.eclipse.dataspaceconnector.spi.types.domain.contract.agreement.ContractAgreement;
 import org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiation;
@@ -55,21 +58,29 @@ import org.eclipse.dataspaceconnector.spi.types.domain.transfer.TransferProcess;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.LocalDate;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
+import static org.mockito.Mockito.mock;
 
-@Provides({ AssetIndex.class, ContractDefinitionStore.class, IdentityService.class, TransferProcessStore.class, ConsumerContractNegotiationManager.class, ProviderContractNegotiationManager.class,
-        ContractOfferService.class, ContractValidationService.class })
+@Provides({AssetIndex.class,
+        DataAddressResolver.class,
+        ContractDefinitionStore.class,
+        IdentityService.class,
+        TransferProcessStore.class,
+        ConsumerContractNegotiationManager.class,
+        ProviderContractNegotiationManager.class,
+        ContractOfferService.class,
+        ContractValidationService.class})
 class IdsApiMultipartEndpointV1IntegrationTestServiceExtension implements ServiceExtension {
     private final List<Asset> assets;
 
@@ -88,11 +99,11 @@ class IdsApiMultipartEndpointV1IntegrationTestServiceExtension implements Servic
                 .contractAgreement(ContractAgreement.Builder.newInstance().id("1")
                         .providerAgentId("provider")
                         .consumerAgentId("consumer")
-                        .asset(Asset.Builder.newInstance().build())
+                        .assetId(UUID.randomUUID().toString())
                         .policy(Policy.Builder.newInstance().build())
-                        .contractSigningDate(LocalDate.MIN.toEpochDay())
-                        .contractStartDate(LocalDate.MIN.toEpochDay())
-                        .contractEndDate(LocalDate.MAX.toEpochDay())
+                        .contractStartDate(Instant.now().getEpochSecond())
+                        .contractEndDate(Instant.now().plus(1, ChronoUnit.DAYS).getEpochSecond())
+                        .contractSigningDate(Instant.now().getEpochSecond())
                         .id("1:2").build())
                 .state(ContractNegotiationStates.CONFIRMED.code())
                 .build();
@@ -103,11 +114,13 @@ class IdsApiMultipartEndpointV1IntegrationTestServiceExtension implements Servic
         context.registerService(IdentityService.class, new FakeIdentityService());
         context.registerService(TransferProcessStore.class, new FakeTransferProcessStore());
         context.registerService(RemoteMessageDispatcherRegistry.class, new FakeRemoteMessageDispatcherRegistry());
-        context.registerService(AssetIndex.class, new FakeAssetIndex(assets));
+        var assetIndex = new FakeAssetIndex(assets);
+        context.registerService(AssetIndex.class, assetIndex);
+        context.registerService(DataAddressResolver.class, assetIndex);
         context.registerService(ContractOfferService.class, new FakeContractOfferService(assets));
         context.registerService(ContractDefinitionStore.class, new FakeContractDefinitionStore());
         context.registerService(ContractValidationService.class, new FakeContractValidationService());
-        context.registerService(ContractNegotiationStore.class, new FakeContractNegotiationStore());
+        context.registerService(ContractNegotiationStore.class, mock(ContractNegotiationStore.class));
         context.registerService(ProviderContractNegotiationManager.class, new FakeProviderContractNegotiationManager());
         context.registerService(ConsumerContractNegotiationManager.class, new FakeConsumerContractNegotiationManager());
     }
@@ -119,12 +132,12 @@ class IdsApiMultipartEndpointV1IntegrationTestServiceExtension implements Servic
         }
 
         @Override
-        public Result<ClaimToken> verifyJwtToken(String token) {
+        public Result<ClaimToken> verifyJwtToken(TokenRepresentation tokenRepresentation) {
             return Result.success(ClaimToken.Builder.newInstance().build());
         }
     }
 
-    private static class FakeAssetIndex implements AssetIndex {
+    private static class FakeAssetIndex implements AssetIndex, DataAddressResolver {
         private final List<Asset> assets;
 
         private FakeAssetIndex(List<Asset> assets) {
@@ -146,6 +159,14 @@ class IdsApiMultipartEndpointV1IntegrationTestServiceExtension implements Servic
             return assets.stream().filter(a -> a.getId().equals(assetId)).findFirst().orElse(null);
         }
 
+        @Override
+        public DataAddress resolveForAsset(String assetId) {
+            var asset = findById(assetId);
+            if (asset == null) {
+                return null;
+            }
+            return DataAddress.Builder.newInstance().type("test").build();
+        }
     }
 
     private static class FakeContractOfferService implements ContractOfferService {
@@ -213,25 +234,10 @@ class IdsApiMultipartEndpointV1IntegrationTestServiceExtension implements Servic
         }
 
         @Override
-        public void createData(String processId, String key, Object data) {
-        }
-
-        @Override
-        public void updateData(String processId, String key, Object data) {
-        }
-
-        @Override
-        public void deleteData(String processId, String key) {
-        }
-
-        @Override
-        public void deleteData(String processId, Set<String> keys) {
-        }
-
-        @Override
-        public <T> T findData(Class<T> type, String processId, String resourceDefinitionId) {
+        public Stream<TransferProcess> findAll(QuerySpec querySpec) {
             return null;
         }
+
     }
 
     private static class FakeRemoteMessageDispatcherRegistry implements RemoteMessageDispatcherRegistry {
@@ -256,6 +262,16 @@ class IdsApiMultipartEndpointV1IntegrationTestServiceExtension implements Servic
         }
 
         @Override
+        public @NotNull Stream<ContractDefinition> findAll(QuerySpec spec) {
+            throw new UnsupportedOperationException();
+        }
+    
+        @Override
+        public ContractDefinition findById(String definitionId) {
+            throw new UnsupportedOperationException();
+        }
+    
+        @Override
         public void save(Collection<ContractDefinition> definitions) {
             contractDefinitions.addAll(definitions);
         }
@@ -271,7 +287,7 @@ class IdsApiMultipartEndpointV1IntegrationTestServiceExtension implements Servic
         }
 
         @Override
-        public void delete(String id) {
+        public ContractDefinition deleteById(String id) {
             throw new NotImplementedError();
         }
 
@@ -304,44 +320,15 @@ class IdsApiMultipartEndpointV1IntegrationTestServiceExtension implements Servic
         }
     }
 
-    private static class FakeContractNegotiationStore implements ContractNegotiationStore {
-
-        @Override
-        public @Nullable ContractNegotiation find(String negotiationId) {
-            return null;
-        }
-
-        @Override
-        public @Nullable ContractNegotiation findForCorrelationId(String correlationId) {
-            return null;
-        }
-
-        @Override
-        public @Nullable ContractAgreement findContractAgreement(String contractId) {
-            return null;
-        }
-
-        @Override
-        public void save(ContractNegotiation negotiation) {
-
-        }
-
-        @Override
-        public void delete(String negotiationId) {
-
-        }
-
-        @Override
-        public @NotNull List<ContractNegotiation> nextForState(int state, int max) {
-            return Collections.emptyList();
-        }
-    }
-
     private static class FakeProviderContractNegotiationManager implements ProviderContractNegotiationManager {
 
         @Override
         public NegotiationResult declined(ClaimToken token, String negotiationId) {
             return NegotiationResult.success(fakeContractNegotiation());
+        }
+
+        @Override
+        public void enqueueCommand(ContractNegotiationCommand command) {
         }
 
         @Override
@@ -357,10 +344,6 @@ class IdsApiMultipartEndpointV1IntegrationTestServiceExtension implements Servic
         @Override
         public NegotiationResult consumerApproved(ClaimToken token, String correlationId, ContractAgreement agreement, String hash) {
             return NegotiationResult.success(fakeContractNegotiation());
-        }
-    
-        @Override
-        public void enqueueCommand(ContractNegotiationCommand command) {
         }
     }
 
@@ -385,7 +368,7 @@ class IdsApiMultipartEndpointV1IntegrationTestServiceExtension implements Servic
         public NegotiationResult declined(ClaimToken token, String negotiationId) {
             return NegotiationResult.success(fakeContractNegotiation());
         }
-    
+
         @Override
         public void enqueueCommand(ContractNegotiationCommand command) {
         }

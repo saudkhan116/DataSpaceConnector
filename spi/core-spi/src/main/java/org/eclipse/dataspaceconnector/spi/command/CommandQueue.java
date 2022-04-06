@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020-2022 Microsoft Corporation
+ *  Copyright (c) 2020 - 2022 Microsoft Corporation
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -12,22 +12,22 @@
  *       Fraunhofer Institute for Software and Systems Engineering - refactored
  *
  */
+
 package org.eclipse.dataspaceconnector.spi.command;
 
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
+/**
+ * Implementations queue commands for processing.
+ */
 public interface CommandQueue<C extends Command> {
 
     /**
-     * Adds one element to the command queue. In case the queue cannot accept any element, e.g. because it is full, the returned {@link CompletableFuture} immediately completes exceptionally. If the command
-     * was successfully enqueued, but the command could not be processed, the future will also complete exceptionally, potentially after retrying.
-     * In any other cases the future completes as soon as the command was successfully processed.
+     * Adds one element to the command queue. In case the queue cannot accept any element, e.g. because it is full, the operation completes exceptionally.
      *
      * @param element The element to add
-     * @see Command#getFuture()
      */
     void enqueue(C element);
 

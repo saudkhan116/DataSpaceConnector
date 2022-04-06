@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2021 Fraunhofer Institute for Software and Systems Engineering
+ *  Copyright (c) 2021 - 2022 Fraunhofer Institute for Software and Systems Engineering
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -9,6 +9,7 @@
  *
  *  Contributors:
  *       Fraunhofer Institute for Software and Systems Engineering - initial API and implementation
+ *       Bayerische Motoren Werke Aktiengesellschaft (BMW AG) - initial API and implementation
  *
  */
 
@@ -17,18 +18,22 @@ plugins {
     `maven-publish`
 }
 
+val awaitility: String by project
+val jodahFailsafeVersion: String by project
 val jupiterVersion: String by project
 val okHttpVersion: String by project
-val jodahFailsafeVersion: String by project
 
 
 dependencies {
-    api(project(":spi"))
+    api(project(":spi:core-spi"))
 
     api("com.squareup.okhttp3:okhttp:${okHttpVersion}")
     api("net.jodah:failsafe:${jodahFailsafeVersion}")
 
-    testImplementation("org.awaitility:awaitility:4.1.1")
+    implementation(project(":core:policy:policy-engine"))
+
+    testImplementation(testFixtures(project(":launchers:junit")))
+    testImplementation("org.awaitility:awaitility:${awaitility}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${jupiterVersion}")
 }
 

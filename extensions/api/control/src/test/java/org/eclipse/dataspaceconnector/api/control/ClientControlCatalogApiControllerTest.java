@@ -1,3 +1,17 @@
+/*
+ *  Copyright (c) 2021 Daimler TSS GmbH
+ *
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Contributors:
+ *       Daimler TSS GmbH - Initial implementation
+ *
+ */
+
 package org.eclipse.dataspaceconnector.api.control;
 
 import io.restassured.RestAssured;
@@ -22,6 +36,9 @@ class ClientControlCatalogApiControllerTest extends AbstractClientControlCatalog
         return new HashMap<>() {
             {
                 put("web.http.port", String.valueOf(getPort()));
+                put("web.http.path", "/api");
+                put("web.http.ids.port", String.valueOf(getIdsPort()));
+                put("web.http.ids.path", "/api/v1/ids");
                 put("edc.ids.id", "urn:connector:" + CONNECTOR_ID);
                 put("ids.webhook.address", "http://localhost:8181");
                 put(EDC_API_CONTROL_AUTH_APIKEY_KEY, API_KEY_HEADER);
@@ -32,7 +49,7 @@ class ClientControlCatalogApiControllerTest extends AbstractClientControlCatalog
 
     @Test
     void testUnauthorized() {
-        String requestUri = String.format("%s%s", getUrl(), String.format("/api/control/catalog?provider=%s/api/ids/multipart", getUrl()));
+        String requestUri = String.format("%s%s", getUrl(), String.format("/api/control/catalog?provider=%s/api/v1/ids/data", getIdsUrl()));
 
         RestAssured.given()
                 .log().all()
@@ -44,7 +61,7 @@ class ClientControlCatalogApiControllerTest extends AbstractClientControlCatalog
 
     @Test
     void testForbidden() {
-        String requestUri = String.format("%s%s", getUrl(), String.format("/api/control/catalog?provider=%s/api/ids/multipart", getUrl()));
+        String requestUri = String.format("%s%s", getUrl(), String.format("/api/control/catalog?provider=%s/api/v1/ids/data", getIdsUrl()));
 
         RestAssured.given()
                 .headers(API_KEY_HEADER, "invalidApiKey")
@@ -57,7 +74,7 @@ class ClientControlCatalogApiControllerTest extends AbstractClientControlCatalog
 
     @Test
     void testSuccess() {
-        String requestUri = String.format("%s%s", getUrl(), String.format("/api/control/catalog?provider=%s/api/ids/multipart", getUrl()));
+        String requestUri = String.format("%s%s", getUrl(), String.format("/api/control/catalog?provider=%s/api/v1/ids/data", getIdsUrl()));
 
         JsonPath jsonPath = RestAssured.given()
                 .headers(API_KEY_HEADER, API_KEY)

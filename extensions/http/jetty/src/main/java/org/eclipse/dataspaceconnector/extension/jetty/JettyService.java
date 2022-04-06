@@ -9,6 +9,7 @@
  *
  *  Contributors:
  *       Microsoft Corporation - initial API and implementation
+ *       Fraunhofer Institute for Software and Systems Engineering - added method
  *
  */
 
@@ -16,6 +17,7 @@ package org.eclipse.dataspaceconnector.extension.jetty;
 
 import jakarta.servlet.Servlet;
 import org.eclipse.dataspaceconnector.spi.EdcException;
+import org.eclipse.dataspaceconnector.spi.WebServer;
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -30,10 +32,13 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.KeyStore;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
@@ -41,7 +46,7 @@ import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
 /**
  * Provides HTTP(S) support using Jetty.
  */
-public class JettyService {
+public class JettyService implements WebServer {
 
     public static final String DEFAULT_ROOT_PATH = "/api";
     private static final String LOG_ANNOUNCE = "org.eclipse.jetty.util.log.announce";
@@ -49,6 +54,7 @@ public class JettyService {
     private final Monitor monitor;
     private final KeyStore keyStore;
     private final Map<String, ServletContextHandler> handlers = new HashMap<>();
+    private final List<Consumer<ServerConnector>> connectorConfigurationCallbacks = new ArrayList<>();
     private Server server;
 
     public JettyService(JettyConfiguration configuration, Monitor monitor) {
@@ -123,13 +129,25 @@ public class JettyService {
         var handler = getOrCreate(actualPath);
         handler.getServletHandler().addServletWithMapping(servletHolder, "/*");
     }
+    
+    /**
+     * Allows adding a {@link PortMapping} that is not defined in the configuration. This can only
+     * be done before the JettyService is started, i.e. before {@link #start()} is called.
+     *
+     * @param contextName name of the port mapping.
+     * @param port port of the port mapping.
+     * @param path path of the port mapping.
+     */
+    public void addPortMapping(String contextName, int port, String path) {
+        var portMapping = new PortMapping(contextName, port, path);
+        if (server != null && (server.isStarted() || server.isStarting())) {
+            return;
+        }
+        configuration.getPortMappings().add(portMapping);
+    }
 
     public ServletContextHandler getHandler(String path) {
         return handlers.get(path);
-    }
-
-    public void registerHandler(ServletContextHandler handler) {
-        handlers.put(handler.getContextPath(), handler);
     }
 
     @NotNull
@@ -152,6 +170,7 @@ public class JettyService {
         var sslConnectionFactory = new SslConnectionFactory(contextFactory, "http/1.1");
         var sslConnector = new ServerConnector(server, httpConnectionFactory(), sslConnectionFactory);
         sslConnector.setPort(port);
+        configure(sslConnector);
         return sslConnector;
     }
 
@@ -159,7 +178,16 @@ public class JettyService {
     private ServerConnector httpServerConnector(int port) {
         ServerConnector connector = new ServerConnector(server, httpConnectionFactory());
         connector.setPort(port);
+        configure(connector);
         return connector;
+    }
+
+    private void configure(ServerConnector connector) {
+        connectorConfigurationCallbacks.forEach(c -> c.accept(connector));
+    }
+
+    public void addConnectorConfigurationCallback(Consumer<ServerConnector> callback) {
+        connectorConfigurationCallbacks.add(callback);
     }
 
     @NotNull

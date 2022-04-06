@@ -2,14 +2,15 @@ name: Integration Tests
 
 on:
   push:
+  pull_request:
     branches: [ main ]
-  pull_request_target:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
 
 jobs:
 
-  Azure-Integration-Test:
-    # run only on upstream repo
-    if: github.repository_owner == 'eclipse-dataspaceconnector'
+  Azure-Storage-Integration-Test:
     runs-on: ubuntu-latest
 
     services:
@@ -18,49 +19,52 @@ jobs:
         ports:
           - 10000:10000
         env:
-          AZURITE_ACCOUNTS: account1:key1
+          AZURITE_ACCOUNTS: account1:key1;account2:key2
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
+
+      - uses: actions/setup-java@v2
         with:
-          java-version: '11'
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
 
-      - name: Object Storage StatusChecker Test
-        env:
-          RUN_INTEGRATION_TEST: true
-        run: ./gradlew extensions:azure:blobstorage:blob-provision:check
+      - name: Azure Storage Tests
+        run: ./gradlew -p extensions/azure test -DincludeTags="AzureStorageIntegrationTest"
 
-      - name: CosmosDB Transfer Process Store Test
+  Check-Cosmos-Key:
+    runs-on: ubuntu-latest
+    steps:
+      - id: has-cosmos-key
         env:
-          RUN_INTEGRATION_TEST: true
-          COSMOS_KEY: ${{ secrets.COSMOS_KEY }}
-        run: ./gradlew extensions:azure:cosmos:transfer-process-store-cosmos:check
+          HAS_COSMOS_KEY: ${{ secrets.COSMOS_KEY }}
+        if: "${{ env.HAS_COSMOS_KEY != '' }}"
+        run: echo "::set-output name=defined::true"
+    outputs:
+      has-cosmos-key: ${{ steps.has-cosmos-key.outputs.defined }}
 
-      - name: Cosmos-based Asset Index test
-        env:
-          RUN_INTEGRATION_TEST: true
-          COSMOS_KEY: ${{ secrets.COSMOS_KEY }}
-        run: ./gradlew extensions:azure:cosmos:assetindex-cosmos:check
+  Azure-CosmosDB-Integration-Test:
+    # run only if COSMOS_KEY is present
+    needs: [ Check-Cosmos-Key ]
+    if: needs.Check-Cosmos-Key.outputs.has-cosmos-key == 'true'
+    runs-on: ubuntu-latest
 
-      - name: Cosmos-based FCN Directory test
-        env:
-          RUN_INTEGRATION_TEST: true
-          COSMOS_KEY: ${{ secrets.COSMOS_KEY }}
-        run: ./gradlew extensions:azure:cosmos:transfer-process-store-cosmos:check
+    env:
+      COSMOS_KEY: ${{ secrets.COSMOS_KEY }}
+      COSMOS_URL: ${{ secrets.COSMOS_URL }}
 
-      - name: Cosmos-based ContractDefinitionStore Test
-        env:
-          RUN_INTEGRATION_TEST: true
-          COSMOS_KEY: ${{ secrets.COSMOS_KEY }}
-        run: ./gradlew extensions:azure:cosmos:contract-definition-store-cosmos:check
+    steps:
+      - uses: actions/checkout@v2
 
-      - name: Cosmos-based ContractNegotiationStore Test
-        env:
-          RUN_INTEGRATION_TEST: true
-          COSMOS_KEY: ${{ secrets.COSMOS_KEY }}
-        run: ./gradlew extensions:azure:cosmos:contract-negotiation-store-cosmos:check
+      - uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Azure CosmosDB Tests
+        run: ./gradlew -p extensions/azure/cosmos test -DincludeTags="AzureCosmosDbIntegrationTest"
 
   Aws-Integration-Test:
     runs-on: ubuntu-latest
@@ -71,22 +75,29 @@ jobs:
         ports:
           - 9000:9000
         env:
-          MINIO_ACCESS_KEY: root
-          MINIO_SECRET_KEY: password
+          MINIO_ROOT_USER: root
+          MINIO_ROOT_PASSWORD: password
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
+
+      - uses: actions/setup-java@v2
         with:
-          java-version: '11'
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: AWS S3 Tests
+        env:
+          S3_ACCESS_KEY_ID: root
+          S3_SECRET_ACCESS_KEY: password
+        run: ./gradlew -p extensions/aws/s3 test -DincludeTags="AwsS3IntegrationTest"
 
       - name: AWS S3 StatusChecker Test
         env:
-          RUN_INTEGRATION_TEST: true
           S3_ACCESS_KEY_ID: root
           S3_SECRET_ACCESS_KEY: password
-        run: ./gradlew extensions:aws:s3:s3-provision:check
+        run: ./gradlew extensions:aws:s3:s3-data-operator:check
 
   Daps-Integration-Test:
     runs-on: ubuntu-latest
@@ -99,12 +110,27 @@ jobs:
 
       - run: docker run -d --rm -p 4567:4567 -v ${{ github.workspace }}/extensions/iam/daps/src/test/resources/config:/opt/config -v ${{ github.workspace }}/extensions/iam/daps/src/test/resources/keys:/opt/keys ghcr.io/fraunhofer-aisec/omejdn-server:1.3.1
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
+      - uses: actions/setup-java@v2
         with:
-          java-version: '11'
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
 
-      - name: Daps Integration Test
-        env:
-          RUN_INTEGRATION_TEST: true
-        run: ./gradlew clean extensions:iam:daps:check
+      - name: Daps Integration Tests
+        run: ./gradlew -p extensions/iam/daps test -DincludeTags="DapsIntegrationTest"
+
+  Micrometer-Integration-Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Download opentelemetry javaagent.
+        run: wget -q https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.12.0/opentelemetry-javaagent.jar
+      - name: Micrometer Integration Tests.
+        run: ./gradlew -p core/micrometer test -DincludeTags="OpenTelemetryIntegrationTest"

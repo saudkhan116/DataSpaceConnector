@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020, 2021 Microsoft Corporation
+ *  Copyright (c) 2022 Microsoft Corporation
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -14,10 +14,9 @@
 
 package org.eclipse.dataspaceconnector.iam.daps;
 
-import org.eclipse.dataspaceconnector.common.annotations.IntegrationTest;
-import org.eclipse.dataspaceconnector.core.config.ConfigFactory;
 import org.eclipse.dataspaceconnector.core.security.fs.FsCertificateResolver;
 import org.eclipse.dataspaceconnector.core.security.fs.FsPrivateKeyResolver;
+import org.eclipse.dataspaceconnector.iam.daps.annotations.DapsTest;
 import org.eclipse.dataspaceconnector.junit.launcher.EdcExtension;
 import org.eclipse.dataspaceconnector.junit.launcher.MockVault;
 import org.eclipse.dataspaceconnector.spi.EdcException;
@@ -25,9 +24,8 @@ import org.eclipse.dataspaceconnector.spi.iam.IdentityService;
 import org.eclipse.dataspaceconnector.spi.security.CertificateResolver;
 import org.eclipse.dataspaceconnector.spi.security.PrivateKeyResolver;
 import org.eclipse.dataspaceconnector.spi.security.Vault;
-import org.eclipse.dataspaceconnector.spi.system.Config;
 import org.eclipse.dataspaceconnector.spi.system.ConfigurationExtension;
-import org.jetbrains.annotations.Nullable;
+import org.eclipse.dataspaceconnector.spi.system.configuration.ConfigFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,8 +37,8 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@IntegrationTest
 @ExtendWith(EdcExtension.class)
+@DapsTest
 class DapsIntegrationTest {
 
     private static final String AUDIENCE_IDS_CONNECTORS_ALL = "idsc:IDS_CONNECTORS_ALL";
@@ -61,7 +59,7 @@ class DapsIntegrationTest {
     @BeforeEach
     protected void before(EdcExtension extension) {
         KeyStore clientKeystore = readKeystoreFromResources("keystore.p12", "PKCS12", CLIENT_KEYSTORE_PASSWORD);
-        extension.registerSystemExtension(ConfigurationExtension.class, (ConfigurationExtension) () -> ConfigFactory.fromMap(configuration));
+        extension.setConfiguration(configuration);
         extension.registerServiceMock(Vault.class, new MockVault());
         extension.registerServiceMock(PrivateKeyResolver.class, new FsPrivateKeyResolver(CLIENT_KEYSTORE_PASSWORD, clientKeystore));
         extension.registerServiceMock(CertificateResolver.class, new FsCertificateResolver(clientKeystore));

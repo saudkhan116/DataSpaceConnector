@@ -138,7 +138,7 @@ The requesting of data offers and data transfer can also be initiated using IDS 
 To request data offers from the provider run
 
 ```bash
-curl -X GET -H 'X-Api-Key: password' http://localhost:9191/api/control/catalog?provider=http://localhost:8181/api/ids/multipart
+curl -X GET -H 'X-Api-Key: password' http://localhost:9191/api/control/catalog?provider=http://localhost:8282/api/v1/ids/data
 ```
 
 #### 2. Negotiate Contract
@@ -154,7 +154,7 @@ curl --location --request POST 'http://localhost:9191/api/control/negotiation' \
   "type": "INITIAL",
   "protocol": "ids-multipart",
   "connectorId": "1",
-  "connectorAddress": "http://localhost:8181/api/ids/multipart",
+  "connectorAddress": "http://localhost:8282/api/v1/ids/data",
   "correlationId": null,
   "contractOffer": { <Copy one of the contract offer from Step 2> },
   "asset": "1",
@@ -174,12 +174,12 @@ The EDC will answer with the contract negotiation id. This id will be used in st
 To get the contract agreement id insert the negotiation id into the following statement end execute it.
 
 ```bash
-curl --location --request GET 'http://localhost:9191/api/control/agreement/<NegotiationId>' \
+curl --location --request GET 'http://localhost:9191/api/control/negotiation/<NegotiationId>/state' \
 --header 'X-API-Key: password'
 ```
 
-The EDC will answer with the serialized contract negotiation. After the negotiation is done the serialized contract
-negotiation will contain an agreement with id, that is required in the next step. This may take a few seconds.
+The EDC will return the current state of the contract negotiation. When the negotiation is completed successfully,
+the response will also contain an agreement id, that is required in the next step. This may take a few seconds.
 
 #### 4. Transfer Data
 
@@ -194,7 +194,7 @@ curl --location --request POST 'http://localhost:9191/api/control/transfer' \
   "edctype": "dataspaceconnector:datarequest",
   "id": null,
   "processId": null,
-  "connectorAddress": "http://localhost:8181/api/ids/multipart",
+  "connectorAddress": "http://localhost:8282/api/v1/ids/data",
   "protocol": "ids-multipart",
   "connectorId": "consumer",
   "assetId": "1",

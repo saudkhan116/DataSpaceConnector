@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.eclipse.dataspaceconnector.cosmos.azure.CosmosDocument.sanitize;
+import static org.eclipse.dataspaceconnector.azure.cosmos.CosmosDocument.sanitize;
 
 /**
  * Represents in a structural way a WHERE clause in an SQL statement. Attempts to use parameterized statements using
@@ -74,11 +74,10 @@ class WhereClause implements Clause {
         if (!SUPPORTED_OPERATOR.contains(criterion.getOperator())) {
             throw new IllegalArgumentException("Cannot build SqlParameter for operator: " + criterion.getOperator());
         }
-        //        criterion = operandEscapeFunction.apply(criterion);
         var operandLeft = sanitize(criterion.getOperandLeft().toString());
         var operandRight = criterion.getOperandRight().toString();
         var queryParam = createQueryParam(operandLeft, criterion.getOperator(), operandRight);
-        String param = queryParam.isEmpty() ? operandRight : "@" + operandLeft;
+        String param = queryParam.isEmpty() ? operandRight : sanitizedParameterName(operandLeft);
         where += parameters.isEmpty() ? "WHERE" : " AND";
         parameters.addAll(queryParam);
         where += String.format(" %s.%s %s %s", objectPrefix, operandLeft, criterion.getOperator(), param);
@@ -87,12 +86,16 @@ class WhereClause implements Clause {
     private List<SqlParameter> createQueryParam(String opLeft, String operator, String opRight) {
         switch (operator) {
             case EQUALS_OPERATOR:
-                return List.of(new SqlParameter("@" + opLeft, opRight));
+                return List.of(new SqlParameter(sanitizedParameterName(opLeft), opRight));
             case IN_OPERATOR:
                 return List.of();
             default: //not actually needed, but it's good style to have a default case
                 throw new IllegalArgumentException("Cannot build SqlParameter for operator: " + operator);
         }
+    }
+
+    private String sanitizedParameterName(String operandLeft) {
+        return "@" + operandLeft.replaceAll("\\.", "");
     }
 
 }

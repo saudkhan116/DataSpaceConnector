@@ -14,10 +14,9 @@
 
 package org.eclipse.dataspaceconnector.ids.transform;
 
-import de.fraunhofer.iais.eis.ConstraintBuilder;
-import org.eclipse.dataspaceconnector.ids.spi.transform.TransformerContext;
+import org.eclipse.dataspaceconnector.ids.core.policy.IdsConstraintBuilder;
 import org.eclipse.dataspaceconnector.policy.model.Constraint;
-import org.eclipse.dataspaceconnector.policy.model.Duty;
+import org.eclipse.dataspaceconnector.spi.transformer.TransformerContext;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +53,7 @@ public class IdsProhibitionToProhibitionTransformerTest {
     @BeforeEach
     void setUp() {
         transformer = new IdsProhibitionToProhibitionTransformer();
-        idsConstraint = new ConstraintBuilder().build();
+        idsConstraint = new IdsConstraintBuilder().build();
         idsPermission = new de.fraunhofer.iais.eis.ProhibitionBuilder()
                 ._action_(new ArrayList<>(Collections.singletonList(de.fraunhofer.iais.eis.Action.USE)))
                 ._target_(TARGET_URI)

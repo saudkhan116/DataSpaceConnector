@@ -1,3 +1,17 @@
+/*
+ *  Copyright (c) 2021 Daimler TSS GmbH
+ *
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Contributors:
+ *       Daimler TSS GmbH - Initial implementation
+ *
+ */
+
 package org.eclipse.dataspaceconnector.api.control;
 
 import org.eclipse.dataspaceconnector.junit.launcher.EdcExtension;
@@ -15,6 +29,7 @@ import static org.eclipse.dataspaceconnector.common.testfixtures.TestUtils.getFr
 abstract class AbstractClientControlCatalogApiControllerTest {
 
     private static final AtomicReference<Integer> PORT = new AtomicReference<>();
+    private static final AtomicReference<Integer> IDS_PORT = new AtomicReference<>();
 
     @AfterEach
     void after() {
@@ -23,11 +38,13 @@ abstract class AbstractClientControlCatalogApiControllerTest {
         }
 
         PORT.set(null);
+        IDS_PORT.set(null);
     }
 
     @BeforeEach
     protected void before(EdcExtension extension) {
         PORT.set(getFreePort());
+        IDS_PORT.set(getFreePort());
 
         for (Map.Entry<String, String> entry : getSystemProperties().entrySet()) {
             System.setProperty(entry.getKey(), entry.getValue());
@@ -39,9 +56,17 @@ abstract class AbstractClientControlCatalogApiControllerTest {
     protected int getPort() {
         return PORT.get();
     }
+    
+    protected int getIdsPort() {
+        return IDS_PORT.get();
+    }
 
     protected String getUrl() {
         return String.format("http://localhost:%s", getPort());
+    }
+    
+    protected String getIdsUrl() {
+        return String.format("http://localhost:%s", getIdsPort());
     }
 
     protected abstract Map<String, String> getSystemProperties();

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2021 Microsoft Corporation
+ *  Copyright (c) 2021 - 2022 Microsoft Corporation
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -10,14 +10,17 @@
  *  Contributors:
  *       Microsoft Corporation - initial API and implementation
  *       Fraunhofer Institute for Software and Systems Engineering - extended method implementation
+ *       Bayerische Motoren Werke Aktiengesellschaft (BMW AG) - improvements
  *
  */
+
 package org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import org.eclipse.dataspaceconnector.spi.telemetry.TraceCarrier;
 import org.eclipse.dataspaceconnector.spi.types.domain.contract.agreement.ContractAgreement;
 import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.ContractOffer;
 import org.jetbrains.annotations.NotNull;
@@ -26,18 +29,25 @@ import org.jetbrains.annotations.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.CONFIRMED;
 import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.CONFIRMING;
-import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.CONFIRMING_SENT;
 import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.CONSUMER_APPROVED;
+import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.CONSUMER_APPROVING;
 import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.CONSUMER_OFFERED;
+import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.CONSUMER_OFFERING;
+import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.DECLINED;
+import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.DECLINING;
 import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.INITIAL;
 import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.PROVIDER_OFFERED;
+import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.PROVIDER_OFFERING;
 import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.REQUESTED;
 import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.REQUESTING;
 import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractNegotiationStates.UNSAVED;
@@ -55,7 +65,7 @@ import static org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiati
  */
 @JsonTypeName("dataspaceconnector:contractnegotiation")
 @JsonDeserialize(builder = ContractNegotiation.Builder.class)
-public class ContractNegotiation {
+public class ContractNegotiation implements TraceCarrier {
     private String id;
     private String correlationId;
     private String counterPartyId;
@@ -68,6 +78,7 @@ public class ContractNegotiation {
     private String errorDetail;
     private ContractAgreement contractAgreement;
     private List<ContractOffer> contractOffers = new ArrayList<>();
+    private Map<String, String> traceContext = new HashMap<>();
 
     public Type getType() {
         return type;
@@ -100,6 +111,11 @@ public class ContractNegotiation {
     @NotNull
     public String getProtocol() {
         return protocol;
+    }
+
+    @Override
+    public Map<String, String> getTraceContext() {
+        return Collections.unmodifiableMap(traceContext);
     }
 
     /**
@@ -206,7 +222,7 @@ public class ContractNegotiation {
         if (Type.PROVIDER == type) {
             throw new IllegalStateException("Provider processes have no REQUESTING state");
         }
-        transition(ContractNegotiationStates.REQUESTING, ContractNegotiationStates.REQUESTING, INITIAL);
+        transition(REQUESTING, REQUESTING, INITIAL);
     }
 
     /**
@@ -216,7 +232,7 @@ public class ContractNegotiation {
         if (Type.PROVIDER == type) {
             transition(REQUESTED, UNSAVED);
         } else {
-            transition(REQUESTED, REQUESTED, ContractNegotiationStates.REQUESTING);
+            transition(REQUESTED, REQUESTED, REQUESTING);
         }
     }
 
@@ -225,9 +241,9 @@ public class ContractNegotiation {
      */
     public void transitionOffering() {
         if (Type.CONSUMER == type) {
-            transition(ContractNegotiationStates.CONSUMER_OFFERING, REQUESTED);
+            transition(CONSUMER_OFFERING, CONSUMER_OFFERING, REQUESTED);
         } else {
-            transition(ContractNegotiationStates.PROVIDER_OFFERING, ContractNegotiationStates.PROVIDER_OFFERING, PROVIDER_OFFERED, REQUESTED);
+            transition(PROVIDER_OFFERING, PROVIDER_OFFERING, PROVIDER_OFFERED, REQUESTED);
         }
     }
 
@@ -237,9 +253,9 @@ public class ContractNegotiation {
      */
     public void transitionOffered() {
         if (Type.CONSUMER == type) {
-            transition(CONSUMER_OFFERED, PROVIDER_OFFERED, ContractNegotiationStates.CONSUMER_OFFERING);
+            transition(CONSUMER_OFFERED, PROVIDER_OFFERED, CONSUMER_OFFERING);
         } else {
-            transition(PROVIDER_OFFERED, PROVIDER_OFFERED, ContractNegotiationStates.PROVIDER_OFFERING);
+            transition(PROVIDER_OFFERED, PROVIDER_OFFERED, PROVIDER_OFFERING);
         }
     }
 
@@ -250,7 +266,7 @@ public class ContractNegotiation {
         if (Type.PROVIDER == type) {
             throw new IllegalStateException("Provider processes have no CONSUMER_APPROVING state");
         }
-        transition(ContractNegotiationStates.CONSUMER_APPROVING, ContractNegotiationStates.CONSUMER_APPROVING, CONSUMER_OFFERED, REQUESTED);
+        transition(CONSUMER_APPROVING, CONSUMER_APPROVING, CONSUMER_OFFERED, REQUESTED);
     }
 
     /**
@@ -260,7 +276,7 @@ public class ContractNegotiation {
         if (Type.PROVIDER == type) {
             throw new IllegalStateException("Provider processes have no CONSUMER_APPROVED state");
         }
-        transition(CONSUMER_APPROVED, CONSUMER_APPROVED, ContractNegotiationStates.CONSUMER_APPROVING, PROVIDER_OFFERED);
+        transition(CONSUMER_APPROVED, CONSUMER_APPROVED, CONSUMER_APPROVING, PROVIDER_OFFERED);
     }
 
     /**
@@ -268,9 +284,9 @@ public class ContractNegotiation {
      */
     public void transitionDeclining() {
         if (Type.CONSUMER == type) {
-            transition(ContractNegotiationStates.DECLINING, ContractNegotiationStates.DECLINING, REQUESTED, CONSUMER_OFFERED, CONSUMER_APPROVED);
+            transition(DECLINING, DECLINING, REQUESTED, CONSUMER_OFFERED, CONSUMER_APPROVED);
         } else {
-            transition(ContractNegotiationStates.DECLINING, ContractNegotiationStates.DECLINING, REQUESTED, PROVIDER_OFFERED, CONSUMER_APPROVED);
+            transition(DECLINING, DECLINING, REQUESTED, PROVIDER_OFFERED, CONSUMER_APPROVED);
         }
     }
 
@@ -279,9 +295,9 @@ public class ContractNegotiation {
      */
     public void transitionDeclined() {
         if (Type.CONSUMER == type) {
-            transition(ContractNegotiationStates.DECLINED, ContractNegotiationStates.DECLINING, CONSUMER_OFFERED, REQUESTED);
+            transition(DECLINED, DECLINING, CONSUMER_OFFERED, REQUESTED);
         } else {
-            transition(ContractNegotiationStates.DECLINED, ContractNegotiationStates.DECLINING, PROVIDER_OFFERED, ContractNegotiationStates.CONFIRMED, REQUESTED);
+            transition(DECLINED, DECLINING, PROVIDER_OFFERED, CONFIRMED, REQUESTED);
         }
 
     }
@@ -293,11 +309,7 @@ public class ContractNegotiation {
         if (Type.CONSUMER == type) {
             throw new IllegalStateException("Consumer processes have no CONFIRMING state");
         }
-        transition(CONFIRMING, CONFIRMING, REQUESTED, PROVIDER_OFFERED, CONFIRMING_SENT);
-    }
-
-    public void transitionConfirmingSent() {
-        transition(CONFIRMING_SENT, CONFIRMING);
+        transition(CONFIRMING, CONFIRMING, REQUESTED, PROVIDER_OFFERED);
     }
 
     /**
@@ -305,9 +317,9 @@ public class ContractNegotiation {
      */
     public void transitionConfirmed() {
         if (Type.CONSUMER == type) {
-            transition(ContractNegotiationStates.CONFIRMED, CONSUMER_APPROVED, REQUESTED, CONSUMER_OFFERED, CONFIRMED);
+            transition(CONFIRMED, CONSUMER_APPROVED, REQUESTED, CONSUMER_OFFERED, CONFIRMED);
         } else {
-            transition(ContractNegotiationStates.CONFIRMED, CONFIRMING, CONFIRMING_SENT);
+            transition(CONFIRMED, CONFIRMING);
         }
 
     }
@@ -341,9 +353,10 @@ public class ContractNegotiation {
      * @return The copy.
      */
     public ContractNegotiation copy() {
-        return ContractNegotiation.Builder.newInstance().id(id).correlationId(correlationId).counterPartyId(counterPartyId)
+        return Builder.newInstance().id(id).correlationId(correlationId).counterPartyId(counterPartyId)
                 .counterPartyAddress(counterPartyAddress).protocol(protocol).type(type).state(state).stateCount(stateCount)
-                .stateTimestamp(stateTimestamp).errorDetail(errorDetail).contractAgreement(contractAgreement).contractOffers(contractOffers).build();
+                .stateTimestamp(stateTimestamp).errorDetail(errorDetail).contractAgreement(contractAgreement)
+                .contractOffers(contractOffers).traceContext(traceContext).build();
     }
 
     /**
@@ -355,7 +368,7 @@ public class ContractNegotiation {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, correlationId, counterPartyId, protocol, type, state, stateCount, stateTimestamp, contractAgreement, contractOffers);
+        return Objects.hash(id, correlationId, counterPartyId, protocol, traceContext, type, state, stateCount, stateTimestamp, contractAgreement, contractOffers);
     }
 
     @Override
@@ -368,7 +381,8 @@ public class ContractNegotiation {
         }
         ContractNegotiation that = (ContractNegotiation) o;
         return state == that.state && stateCount == that.stateCount && stateTimestamp == that.stateTimestamp && Objects.equals(id, that.id) &&
-                Objects.equals(correlationId, that.correlationId) && Objects.equals(counterPartyId, that.counterPartyId) && Objects.equals(protocol, that.protocol) &&
+                Objects.equals(correlationId, that.correlationId) && Objects.equals(counterPartyId, that.counterPartyId) &&
+                Objects.equals(protocol, that.protocol) && Objects.equals(traceContext, that.traceContext) &&
                 type == that.type && Objects.equals(contractAgreement, that.contractAgreement) && Objects.equals(contractOffers, that.contractOffers);
     }
 
@@ -469,6 +483,11 @@ public class ContractNegotiation {
             return this;
         }
 
+        public Builder contractOffer(ContractOffer contractOffer) {
+            negotiation.contractOffers.add(contractOffer);
+            return this;
+        }
+
         public Builder type(Type type) {
             negotiation.type = type;
             return this;
@@ -476,6 +495,11 @@ public class ContractNegotiation {
 
         public Builder errorDetail(String errorDetail) {
             negotiation.errorDetail = errorDetail;
+            return this;
+        }
+
+        public Builder traceContext(Map<String, String> traceContext) {
+            negotiation.traceContext = traceContext;
             return this;
         }
 

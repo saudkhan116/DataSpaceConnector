@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2021-2022 Fraunhofer Institute for Software and Systems Engineering
+ *  Copyright (c) 2021 - 2022 Fraunhofer Institute for Software and Systems Engineering
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -11,14 +11,14 @@
  *       Fraunhofer Institute for Software and Systems Engineering - initial API and implementation
  *
  */
+
 package org.eclipse.dataspaceconnector.contract.negotiation.command;
 
 import org.eclipse.dataspaceconnector.contract.negotiation.ConsumerContractNegotiationManagerImpl;
 import org.eclipse.dataspaceconnector.contract.negotiation.ProviderContractNegotiationManagerImpl;
 import org.eclipse.dataspaceconnector.contract.negotiation.command.commands.SingleContractNegotiationCommand;
 import org.eclipse.dataspaceconnector.contract.negotiation.command.handlers.SingleContractNegotiationCommandHandler;
-import org.eclipse.dataspaceconnector.core.base.BoundedCommandQueue;
-import org.eclipse.dataspaceconnector.core.base.CommandHandlerRegistryImpl;
+import org.eclipse.dataspaceconnector.spi.command.BoundedCommandQueue;
 import org.eclipse.dataspaceconnector.spi.command.CommandHandlerRegistry;
 import org.eclipse.dataspaceconnector.spi.command.CommandQueue;
 import org.eclipse.dataspaceconnector.spi.command.CommandRunner;
@@ -41,57 +41,42 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ContractNegotiationCommandQueueIntegrationTest {
-    
-    private ContractNegotiationStore store;
-    private ContractValidationService validationService;
-    private RemoteMessageDispatcherRegistry dispatcherRegistry;
+
+    private final ContractNegotiationStore store = mock(ContractNegotiationStore.class);
+    private final ContractValidationService validationService = mock(ContractValidationService.class);
+    private final RemoteMessageDispatcherRegistry dispatcherRegistry = mock(RemoteMessageDispatcherRegistry.class);
+    private final ContractNegotiationObservable observable = mock(ContractNegotiationObservable.class);
+    private final Monitor monitor = mock(Monitor.class);
+    private final String errorDetail = "Updated by command handler";
     private CommandQueue<ContractNegotiationCommand> commandQueue;
     private CommandRunner<ContractNegotiationCommand> commandRunner;
-    private CommandHandlerRegistry commandHandlerRegistry;
-    private ContractNegotiationObservable observable;
-    private Monitor monitor;
-    
+
     private CountDownLatch countDownLatch;
-    private String errorDetail;
-    
+
     private String negotiationId;
     private ContractNegotiation negotiation;
     private TestCommand command;
-    
+
     @BeforeEach
     void setUp() {
-        // Create mocks
-        monitor = mock(Monitor.class);
-        store = mock(ContractNegotiationStore.class);
-        validationService = mock(ContractValidationService.class);
-        dispatcherRegistry = mock(RemoteMessageDispatcherRegistry.class);
-        observable = mock(ContractNegotiationObservable.class);
-        
-        // Create CommandHandlerRegistry
-        commandHandlerRegistry = new CommandHandlerRegistryImpl();
-    
-        // Set error detail that will be set on the negotiation by the command handler
-        errorDetail = "Updated by command handler";
-        
-        // Create & register CommandHandler
+        var commandHandlerRegistry = mock(CommandHandlerRegistry.class);
+
         countDownLatch = new CountDownLatch(1);
         TestCommandHandler handler = new TestCommandHandler(store, countDownLatch, errorDetail);
-        commandHandlerRegistry.register(handler);
-        
-        // Create CommandRunner
+
+        when(commandHandlerRegistry.get(TestCommand.class)).thenReturn(handler);
+
         commandRunner = new CommandRunner<>(commandHandlerRegistry, monitor);
-        
-        // Create CommandQueue
+
         commandQueue = new BoundedCommandQueue<>(1);
-    
-        // Create ContractNegotiation and TestCommand
+
         negotiationId = "test";
         negotiation = getNegotiation(negotiationId);
         command = new TestCommand(negotiationId);
-        
+
         when(store.find(negotiationId)).thenReturn(negotiation);
     }
-    
+
     @Test
     void submitTestCommand_providerManager() throws Exception {
         // Create and start the negotiation manager
@@ -102,28 +87,29 @@ class ContractNegotiationCommandQueueIntegrationTest {
                 .commandQueue(commandQueue)
                 .commandRunner(commandRunner)
                 .observable(observable)
+                .store(store)
                 .build();
-        negotiationManager.start(store);
-        
-        // Enqueue command
+
+        negotiationManager.start();
+
         negotiationManager.enqueueCommand(command);
-    
+
         // Wait for CommandHandler to modify negotiation with time out at 15 seconds
         var success = countDownLatch.await(15, TimeUnit.SECONDS);
-        
+
         assertThat(success).isTrue();
-        
+
         assertThat(negotiation.getState()).isEqualTo(ContractNegotiationStates.ERROR.code());
         assertThat(negotiation.getErrorDetail()).isEqualTo(errorDetail);
-    
+
         // Stop the negotiation manager
         negotiationManager.stop();
     }
-    
+
     @Test
     void submitTestCommand_consumerManager() throws Exception {
         when(store.find(negotiationId)).thenReturn(negotiation);
-    
+
         // Create and start the negotiation manager
         var negotiationManager = ConsumerContractNegotiationManagerImpl.Builder.newInstance()
                 .monitor(monitor)
@@ -132,24 +118,25 @@ class ContractNegotiationCommandQueueIntegrationTest {
                 .commandQueue(commandQueue)
                 .commandRunner(commandRunner)
                 .observable(observable)
+                .store(store)
                 .build();
-        negotiationManager.start(store);
-        
+        negotiationManager.start();
+
         // Enqueue command
         negotiationManager.enqueueCommand(command);
-        
+
         // Wait for CommandHandler to modify negotiation with time out at 15 seconds
         var success = countDownLatch.await(15, TimeUnit.SECONDS);
-        
+
         assertThat(success).isTrue();
-        
+
         assertThat(negotiation.getState()).isEqualTo(ContractNegotiationStates.ERROR.code());
         assertThat(negotiation.getErrorDetail()).isEqualTo(errorDetail);
-        
+
         // Stop the negotiation manager
         negotiationManager.stop();
     }
-    
+
     private ContractNegotiation getNegotiation(String id) {
         return ContractNegotiation.Builder.newInstance()
                 .id(id)
@@ -159,7 +146,7 @@ class ContractNegotiationCommandQueueIntegrationTest {
                 .state(0)
                 .build();
     }
-    
+
     /**
      * Example Command implementation for this test.
      */
@@ -168,22 +155,22 @@ class ContractNegotiationCommandQueueIntegrationTest {
             super(negotiationId);
         }
     }
-    
+
     /**
      * Handler for the {@link TestCommand}. Will transition the specific {@link ContractNegotiation}
      * to the error state and set a custom error detail.
      */
     private static class TestCommandHandler extends SingleContractNegotiationCommandHandler<TestCommand> {
-        
+
         private CountDownLatch countDownLatch;
         private String errorDetail;
-    
+
         public TestCommandHandler(ContractNegotiationStore store, CountDownLatch countDownLatch, String errorDetail) {
             super(store);
             this.countDownLatch = countDownLatch;
             this.errorDetail = errorDetail;
         }
-    
+
         @Override
         protected boolean modify(ContractNegotiation negotiation) {
             negotiation.transitionError(errorDetail);
@@ -191,11 +178,11 @@ class ContractNegotiationCommandQueueIntegrationTest {
             countDownLatch.countDown();
             return true;
         }
-    
+
         @Override
         public Class<TestCommand> getType() {
             return TestCommand.class;
         }
     }
-    
+
 }

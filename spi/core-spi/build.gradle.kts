@@ -13,7 +13,7 @@
  */
 
 val jacksonVersion: String by project
-
+val openTelemetryVersion: String by project
 
 plugins {
     `java-library`
@@ -26,6 +26,11 @@ dependencies {
     api("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
     api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}")
 
+    api(project(":core:policy:policy-evaluator"))
+
+    implementation("io.opentelemetry:opentelemetry-api:${openTelemetryVersion}")
+
+    implementation(project(":common:util"))
     testImplementation(testFixtures(project(":common:util")))
 }
 

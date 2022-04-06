@@ -19,11 +19,11 @@ import de.fraunhofer.iais.eis.ResourceCatalog;
 import org.eclipse.dataspaceconnector.ids.spi.IdsIdParser;
 import org.eclipse.dataspaceconnector.ids.spi.IdsType;
 import org.eclipse.dataspaceconnector.ids.spi.transform.IdsTypeTransformer;
-import org.eclipse.dataspaceconnector.ids.spi.transform.TransformerContext;
 import org.eclipse.dataspaceconnector.policy.model.Duty;
 import org.eclipse.dataspaceconnector.policy.model.Permission;
 import org.eclipse.dataspaceconnector.policy.model.Policy;
 import org.eclipse.dataspaceconnector.policy.model.Prohibition;
+import org.eclipse.dataspaceconnector.spi.transformer.TransformerContext;
 import org.eclipse.dataspaceconnector.spi.types.domain.asset.Asset;
 import org.eclipse.dataspaceconnector.spi.types.domain.catalog.Catalog;
 import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.ContractOffer;
@@ -63,8 +63,8 @@ public class IdsResourceCatalogToDataCatalogTransformer implements IdsTypeTransf
 
         builder.id(catalogIdsId.getValue());
 
-        List<Resource> resources;
-        if ((resources = object.getOfferedResource()) != null) {
+        List<Resource> resources = object.getOfferedResource();
+        if (resources != null) {
             List<ContractOffer> contractOffers = new LinkedList<>();
 
             for (Resource resource : resources) {

@@ -14,16 +14,20 @@
 
 package org.eclipse.dataspaceconnector.common.testfixtures;
 
+import okhttp3.OkHttpClient;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -104,8 +108,10 @@ public class TestUtils {
 
         while (!found && port <= upperBound) {
             try (ServerSocket serverSocket = new ServerSocket(port)) {
-                found = true;
+                serverSocket.setReuseAddress(true);
                 port = serverSocket.getLocalPort();
+
+                found = true;
             } catch (IOException e) {
                 found = false;
                 port++;
@@ -116,5 +122,32 @@ public class TestUtils {
             throw new IllegalArgumentException(format("No free ports in the range [%d - %d]", lowerBound, upperBound));
         }
         return port;
+    }
+
+    /**
+     * Helper method to create a temporary directory.
+     *
+     * @return a newly create temporary directory.
+     */
+    public static String tempDirectory() {
+        try {
+            return Files.createTempDirectory(TestUtils.class.getSimpleName()).toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Create an {@link OkHttpClient} suitable for using in unit tests. The client configured with long timeouts
+     * suitable for high-contention scenarios in CI.
+     *
+     * @return an {@link OkHttpClient.Builder}.
+     */
+    public static OkHttpClient testOkHttpClient() {
+        return new OkHttpClient.Builder()
+                .connectTimeout(1, TimeUnit.MINUTES)
+                .writeTimeout(1, TimeUnit.MINUTES)
+                .readTimeout(1, TimeUnit.MINUTES)
+                .build();
     }
 }

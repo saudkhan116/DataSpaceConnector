@@ -9,14 +9,16 @@
  *
  *  Contributors:
  *       Microsoft Corporation - initial API and implementation
+ *       Fraunhofer Institute for Software and Systems Engineering - Improvements
  *
  */
 
 package org.eclipse.dataspaceconnector.junit;
 
-import org.eclipse.dataspaceconnector.core.security.NullVaultExtension;
+import org.eclipse.dataspaceconnector.dataloading.AssetLoader;
 import org.eclipse.dataspaceconnector.ids.spi.Protocols;
 import org.eclipse.dataspaceconnector.junit.launcher.EdcExtension;
+import org.eclipse.dataspaceconnector.policy.model.Policy;
 import org.eclipse.dataspaceconnector.spi.iam.ClaimToken;
 import org.eclipse.dataspaceconnector.spi.iam.IdentityService;
 import org.eclipse.dataspaceconnector.spi.iam.TokenRepresentation;
@@ -24,6 +26,7 @@ import org.eclipse.dataspaceconnector.spi.message.MessageContext;
 import org.eclipse.dataspaceconnector.spi.message.RemoteMessageDispatcher;
 import org.eclipse.dataspaceconnector.spi.message.RemoteMessageDispatcherRegistry;
 import org.eclipse.dataspaceconnector.spi.result.Result;
+import org.eclipse.dataspaceconnector.spi.system.NullVaultExtension;
 import org.eclipse.dataspaceconnector.spi.system.Provides;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtension;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtensionContext;
@@ -32,6 +35,7 @@ import org.eclipse.dataspaceconnector.spi.transfer.TransferProcessManager;
 import org.eclipse.dataspaceconnector.spi.transfer.flow.DataFlowController;
 import org.eclipse.dataspaceconnector.spi.transfer.flow.DataFlowInitiateResult;
 import org.eclipse.dataspaceconnector.spi.transfer.flow.DataFlowManager;
+import org.eclipse.dataspaceconnector.spi.types.domain.DataAddress;
 import org.eclipse.dataspaceconnector.spi.types.domain.asset.Asset;
 import org.eclipse.dataspaceconnector.spi.types.domain.message.RemoteMessage;
 import org.eclipse.dataspaceconnector.spi.types.domain.transfer.DataRequest;
@@ -84,13 +88,13 @@ public class EndToEndTest {
     }
 
     @Test
-    void processProviderRequest(TransferProcessManager processManager, DataFlowManager dataFlowManager) throws InterruptedException {
+    void processProviderRequest(TransferProcessManager processManager, DataFlowManager dataFlowManager, AssetLoader loader) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
         DataFlowController controllerMock = mock(DataFlowController.class);
 
         when(controllerMock.canHandle(isA(DataRequest.class))).thenReturn(true);
-        when(controllerMock.initiateFlow(isA(DataRequest.class))).thenAnswer(i -> {
+        when(controllerMock.initiateFlow(isA(DataRequest.class), isA(Policy.class))).thenAnswer(i -> {
             latch.countDown();
             return DataFlowInitiateResult.success("");
         });
@@ -101,6 +105,10 @@ public class EndToEndTest {
         var connectorId = "https://test";
 
         var asset = Asset.Builder.newInstance().id(artifactId).build();
+
+        loader.accept(asset, DataAddress.Builder.newInstance().type("test").build());
+
+
         var request = DataRequest.Builder.newInstance().protocol(Protocols.IDS_MULTIPART).assetId(asset.getId())
                 .connectorId(connectorId).connectorAddress(connectorId).destinationType("S3").id(UUID.randomUUID().toString()).build();
 
@@ -108,7 +116,7 @@ public class EndToEndTest {
 
         assertThat(latch.await(1, TimeUnit.MINUTES)).isTrue();
         verify(controllerMock).canHandle(isA(DataRequest.class));
-        verify(controllerMock).initiateFlow(isA(DataRequest.class));
+        verify(controllerMock).initiateFlow(isA(DataRequest.class), isA(Policy.class));
     }
 
     @BeforeEach
@@ -128,7 +136,7 @@ public class EndToEndTest {
                 }
 
                 @Override
-                public Result<ClaimToken> verifyJwtToken(String token) {
+                public Result<ClaimToken> verifyJwtToken(TokenRepresentation tokenRepresentation) {
                     return Result.success(ClaimToken.Builder.newInstance().build());
                 }
             });

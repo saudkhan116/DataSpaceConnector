@@ -4,15 +4,17 @@ plugins {
 }
 
 val rsApi: String by project
+val okHttpVersion: String by project
 
 dependencies {
-    api(project(":core:base"))
     api(project(":extensions:iam:decentralized-identity:identity-did-spi"))
     implementation(project(":extensions:iam:decentralized-identity:identity-did-crypto"))
 
     implementation("jakarta.ws.rs:jakarta.ws.rs-api:${rsApi}")
+    implementation("com.squareup.okhttp3:okhttp:${okHttpVersion}")
 
     testImplementation(testFixtures(project(":extensions:iam:decentralized-identity:identity-common-test")))
+    testImplementation(testFixtures(project(":launchers:junit")))
 }
 
 publishing {

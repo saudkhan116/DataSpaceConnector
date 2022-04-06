@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2021 Daimler TSS GmbH
+ *  Copyright (c) 2021 - 2022 Daimler TSS GmbH
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -9,6 +9,7 @@
  *
  *  Contributors:
  *       Daimler TSS GmbH - Initial API and Implementation
+ *       Bayerische Motoren Werke Aktiengesellschaft (BMW AG) - improvements
  *
  */
 
@@ -18,7 +19,7 @@ import de.fraunhofer.iais.eis.ResourceCatalog;
 import org.eclipse.dataspaceconnector.ids.spi.IdsId;
 import org.eclipse.dataspaceconnector.ids.spi.IdsType;
 import org.eclipse.dataspaceconnector.ids.spi.service.CatalogService;
-import org.eclipse.dataspaceconnector.ids.spi.transform.TransformerRegistry;
+import org.eclipse.dataspaceconnector.ids.spi.transform.IdsTransformerRegistry;
 import org.eclipse.dataspaceconnector.spi.iam.ClaimToken;
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
 import org.eclipse.dataspaceconnector.spi.result.Result;
@@ -32,7 +33,7 @@ public class DataCatalogDescriptionRequestHandler extends AbstractDescriptionReq
             @NotNull Monitor monitor,
             @NotNull String connectorId,
             @NotNull CatalogService dataCatalogService,
-            @NotNull TransformerRegistry transformerRegistry) {
+            @NotNull IdsTransformerRegistry transformerRegistry) {
         super(
                 connectorId,
                 monitor,
@@ -43,7 +44,8 @@ public class DataCatalogDescriptionRequestHandler extends AbstractDescriptionReq
         this.dataCatalogService = dataCatalogService;
     }
 
-    protected Catalog retrieveObject(@NotNull IdsId idsId, @NotNull Result<ClaimToken> verificationResult) {
-        return dataCatalogService.getDataCatalog(verificationResult);
+    @Override
+    protected Catalog retrieveObject(@NotNull IdsId idsId, @NotNull ClaimToken claimToken) {
+        return dataCatalogService.getDataCatalog(claimToken);
     }
 }

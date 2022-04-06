@@ -19,7 +19,7 @@ import de.fraunhofer.iais.eis.DescriptionResponseMessage;
 import org.eclipse.dataspaceconnector.ids.api.multipart.message.MultipartResponse;
 import org.eclipse.dataspaceconnector.ids.spi.IdsId;
 import org.eclipse.dataspaceconnector.ids.spi.IdsType;
-import org.eclipse.dataspaceconnector.ids.spi.transform.TransformerRegistry;
+import org.eclipse.dataspaceconnector.ids.spi.transform.IdsTransformerRegistry;
 import org.eclipse.dataspaceconnector.spi.iam.ClaimToken;
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
 import org.eclipse.dataspaceconnector.spi.result.Result;
@@ -36,14 +36,14 @@ import static org.eclipse.dataspaceconnector.ids.api.multipart.handler.descripti
 abstract class AbstractDescriptionRequestHandler<T, S> implements DescriptionRequestHandler {
     protected final String connectorId;
     protected final Monitor monitor;
-    protected final TransformerRegistry transformerRegistry;
+    protected final IdsTransformerRegistry transformerRegistry;
     protected final IdsType targetIdsType;
     protected final Class<S> resultType;
 
     public AbstractDescriptionRequestHandler(
             @NotNull String connectorId,
             @NotNull Monitor monitor,
-            @NotNull TransformerRegistry transformerRegistry,
+            @NotNull IdsTransformerRegistry transformerRegistry,
             @NotNull IdsType targetIdsType,
             @NotNull Class<S> resultType
     ) {
@@ -57,7 +57,7 @@ abstract class AbstractDescriptionRequestHandler<T, S> implements DescriptionReq
     @Override
     public final MultipartResponse handle(
             @NotNull DescriptionRequestMessage descriptionRequestMessage,
-            @NotNull Result<ClaimToken> verificationResult,
+            @NotNull ClaimToken claimToken,
             @Nullable String payload) {
         Objects.requireNonNull(descriptionRequestMessage);
 
@@ -82,7 +82,7 @@ abstract class AbstractDescriptionRequestHandler<T, S> implements DescriptionReq
             return createBadParametersErrorMultipartResponse(connectorId, descriptionRequestMessage);
         }
 
-        T retrievedObject = retrieveObject(idsId, verificationResult);
+        T retrievedObject = retrieveObject(idsId, claimToken);
         if (retrievedObject == null) {
             return createNotFoundErrorMultipartResponse(connectorId, descriptionRequestMessage);
         }
@@ -110,5 +110,5 @@ abstract class AbstractDescriptionRequestHandler<T, S> implements DescriptionReq
                 .build();
     }
 
-    protected abstract T retrieveObject(@NotNull IdsId idsId, @NotNull Result<ClaimToken> verificationResult);
+    protected abstract T retrieveObject(@NotNull IdsId idsId, @NotNull ClaimToken verificationResult);
 }

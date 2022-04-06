@@ -11,24 +11,24 @@
  *       Microsoft Corporation - initial API and implementation
  *
  */
+
 package org.eclipse.dataspaceconnector.ids.transform;
 
-import de.fraunhofer.iais.eis.ConstraintBuilder;
 import de.fraunhofer.iais.eis.LogicalConstraint;
+import org.eclipse.dataspaceconnector.ids.core.policy.IdsConstraintBuilder;
 import org.eclipse.dataspaceconnector.ids.spi.IdsId;
-import org.eclipse.dataspaceconnector.ids.spi.transform.TransformerContext;
 import org.eclipse.dataspaceconnector.policy.model.AndConstraint;
 import org.eclipse.dataspaceconnector.policy.model.AtomicConstraint;
 import org.eclipse.dataspaceconnector.policy.model.LiteralExpression;
 import org.eclipse.dataspaceconnector.policy.model.OrConstraint;
 import org.eclipse.dataspaceconnector.policy.model.XoneConstraint;
+import org.eclipse.dataspaceconnector.spi.transformer.TransformerContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.contentOf;
 import static org.eclipse.dataspaceconnector.policy.model.Operator.EQ;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -52,7 +52,7 @@ class ConstraintToIdsLogicalConstraintTransformerTest {
     void verifyAndConstraint() {
         when(context.transform(isA(IdsId.class), eq(URI.class))).thenReturn(URI.create("foo"));
         when(context.transform(isA(AtomicConstraint.class), eq(de.fraunhofer.iais.eis.Constraint.class)))
-                .thenReturn(new ConstraintBuilder().build());
+                .thenReturn(new IdsConstraintBuilder().build());
 
         var atomicConstraint = AtomicConstraint.Builder.newInstance()
                 .leftExpression(new LiteralExpression("1"))
@@ -71,7 +71,7 @@ class ConstraintToIdsLogicalConstraintTransformerTest {
     void verifyOrConstraint() {
         when(context.transform(isA(IdsId.class), eq(URI.class))).thenReturn(URI.create("foo"));
         when(context.transform(isA(AtomicConstraint.class), eq(de.fraunhofer.iais.eis.Constraint.class)))
-                .thenReturn(new ConstraintBuilder().build());
+                .thenReturn(new IdsConstraintBuilder().build());
 
         var atomicConstraint = AtomicConstraint.Builder.newInstance()
                 .leftExpression(new LiteralExpression("1"))
@@ -93,7 +93,7 @@ class ConstraintToIdsLogicalConstraintTransformerTest {
     void verifyXoneConstraint() {
         when(context.transform(isA(IdsId.class), eq(URI.class))).thenReturn(URI.create("foo"));
         when(context.transform(isA(AtomicConstraint.class), eq(de.fraunhofer.iais.eis.Constraint.class)))
-                .thenReturn(new ConstraintBuilder().build());
+                .thenReturn(new IdsConstraintBuilder().build());
 
         var atomicConstraint = AtomicConstraint.Builder.newInstance()
                 .leftExpression(new LiteralExpression("1"))

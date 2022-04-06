@@ -1,3 +1,17 @@
+/*
+ *  Copyright (c) 2021 Microsoft Corporation
+ *
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Contributors:
+ *       Microsoft Corporation - Initial implementation
+ *
+ */
+
 package org.eclipse.dataspaceconnector.catalog.cache.query;
 
 import org.eclipse.dataspaceconnector.catalog.spi.NodeQueryAdapter;
@@ -34,11 +48,11 @@ public class IdsMultipartNodeQueryAdapter implements NodeQueryAdapter {
         return future.thenApply(catalog -> new UpdateResponse(getNodeUrl(updateRequest), catalog));
     }
 
-    // adds /api/ids/multipart if not already there
+    // adds /api/ids/data if not already there
     private String getNodeUrl(UpdateRequest updateRequest) {
         var url = updateRequest.getNodeUrl();
-        if (!url.endsWith("/api/ids/multipart")) {
-            url += "/api/ids/multipart";
+        if (!url.endsWith("/ids/data")) {
+            url += "/api/v1/ids/data";
         }
 
         return url;

@@ -1,3 +1,17 @@
+/*
+ *  Copyright (c) 2021 Microsoft Corporation
+ *
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Contributors:
+ *       Microsoft Corporation - Initial implementation
+ *
+ */
+
 package org.eclipse.dataspaceconnector.samples.identity.did;
 
 import org.eclipse.dataspaceconnector.iam.did.spi.document.DidDocument;
@@ -8,6 +22,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
@@ -87,6 +102,19 @@ public class InMemoryDidDocumentStore implements DidStore {
         @Override
         public int compareTo(Entity<T> other) {
             return createTime.compareTo(other.getCreateTime());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Entity<?> entity = (Entity<?>) o;
+            return createTime.equals(entity.createTime) && payload.equals(entity.payload);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(createTime, payload);
         }
     }
 }

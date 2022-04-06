@@ -11,6 +11,7 @@
  *       Microsoft Corporation - initial API and implementation
  *
  */
+
 package org.eclipse.dataspaceconnector.iam.did.spi.hub.message;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,7 +24,6 @@ public class CommitHeader {
     private String iss;
 
     public CommitHeader(@JsonProperty("iss") String iss) {
-        rev = rev;
         this.iss = iss;
     }
 

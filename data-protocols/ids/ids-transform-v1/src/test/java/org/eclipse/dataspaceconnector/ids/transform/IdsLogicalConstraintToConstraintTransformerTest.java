@@ -11,20 +11,20 @@
  *       Microsoft Corporation - initial API and implementation
  *
  */
+
 package org.eclipse.dataspaceconnector.ids.transform;
 
 import de.fraunhofer.iais.eis.BinaryOperator;
-import de.fraunhofer.iais.eis.ConstraintBuilder;
-import de.fraunhofer.iais.eis.LeftOperand;
 import de.fraunhofer.iais.eis.LogicalConstraintBuilder;
 import de.fraunhofer.iais.eis.util.RdfResource;
-import org.eclipse.dataspaceconnector.ids.spi.transform.TransformerContext;
+import org.eclipse.dataspaceconnector.ids.core.policy.IdsConstraintBuilder;
 import org.eclipse.dataspaceconnector.policy.model.AndConstraint;
 import org.eclipse.dataspaceconnector.policy.model.AtomicConstraint;
 import org.eclipse.dataspaceconnector.policy.model.Constraint;
 import org.eclipse.dataspaceconnector.policy.model.MultiplicityConstraint;
 import org.eclipse.dataspaceconnector.policy.model.OrConstraint;
 import org.eclipse.dataspaceconnector.policy.model.XoneConstraint;
+import org.eclipse.dataspaceconnector.spi.transformer.TransformerContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -44,10 +44,10 @@ class IdsLogicalConstraintToConstraintTransformerTest {
         when(context.transform(isA(de.fraunhofer.iais.eis.Constraint.class), eq(Constraint.class)))
                 .thenReturn(AtomicConstraint.Builder.newInstance().build());
 
-        var constraint = new ConstraintBuilder()
-                ._leftOperand_(LeftOperand.COUNT)
-                ._operator_(BinaryOperator.EQ)
-                ._rightOperand_(new RdfResource())
+        var constraint = new IdsConstraintBuilder()
+                .leftOperand("COUNT")
+                .operator(BinaryOperator.EQ)
+                .rightOperand(new RdfResource())
                 .build();
         var logicalConstraint = new LogicalConstraintBuilder()._and_(constraint).build();
 
@@ -64,10 +64,10 @@ class IdsLogicalConstraintToConstraintTransformerTest {
         when(context.transform(isA(de.fraunhofer.iais.eis.Constraint.class), eq(Constraint.class)))
                 .thenReturn(AtomicConstraint.Builder.newInstance().build());
 
-        var constraint = new ConstraintBuilder()
-                ._leftOperand_(LeftOperand.COUNT)
-                ._operator_(BinaryOperator.EQ)
-                ._rightOperand_(new RdfResource())
+        var constraint = new IdsConstraintBuilder()
+                .leftOperand("COUNT")
+                .operator(BinaryOperator.EQ)
+                .rightOperand(new RdfResource())
                 .build();
         var logicalConstraint = new LogicalConstraintBuilder()._or_(constraint).build();
 
@@ -84,10 +84,10 @@ class IdsLogicalConstraintToConstraintTransformerTest {
         when(context.transform(isA(de.fraunhofer.iais.eis.Constraint.class), eq(Constraint.class)))
                 .thenReturn(AtomicConstraint.Builder.newInstance().build());
 
-        var constraint = new ConstraintBuilder()
-                ._leftOperand_(LeftOperand.COUNT)
-                ._operator_(BinaryOperator.EQ)
-                ._rightOperand_(new RdfResource())
+        var constraint = new IdsConstraintBuilder()
+                .leftOperand("COUNT")
+                .operator(BinaryOperator.EQ)
+                .rightOperand(new RdfResource())
                 .build();
         var logicalConstraint = new LogicalConstraintBuilder()._xone_(constraint).build();
 

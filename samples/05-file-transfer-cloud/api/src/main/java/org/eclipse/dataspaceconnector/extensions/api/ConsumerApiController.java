@@ -1,3 +1,17 @@
+/*
+ *  Copyright (c) 2021 Microsoft Corporation
+ *
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Contributors:
+ *       Microsoft Corporation - Initial implementation
+ *
+ */
+
 package org.eclipse.dataspaceconnector.extensions.api;
 
 
@@ -15,7 +29,7 @@ import org.eclipse.dataspaceconnector.spi.transfer.TransferProcessManager;
 import org.eclipse.dataspaceconnector.spi.transfer.store.TransferProcessStore;
 import org.eclipse.dataspaceconnector.spi.types.domain.transfer.DataRequest;
 import org.eclipse.dataspaceconnector.spi.types.domain.transfer.TransferProcessStates;
-import org.eclipse.dataspaceconnector.transfer.core.command.commands.DeprovisionRequest;
+import org.eclipse.dataspaceconnector.spi.types.domain.transfer.command.DeprovisionRequest;
 
 import java.util.UUID;
 
@@ -87,7 +101,7 @@ public class ConsumerApiController {
         } catch (IllegalStateException ex) {
             monitor.severe(ex.getMessage());
             return Response.status(400).entity("The process must be in one of these states: " +
-                    String.join(", ", TransferProcessStates.IN_PROGRESS.name(), TransferProcessStates.REQUESTED_ACK.name(), TransferProcessStates.COMPLETED.name(), TransferProcessStates.STREAMING.name())).build();
+                    String.join(", ", TransferProcessStates.IN_PROGRESS.name(), TransferProcessStates.REQUESTED.name(), TransferProcessStates.COMPLETED.name(), TransferProcessStates.STREAMING.name())).build();
         }
     }
 

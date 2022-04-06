@@ -1,3 +1,17 @@
+/*
+ *  Copyright (c) 2021 Microsoft Corporation
+ *
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Contributors:
+ *       Microsoft Corporation - Initial implementation
+ *
+ */
+
 package org.eclipse.dataspaceconnector.api.observability;
 
 import org.eclipse.dataspaceconnector.spi.WebService;
@@ -14,14 +28,6 @@ public class ObservabilityApiExtension implements ServiceExtension {
     @Inject
     private HealthCheckService healthCheckService;
 
-    public ObservabilityApiExtension(WebService webServiceMock, HealthCheckService healthCheckService) {
-        webService = webServiceMock;
-        this.healthCheckService = healthCheckService;
-    }
-
-    public ObservabilityApiExtension() {
-    }
-
     @Override
     public String name() {
         return "Observability API";
@@ -31,7 +37,7 @@ public class ObservabilityApiExtension implements ServiceExtension {
     public void initialize(ServiceExtensionContext serviceExtensionContext) {
 
 
-        webService.registerController(new ObservabilityApiController(healthCheckService));
+        webService.registerResource(new ObservabilityApiController(healthCheckService));
 
         // contribute to the liveness probe
         healthCheckService.addReadinessProvider(() -> HealthCheckResult.Builder.newInstance().component("Observability API").build());

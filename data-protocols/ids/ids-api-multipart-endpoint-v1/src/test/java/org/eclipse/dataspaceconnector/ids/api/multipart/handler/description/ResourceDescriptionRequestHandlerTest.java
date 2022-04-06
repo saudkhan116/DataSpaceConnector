@@ -17,7 +17,7 @@ package org.eclipse.dataspaceconnector.ids.api.multipart.handler.description;
 import de.fraunhofer.iais.eis.DescriptionRequestMessage;
 import de.fraunhofer.iais.eis.Resource;
 import org.eclipse.dataspaceconnector.ids.spi.IdsType;
-import org.eclipse.dataspaceconnector.ids.spi.transform.TransformerRegistry;
+import org.eclipse.dataspaceconnector.ids.spi.transform.IdsTransformerRegistry;
 import org.eclipse.dataspaceconnector.ids.spi.types.container.OfferedAsset;
 import org.eclipse.dataspaceconnector.spi.asset.AssetIndex;
 import org.eclipse.dataspaceconnector.spi.contract.offer.ContractOfferQuery;
@@ -53,13 +53,12 @@ public class ResourceDescriptionRequestHandlerTest {
     private ResourceDescriptionRequestHandler resourceDescriptionRequestHandler;
 
     private Monitor monitor;
-    private TransformerRegistry transformerRegistry;
+    private IdsTransformerRegistry transformerRegistry;
     private DescriptionRequestMessage descriptionRequestMessage;
     private ContractOfferService contractOfferService;
     private AssetIndex assetIndex;
     private Resource resource;
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @BeforeEach
     public void setup() throws URISyntaxException {
         monitor = mock(Monitor.class);
@@ -91,13 +90,13 @@ public class ResourceDescriptionRequestHandlerTest {
 
     @Test
     public void testSimpleSuccessPath() {
-        var verificationResult = Result.success(ClaimToken.Builder.newInstance().build());
+        var claimToken = ClaimToken.Builder.newInstance().build();
         when(assetIndex.findById(anyString())).thenReturn(Asset.Builder.newInstance().build());
         var resourceResult = Result.success(resource);
         when(transformerRegistry.transform(isA(OfferedAsset.class), eq(Resource.class))).thenReturn(resourceResult);
         when(contractOfferService.queryContractOffers(isA(ContractOfferQuery.class))).thenReturn(Stream.empty());
 
-        var result = resourceDescriptionRequestHandler.handle(descriptionRequestMessage, verificationResult, null);
+        var result = resourceDescriptionRequestHandler.handle(descriptionRequestMessage, claimToken, null);
 
         assertNotNull(result);
         assertNotNull(result.getHeader());

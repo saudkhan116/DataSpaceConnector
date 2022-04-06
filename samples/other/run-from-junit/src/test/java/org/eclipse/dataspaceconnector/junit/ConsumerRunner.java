@@ -83,7 +83,7 @@ public class ConsumerRunner {
             TransferInitiateResult response = processManager.initiateConsumerRequest(usOrEuRequest);
             observable.registerListener(new TransferProcessListener() {
                 @Override
-                public void completed(TransferProcess process) {
+                public void preCompleted(TransferProcess process) {
                     if (process.getId().equals(response.getContent())) {
                         return;
                     }
@@ -93,12 +93,12 @@ public class ConsumerRunner {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    process.transitionDeprovisionRequested();
+                    process.transitionDeprovisioning();
                     store.update(process);
                 }
 
                 @Override
-                public void deprovisioned(TransferProcess process) {
+                public void preDeprovisioned(TransferProcess process) {
                     if (process.getId().equals(response.getContent())) {
                         return;
                     }
@@ -139,7 +139,7 @@ public class ConsumerRunner {
             TransferInitiateResult response = processManager.initiateConsumerRequest(usOrEuRequest);
             observable.registerListener(new TransferProcessListener() {
                 @Override
-                public void completed(TransferProcess process) {
+                public void preCompleted(TransferProcess process) {
                     if (process.getId().equals(response.getContent())) {
                         return;
                     }
@@ -149,12 +149,12 @@ public class ConsumerRunner {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    process.transitionDeprovisionRequested();
+                    process.transitionDeprovisioning();
                     store.update(process);
                 }
 
                 @Override
-                public void deprovisioned(TransferProcess process) {
+                public void preDeprovisioned(TransferProcess process) {
                     if (!process.getId().equals(response.getContent())) {
                         return;
                     }
@@ -192,7 +192,7 @@ public class ConsumerRunner {
             TransferInitiateResult response = processManager.initiateConsumerRequest(usOrEuRequest);
             observable.registerListener(new TransferProcessListener() {
                 @Override
-                public void completed(TransferProcess process) {
+                public void preCompleted(TransferProcess process) {
                     if (process.getId().equals(response.getContent())) {
                         return;
                     }
@@ -202,12 +202,12 @@ public class ConsumerRunner {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    process.transitionDeprovisionRequested();
+                    process.transitionDeprovisioning();
                     store.update(process);
                 }
 
                 @Override
-                public void deprovisioned(TransferProcess process) {
+                public void preDeprovisioned(TransferProcess process) {
                     if (process.getId().equals(response.getContent())) {
                         return;
                     }

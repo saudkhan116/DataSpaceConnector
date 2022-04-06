@@ -9,7 +9,7 @@
  *
  *  Contributors:
  *       Microsoft Corporation - initial API and implementation
- *       Fraunhofer Institute for Software and Systems Engineering
+ *       Fraunhofer Institute for Software and Systems Engineering - Improvements
  *
  */
 
@@ -25,22 +25,24 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import okhttp3.OkHttpClient;
+import org.eclipse.dataspaceconnector.common.token.JwtDecoratorRegistryImpl;
+import org.eclipse.dataspaceconnector.common.token.TokenGenerationService;
+import org.eclipse.dataspaceconnector.common.token.TokenValidationServiceImpl;
 import org.eclipse.dataspaceconnector.iam.oauth2.core.Oauth2Configuration;
-import org.eclipse.dataspaceconnector.iam.oauth2.core.jwt.JwtDecoratorRegistryImpl;
-import org.eclipse.dataspaceconnector.iam.oauth2.spi.PublicKeyResolver;
+import org.eclipse.dataspaceconnector.iam.oauth2.core.rule.Oauth2ValidationRulesRegistryImpl;
+import org.eclipse.dataspaceconnector.spi.iam.PublicKeyResolver;
 import org.eclipse.dataspaceconnector.spi.security.CertificateResolver;
 import org.eclipse.dataspaceconnector.spi.security.PrivateKeyResolver;
 import org.eclipse.dataspaceconnector.spi.types.TypeManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.dataspaceconnector.common.testfixtures.TestUtils.testOkHttpClient;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -58,14 +60,14 @@ class Oauth2ServiceImplTest {
 
     @BeforeEach
     void setUp() throws JOSEException {
-        RSAKey testKey = testKey();
+        var testKey = testKey();
 
         jwsSigner = new RSASSASigner(testKey.toPrivateKey());
-        PublicKeyResolver publicKeyResolverMock = mock(PublicKeyResolver.class);
-        PrivateKeyResolver privateKeyResolverMock = mock(PrivateKeyResolver.class);
-        CertificateResolver certificateResolverMock = mock(CertificateResolver.class);
-        when(publicKeyResolverMock.resolveKey(anyString())).thenReturn((RSAPublicKey) testKey.toPublicKey());
-        Oauth2Configuration configuration = Oauth2Configuration.Builder.newInstance()
+        var publicKeyResolverMock = mock(PublicKeyResolver.class);
+        var privateKeyResolverMock = mock(PrivateKeyResolver.class);
+        var certificateResolverMock = mock(CertificateResolver.class);
+        when(publicKeyResolverMock.resolveKey(anyString())).thenReturn(testKey.toPublicKey());
+        var configuration = Oauth2Configuration.Builder.newInstance()
                 .tokenUrl(TOKEN_URL)
                 .clientId(CLIENT_ID)
                 .privateKeyAlias(PRIVATE_KEY_ALIAS)
@@ -76,7 +78,10 @@ class Oauth2ServiceImplTest {
                 .identityProviderKeyResolver(publicKeyResolverMock)
                 .build();
 
-        authService = new Oauth2ServiceImpl(configuration, jwsSigner, new OkHttpClient.Builder().build(), new JwtDecoratorRegistryImpl(), new TypeManager());
+        var validationRulesRegistry = new Oauth2ValidationRulesRegistryImpl(configuration);
+        var tokenValidationService = new TokenValidationServiceImpl(publicKeyResolverMock, validationRulesRegistry);
+
+        authService = new Oauth2ServiceImpl(configuration, mock(TokenGenerationService.class), testOkHttpClient(), new JwtDecoratorRegistryImpl(), new TypeManager(), tokenValidationService);
     }
 
     @Test

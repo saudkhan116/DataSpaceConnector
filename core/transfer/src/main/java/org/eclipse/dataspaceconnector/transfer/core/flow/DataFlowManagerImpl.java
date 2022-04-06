@@ -14,6 +14,8 @@
 
 package org.eclipse.dataspaceconnector.transfer.core.flow;
 
+import io.opentelemetry.extension.annotations.WithSpan;
+import org.eclipse.dataspaceconnector.policy.model.Policy;
 import org.eclipse.dataspaceconnector.spi.transfer.flow.DataFlowController;
 import org.eclipse.dataspaceconnector.spi.transfer.flow.DataFlowInitiateResult;
 import org.eclipse.dataspaceconnector.spi.transfer.flow.DataFlowManager;
@@ -38,14 +40,15 @@ public class DataFlowManagerImpl implements DataFlowManager {
         controllers.add(controller);
     }
 
+    @WithSpan
     @Override
-    public @NotNull DataFlowInitiateResult initiate(DataRequest dataRequest) {
+    public @NotNull DataFlowInitiateResult initiate(DataRequest dataRequest, Policy policy) {
         try {
             return controllers.stream()
                     .filter(controller -> controller.canHandle(dataRequest))
                     .findFirst()
-                    .map(controller -> controller.initiateFlow(dataRequest))
-                    .orElseGet(() -> failure(FATAL_ERROR, controllerNotFounda(dataRequest.getId())));
+                    .map(controller -> controller.initiateFlow(dataRequest, policy))
+                    .orElseGet(() -> failure(FATAL_ERROR, controllerNotFound(dataRequest.getId())));
         } catch (Exception e) {
             return failure(FATAL_ERROR, runtimeException(dataRequest.getId(), e.getLocalizedMessage()));
         }
@@ -55,7 +58,7 @@ public class DataFlowManagerImpl implements DataFlowManager {
         return format("Unable to process data request %s. Data flow controller throws an exception: %s", id, message);
     }
 
-    private String controllerNotFounda(String id) {
+    private String controllerNotFound(String id) {
         return format("Unable to process data request %s. No data flow controller found", id);
     }
 

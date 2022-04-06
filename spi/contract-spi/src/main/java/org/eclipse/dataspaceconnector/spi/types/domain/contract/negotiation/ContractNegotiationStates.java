@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2021 Microsoft Corporation
+ *  Copyright (c) 2021 - 2022 Microsoft Corporation
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Apache License, Version 2.0 which is available at
@@ -10,8 +10,10 @@
  *  Contributors:
  *       Microsoft Corporation - initial API and implementation
  *       Fraunhofer Institute for Software and Systems Engineering - minor modifications
+ *       Bayerische Motoren Werke Aktiengesellschaft (BMW AG) - improvements
  *
  */
+
 package org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation;
 
 import java.util.Arrays;
@@ -34,7 +36,6 @@ public enum ContractNegotiationStates {
     DECLINING(900),
     DECLINED(1000),
     CONFIRMING(1100),
-    CONFIRMING_SENT(1150),
     CONFIRMED(1200),
     ERROR(-1);
 

@@ -15,14 +15,30 @@
 package org.eclipse.dataspaceconnector.core;
 
 import net.jodah.failsafe.RetryPolicy;
+import okhttp3.EventListener;
 import okhttp3.OkHttpClient;
+import org.eclipse.dataspaceconnector.core.base.CommandHandlerRegistryImpl;
 import org.eclipse.dataspaceconnector.core.base.RemoteMessageDispatcherRegistryImpl;
+import org.eclipse.dataspaceconnector.core.base.agent.ParticipantAgentServiceImpl;
+import org.eclipse.dataspaceconnector.core.base.policy.PolicyEngineImpl;
+import org.eclipse.dataspaceconnector.core.base.policy.RuleBindingRegistryImpl;
+import org.eclipse.dataspaceconnector.core.base.policy.ScopeFilter;
 import org.eclipse.dataspaceconnector.core.health.HealthCheckServiceConfiguration;
 import org.eclipse.dataspaceconnector.core.health.HealthCheckServiceImpl;
+import org.eclipse.dataspaceconnector.policy.model.PolicyRegistrationTypes;
 import org.eclipse.dataspaceconnector.spi.EdcException;
 import org.eclipse.dataspaceconnector.spi.EdcSetting;
+import org.eclipse.dataspaceconnector.spi.agent.ParticipantAgentService;
+import org.eclipse.dataspaceconnector.spi.command.CommandHandlerRegistry;
 import org.eclipse.dataspaceconnector.spi.message.RemoteMessageDispatcherRegistry;
+import org.eclipse.dataspaceconnector.spi.policy.PolicyEngine;
+import org.eclipse.dataspaceconnector.spi.policy.RuleBindingRegistry;
 import org.eclipse.dataspaceconnector.spi.security.PrivateKeyResolver;
+import org.eclipse.dataspaceconnector.spi.system.BaseExtension;
+import org.eclipse.dataspaceconnector.spi.system.ExecutorInstrumentation;
+import org.eclipse.dataspaceconnector.spi.system.ExecutorInstrumentationImplementation;
+import org.eclipse.dataspaceconnector.spi.system.Hostname;
+import org.eclipse.dataspaceconnector.spi.system.Inject;
 import org.eclipse.dataspaceconnector.spi.system.Provides;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtension;
 import org.eclipse.dataspaceconnector.spi.system.ServiceExtensionContext;
@@ -36,10 +52,24 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Optional.ofNullable;
+
+
 @BaseExtension
-@Provides({RetryPolicy.class, HealthCheckService.class, OkHttpClient.class, RemoteMessageDispatcherRegistry.class})
+@Provides({
+        HealthCheckService.class,
+        Hostname.class,
+        OkHttpClient.class,
+        ParticipantAgentService.class,
+        PolicyEngine.class,
+        RemoteMessageDispatcherRegistry.class,
+        RetryPolicy.class,
+        RuleBindingRegistry.class,
+        ExecutorInstrumentation.class,
+})
 public class CoreServicesExtension implements ServiceExtension {
 
     @EdcSetting
@@ -56,9 +86,25 @@ public class CoreServicesExtension implements ServiceExtension {
     public static final String READINESS_PERIOD_SECONDS_SETTING = "edc.core.system.health.check.readiness-period";
     @EdcSetting
     public static final String THREADPOOL_SIZE_SETTING = "edc.core.system.health.check.threadpool-size";
+    @EdcSetting
+    public static final String HOSTNAME_SETTING = "edc.hostname";
 
     private static final long DEFAULT_DURATION = 60;
     private static final int DEFAULT_TP_SIZE = 3;
+    private static final String DEFAULT_HOSTNAME = "localhost";
+
+    /**
+     * An optional OkHttp {@link EventListener} that can be used to instrument OkHttp client for collecting metrics.
+     * Used by the optional {@code micrometer} module.
+     */
+    @Inject(required = false)
+    private EventListener okHttpEventListener;
+    /**
+     * An optional instrumentor for {@link ExecutorService}. Used by the optional {@code micrometer} module.
+     */
+    @Inject(required = false)
+    private ExecutorInstrumentationImplementation executorInstrumentationImplementation;
+
     private HealthCheckServiceImpl healthCheckService;
 
     @Override
@@ -71,15 +117,34 @@ public class CoreServicesExtension implements ServiceExtension {
         addHttpClient(context);
         addRetryPolicy(context);
         registerParser(context);
+        var executorInstrumentation = registerExecutorInstrumentation(context);
         var config = getHealthCheckConfig(context);
 
         // health check service
-        healthCheckService = new HealthCheckServiceImpl(config);
+        healthCheckService = new HealthCheckServiceImpl(config, executorInstrumentation);
         context.registerService(HealthCheckService.class, healthCheckService);
 
         // remote message dispatcher registry
         var dispatcherRegistry = new RemoteMessageDispatcherRegistryImpl();
         context.registerService(RemoteMessageDispatcherRegistry.class, dispatcherRegistry);
+
+        context.registerService(CommandHandlerRegistry.class, new CommandHandlerRegistryImpl());
+
+        var agentService = new ParticipantAgentServiceImpl();
+        context.registerService(ParticipantAgentService.class, agentService);
+
+        var bindingRegistry = new RuleBindingRegistryImpl();
+        context.registerService(RuleBindingRegistry.class, bindingRegistry);
+
+        var scopeFilter = new ScopeFilter(bindingRegistry);
+
+        var typeManager = context.getTypeManager();
+        PolicyRegistrationTypes.TYPES.forEach(typeManager::registerTypes);
+
+        var policyEngine = new PolicyEngineImpl(scopeFilter);
+        context.registerService(PolicyEngine.class, policyEngine);
+
+        registerHostname(context);
     }
 
     @Override
@@ -102,6 +167,14 @@ public class CoreServicesExtension implements ServiceExtension {
                 .readinessPeriod(Duration.ofSeconds(context.getSetting(READINESS_PERIOD_SECONDS_SETTING, DEFAULT_DURATION)))
                 .threadPoolSize(context.getSetting(THREADPOOL_SIZE_SETTING, DEFAULT_TP_SIZE))
                 .build();
+    }
+
+    private void registerHostname(ServiceExtensionContext context) {
+        var hostname = context.getSetting(HOSTNAME_SETTING, DEFAULT_HOSTNAME);
+        if (DEFAULT_HOSTNAME.equals(hostname)) {
+            context.getMonitor().warning(String.format("Settings: No setting found for key '%s'. Using default value '%s'", HOSTNAME_SETTING, DEFAULT_HOSTNAME));
+        }
+        context.registerService(Hostname.class, () -> hostname);
     }
 
     private void registerParser(ServiceExtensionContext context) {
@@ -131,11 +204,22 @@ public class CoreServicesExtension implements ServiceExtension {
     }
 
     private void addHttpClient(ServiceExtensionContext context) {
-        OkHttpClient client = new OkHttpClient.Builder()
+        var builder = new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .build();
+                .readTimeout(30, TimeUnit.SECONDS);
+
+        ofNullable(okHttpEventListener).ifPresent(builder::eventListener);
+
+        var client = builder.build();
 
         context.registerService(OkHttpClient.class, client);
+    }
+
+    private ExecutorInstrumentation registerExecutorInstrumentation(ServiceExtensionContext context) {
+        var executorInstrumentation = ofNullable((ExecutorInstrumentation) this.executorInstrumentationImplementation)
+                .orElse(ExecutorInstrumentation.noop());
+        // Register ExecutorImplementation with default noop implementation if none available
+        context.registerService(ExecutorInstrumentation.class, executorInstrumentation);
+        return executorInstrumentation;
     }
 }

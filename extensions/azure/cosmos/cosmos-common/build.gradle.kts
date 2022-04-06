@@ -14,18 +14,23 @@
 
 plugins {
     `java-library`
+    `java-test-fixtures`
 }
 
 val cosmosSdkVersion: String by project
+val jodahFailsafeVersion: String by project
 
 dependencies {
     api(project(":spi"))
     api(project(":common:util"))
-    api(project(":core:base"))
+
     implementation("com.azure:azure-cosmos:${cosmosSdkVersion}")
+    implementation("net.jodah:failsafe:${jodahFailsafeVersion}")
 
     testImplementation(testFixtures(project(":common:util")))
+    testImplementation(testFixtures(project(":extensions:azure:azure-test")))
 
+    testFixturesImplementation("com.azure:azure-cosmos:${cosmosSdkVersion}")
 }
 
 
