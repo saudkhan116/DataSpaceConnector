@@ -4,10 +4,11 @@
 	"role": "Recycler",
 	"providerRegion": "Stuttgart South",
 	"batteries": [{
-		"id": "RC-01",
-		"name": "RC-01",
+		"id": "test-battery-2",
+		"name": "test-battery 2",
 		"type": "car battery"
-	}],
-	"providerConnector": "",
+	}	
+	],
+	"providerConnector": "http://localhost:8282/api/v1/ids/data",
 	"contractOffers": []
 }

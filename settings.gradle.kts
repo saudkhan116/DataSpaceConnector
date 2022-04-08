@@ -146,9 +146,13 @@ include(":extensions:sql:asset:index")
 include(":extensions:sql:transfer-process-store")
 include(":extensions:http-receiver")
 include(":extensions:http-provisioner")
+include(":extensions:transfer-file")
+
 
 // modules for launchers, i.e. runnable compositions of the app
 include(":launchers:basic")
+include(":launchers:consumer-connector")
+include(":launchers:provider-connector")
 include(":launchers:junit")
 include(":launchers:test")
 include(":launchers:ids-connector")
@@ -187,12 +191,9 @@ include(":samples:04.0-file-transfer:consumer")
 include(":samples:04.0-file-transfer:provider")
 include(":samples:04.0-file-transfer:api")
 include(":samples:04.0-file-transfer:transfer-file")
-<<<<<<< HEAD
 include(":samples:04.0-file-transfer:listener")
 include(":samples:04.0-file-transfer:materialpass.webclient")
 include(":samples:04.0-file-transfer:integration-tests")
-=======
->>>>>>> 1870f326ab35605703b90638556d6dce68220c1a
 
 include(":samples:04.1-file-transfer-listener:consumer")
 include(":samples:04.1-file-transfer-listener:listener")

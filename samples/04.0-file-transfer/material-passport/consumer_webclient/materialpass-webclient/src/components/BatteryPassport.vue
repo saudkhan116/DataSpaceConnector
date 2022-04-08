@@ -95,7 +95,7 @@
     <span class="sr-only"></span>
   </div>
   <br />
-  <div class="h5">{{contractStatus}}</div>
+  <div class="h5">{{currentStatus}}</div>
 </div>
 </template>
 
@@ -114,10 +114,12 @@ export default {
       selectedProvider:'',
       selectedBattery:'',
       selectedContract:'',
-      contractStatus: '',
+      currentStatus: '',
+      uuid: '',
+      contractId:'',
+      isLoading:'',
       isDisabled: false,
       isPassportVisible: false,
-      isLoading:'',
       errors: []
     }
   },
@@ -168,34 +170,43 @@ export default {
       }
     },
     async doTransferData(){
-      const destinationPath = 'C:/Users/muhammadsaud.khan/Documents/Workspace/MP-CatenaX/DataSpaceConnector/samples/04.0-file-transfer/data'
-      var contractId = ''
+      const destinationPath = 'C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/data'
 
       // Do contract negotiation //
-      var uuid = await this.negotiateContract()
-      if (uuid != null)
-        this.contractStatus = "Contract negotiated successfully..."
-      else
-        this.contractStatus = "Something went wrong in contract negotiation process..."
+      // If contract is already negotiated in previous calls then no need to send API calls again //
+      alert(this.uuid)
+      if (this.uuid == ''){
+        this.uuid = await this.negotiateContract()
+        
+        if (this.uuid != ''){
+          this.currentStatus = "Contract negotiated successfully..."
+          
+          // Check agreement status //
+          // Status: INITIAL, REQUESTED, CONFIRMED
+          // first call to get the initial status
+          var data = await this.getAgreementId(this.uuid)
+          if (data == "rejected")
+            return;
+          else
+            this.contractId = data.contractAgreementId
 
-      // Check agreement status //
-      // Status: INITIAL, REQUESTED, CONFIRMED
-      // first call to get the initial status
-      var data = await this.getAgreementId(uuid)
-      if (data == "rejected")
-        return;
-
-      // TODO - Include loading bar to get the status
-
-      // Check the agreement status until it is of status CONFIRMED
-      while(data.status != "CONFIRMED"){        
-        data = await this.getAgreementId(uuid)
-        // setTimeout(
-        //   function(){console.log("Wait for 5 seconds...")},
-        //   5000);
-        this.contractStatus = "Agreement status: " + data.status + "..."
-        console.log(data.status + '_' + data.contractAgreementId)
-        contractId = data.contractAgreementId
+          // Check the agreement status until it is of status CONFIRMED
+          while(data.status != "CONFIRMED"){        
+            data = await this.getAgreementId(this.uuid)
+            // setTimeout(
+            //   function(){console.log("Wait for 5 seconds...")},
+            //   5000);
+            this.currentStatus = "Agreement status: " + data.status + "..."
+            console.log(data.status + '_' + data.contractAgreementId)
+            this.contractId = data.contractAgreementId
+          }
+        }
+        else{
+          this.currentStatus = "Something went wrong in contract negotiation step..."
+        }
+      }
+      else{
+        this.currentStatus = "Contract is already negotiated..."
       }
       
       // Initiate transfer request //
@@ -206,13 +217,12 @@ export default {
         asset = "test-document_dismantler"
       else
         asset = "test-document_oem"
-
-      var res = await this.getProductPassport(asset, destinationPath, contractId)
+      var res = await this.getProductPassport(asset, destinationPath, this.contractId)
       console.log(res)
       if (res == null)
-        this.contractStatus = "Something went wrong in finalizing product process..."
+        this.currentStatus = "Something went wrong in finalizing product process..."
       else {
-        this.contractStatus = "Finalizing product passport..."
+        this.currentStatus = "Finalizing product passport..."
 
         // Display the product passport //
         var productPass = await this.displayProductPassport(asset+ '.json')
@@ -226,7 +236,7 @@ export default {
     negotiateContract(){
 
       // TODO dynamic contractoffer file name
-       let contractOffer = require('C:/Users/muhammadsaud.khan/Documents/Workspace/MP-CatenaX/DataSpaceConnector/samples/04.0-file-transfer/registry/contractoffers/' + this.selectedContract);
+       let contractOffer = require('C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/registry/contractoffers/' + this.selectedContract);
        //let contractOffer = require('../assets/12345_contractoffer.json');
         //var contractOffer = $JSON.parse('../../../../MP-CatenaX/DataSpaceConnector/samples/04.0-file-transfer/registry/12345_contractoffer.json');
         //console.log(contractOffer)
@@ -252,8 +262,8 @@ export default {
             'X-Api-Key': 'password'
           }})
         .then((response) => {
-          console.log(response.data)
-          this.contractStatus = response.data.status
+          console.log('Agreement Id: ' + response.data.status)
+          this.currentStatus = 'Agreement status: ' + response.data.status
           resolve(response.data);
         })
         .catch((e) => {
@@ -266,7 +276,7 @@ export default {
     
     return new Promise(resolve => {
 
-      axios.post('/api/file/' + asset + '?connectorAddress=http://localhost:8181/api/ids/multipart&destination=' + destinationPath + '&contractId=' + contractId)
+      axios.post('/api/file/' + asset + '?connectorAddress=http://localhost:8282/api/v1/ids/data&destination=' + destinationPath + '/' + asset + '.json&contractId=' + contractId)
         .then((response) => {
           console.log(response.data)
           resolve(response.data);

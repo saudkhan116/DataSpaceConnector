@@ -1,3 +1,17 @@
+/*
+ *  Copyright (c) 2021 Microsoft Corporation
+ *
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Contributors:
+ *       Microsoft Corporation - Initial implementation
+ *
+ */
+
 package org.eclipse.dataspaceconnector.extensions.listener;
 
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
@@ -7,8 +21,6 @@ import org.eclipse.dataspaceconnector.spi.types.domain.transfer.TransferProcess;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.sql.Timestamp;
 
 import static java.lang.String.format;
 
@@ -21,12 +33,12 @@ public class MarkerFileCreator implements TransferProcessListener {
     }
 
     /**
-     * Callback invoked by the EDC framework when a transfer has completed.
+     * Callback invoked by the EDC framework when a transfer is about to be completed.
      *
-     * @param process the transfer process that has completed.
+     * @param process the transfer process that is about to be completed.
      */
     @Override
-    public void completed(final TransferProcess process) {
+    public void preCompleted(final TransferProcess process) {
         Path path = Path.of(process.getDataRequest().getDataDestination().getProperty("path"));
         if (!Files.isDirectory(path)) {
             path = path.getParent();
@@ -34,8 +46,7 @@ public class MarkerFileCreator implements TransferProcessListener {
         path = path.resolve("marker.txt");
 
         try {
-        	Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            Files.writeString(path, timestamp +" : File transfer complete for the " + process.getDataRequest().getAssetId() + "\n",StandardOpenOption.APPEND);
+            Files.writeString(path, "Transfer complete");
             monitor.info(format("Transfer Listener successfully wrote file %s", path));
         } catch (IOException e) {
             monitor.warning(format("Could not write file %s", path), e);

@@ -8,7 +8,7 @@
 		"name": "test-battery",
 		"type": "car battery"
 	}],
-	"providerConnector": "http://localhost:8181/api/ids/multipart",
+	"providerConnector": "http://localhost:8282/api/v1/ids/data",
 	"contractOffers": [
 			"test-battery_contractoffer"
 	]
