@@ -51,6 +51,22 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.dataspaceconnector.spi.contract.negotiation.ConsumerContractNegotiationManager;
+import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
+import org.eclipse.dataspaceconnector.spi.transfer.TransferProcessManager;
+import org.eclipse.dataspaceconnector.spi.transfer.store.TransferProcessStore;
+import org.eclipse.dataspaceconnector.spi.types.domain.DataAddress;
+import org.eclipse.dataspaceconnector.spi.types.domain.contract.negotiation.ContractOfferRequest;
+import org.eclipse.dataspaceconnector.spi.types.domain.contract.offer.ContractOffer;
+import org.eclipse.dataspaceconnector.spi.types.domain.transfer.DataRequest;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static java.lang.String.format;
+import static org.eclipse.dataspaceconnector.spi.response.ResponseStatus.FATAL_ERROR;
 
 @Consumes({MediaType.APPLICATION_JSON})
 @Produces({MediaType.APPLICATION_JSON})
@@ -90,8 +106,7 @@ public class ConsumerApiController {
                 .build();
 
         var result = consumerNegotiationManager.initiate(contractOfferRequest);
-        if (result.failed() &&
-                result.getFailure().getStatus() == NegotiationResult.Status.FATAL_ERROR) {
+        if (result.fatalError()) {
             return Response.serverError().build();
         }
 
@@ -138,10 +153,10 @@ public class ConsumerApiController {
                         Response.status(NOT_FOUND).build()
                 );
     }
-    
+
     @GET
     @Path("provider/metadata/{selectedProvider}")
-    @Produces(MediaType.APPLICATION_JSON) 
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getProviderAccessInformation(@PathParam("selectedProvider") String selectedProvider,
     		                                     @QueryParam("role") String role) {
 
@@ -151,7 +166,7 @@ public class ConsumerApiController {
         }
         String currentDir = System.getProperty("user.dir") + METADATA_PATH;
         String filename = currentDir + "/" + selectedProvider + "_" + role + ".json";
-        ProviderMetadata metadata = new ProviderMetadata(); 
+        ProviderMetadata metadata = new ProviderMetadata();
         result = readFile(filename);
         //getJsonData(metadata, filename);
         if (result == "")
@@ -159,27 +174,27 @@ public class ConsumerApiController {
         else
             return Response.ok(result).build();
     }
-    
+
     @GET
     @Path("/")
     public Response helloWorld() {
 
         return Response.ok("Hello World..!!").build();
-        
+
     }
-    
+
     @GET
     @Path("/login")
     public Response isUserAuthenticated() {
 
         return Response.ok("User has been authenticated successfully..!!").build();
-        
+
     }
-    
+
     @GET
     @Path("passport/display/{filename}")
     public Response printProductPassport(@PathParam("filename") String filename) {
-    	
+
     	 String result = "";
     	if (filename == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -187,11 +202,11 @@ public class ConsumerApiController {
         String filePath = System.getProperty("user.dir") + DATA_PATH + "/" + filename;
         result = readFile(filePath);
         return Response.ok(result).build();
-        
+
     }
 
     private String getJsonData(Object object, String filename) {
-    	
+
     	String result = "";
     	ObjectMapper objectMapper = new ObjectMapper();
     	File file = new File(filename);
@@ -211,18 +226,18 @@ public class ConsumerApiController {
     			ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
                 result = objectWriter.writeValueAsString(batteryPass);
     		}
-            
+
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Something went wrong..!!");
         }
-    	
+
     	return result;
     }
-    
-    
+
+
     private String readFile(String filename) {
-    	
+
     	String result = "";
     	try
     	 {

@@ -8,6 +8,10 @@ on:
       - '**.md'
       - 'docs/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   Checkstyle:
     runs-on: ubuntu-latest
@@ -72,12 +76,6 @@ jobs:
 
       - name: CodeCov
         uses: codecov/codecov-action@v2
-
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: Gatling reports
-          path: '**/build/reports/gatling/**'
 
   Sanity-Check:
     runs-on: ubuntu-latest

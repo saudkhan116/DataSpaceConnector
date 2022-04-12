@@ -18,15 +18,8 @@ import org.eclipse.dataspaceconnector.dataloading.AssetLoader;
 import org.eclipse.dataspaceconnector.dataplane.spi.pipeline.DataTransferExecutorServiceContainer;
 import org.eclipse.dataspaceconnector.dataplane.spi.pipeline.PipelineService;
 import org.eclipse.dataspaceconnector.policy.model.Action;
-import org.eclipse.dataspaceconnector.policy.model.AtomicConstraint;
-import org.eclipse.dataspaceconnector.policy.model.Constraint;
-import org.eclipse.dataspaceconnector.policy.model.Expression;
-import org.eclipse.dataspaceconnector.policy.model.LiteralExpression;
-import org.eclipse.dataspaceconnector.policy.model.Operator;
 import org.eclipse.dataspaceconnector.policy.model.Permission;
 import org.eclipse.dataspaceconnector.policy.model.Policy;
-import org.eclipse.dataspaceconnector.policy.model.Prohibition;
-import org.eclipse.dataspaceconnector.policy.model.Expression.Visitor;
 import org.eclipse.dataspaceconnector.spi.asset.AssetSelectorExpression;
 import org.eclipse.dataspaceconnector.spi.contract.offer.store.ContractDefinitionStore;
 import org.eclipse.dataspaceconnector.spi.system.Inject;
@@ -61,104 +54,51 @@ public class FileTransferExtension implements ServiceExtension {
         var sinkFactory = new FileTransferDataSinkFactory(monitor, executorContainer.getExecutorService(), 5);
         pipelineService.registerFactory(sinkFactory);
 
-        var policy = createPolicy("test-document_dismantler");
-        var policy2 = createPolicy("test-document_oem");
+        var policy = createPolicy();
 
         registerDataEntries(context);
-        registerContractDefinition(policy, policy2);
+        registerContractDefinition(policy);
 
         context.getMonitor().info("File Transfer Extension initialized!");
     }
 
-    private Policy createPolicy(String target) {
+    private Policy createPolicy() {
 
-//    	var atomicConstraint = AtomicConstraint.Builder.newInstance().
-//    			leftExpression(new LiteralExpression("passportNumber")).
-//    			rightExpression(new LiteralExpression("12345")).
-//    			operator(Operator.EQ).build();
-    	
-//        var usePermission = Permission.Builder.newInstance()
-//                .action(Action.Builder.newInstance().type("idsc:USE").constraint(atomicConstraint).build())
-//                .build();
-    	
         var usePermission = Permission.Builder.newInstance()
                 .action(Action.Builder.newInstance().type("USE").build())
                 .build();
-        
-//        var useProhibition = Prohibition.Builder.newInstance()
-//                .action(Action.Builder.newInstance().type("idsc:USE").build())
-//                .build();
 
         return Policy.Builder.newInstance()
                 .id(USE_POLICY)
                 .permission(usePermission)
-                .target(target)
                 .build();
-        
-//        return Policy.Builder.newInstance()
-//                .id(USE_POLICY)
-//                .prohibition(useProhibition)
-//                .target("test-document")
-//                .build();
     }
 
     private void registerDataEntries(ServiceExtensionContext context) {
-        String assetPathSetting = context.getSetting(EDC_ASSET_PATH, "/tmp/provider/test-document_dismantler.json");
-        Path assetPath = Path.of(assetPathSetting);
+        var assetPathSetting = context.getSetting(EDC_ASSET_PATH, "/tmp/provider/test-document.txt");
+        var assetPath = Path.of(assetPathSetting);
 
         var dataAddress = DataAddress.Builder.newInstance()
                 .property("type", "File")
-                .property("path", assetPath.toString())
-                .property("filename", "test-document_dismantler.json")
+                .property("path", assetPath.getParent().toString())
+                .property("filename", assetPath.getFileName().toString())
                 .build();
-        
-//        .property("path", assetPath.getParent().toString())
-//      .property("filename", assetPath.getFileName().toString())
 
-
-        String assetId = "test-document_dismantler";
-        Asset asset = Asset.Builder.newInstance().id(assetId).build();
+        var assetId = "test-document";
+        var asset = Asset.Builder.newInstance().id(assetId).build();
 
         loader.accept(asset, dataAddress);
-        
-        DataAddress dataAddress2 = DataAddress.Builder.newInstance()
-                .property("type", "File")
-                .property("path", assetPath.toString())
-                .property("filename", "test-document_oem.json")
-                .build();
-
-//        .property("path", assetPath.getParent().toString())
-//        .property("filename", assetPath.getFileName().toString())
-
-        String assetId2 = "test-document_oem";
-        Asset asset2 = Asset.Builder.newInstance().id(assetId2).build();
-        
-        loader.accept(asset2, dataAddress2);
     }
 
-    private void registerContractDefinition(Policy policy, Policy policy2) {
+    private void registerContractDefinition(Policy policy) {
 
-//        ContractDefinition contractDefinition = ContractDefinition.Builder.newInstance()
-//                .id("1")
-//                .accessPolicy(policy)
-//                .contractPolicy(policy)
-//                .selectorExpression(AssetSelectorExpression.Builder.newInstance().whenEquals(Asset.PROPERTY_ID, "test-document").constraint("passportNumber", "=","12345").build())
-//                .build();
-        ContractDefinition contractDefinition = ContractDefinition.Builder.newInstance()
+        var contractDefinition = ContractDefinition.Builder.newInstance()
                 .id("1")
                 .accessPolicy(policy)
                 .contractPolicy(policy)
-                .selectorExpression(AssetSelectorExpression.Builder.newInstance().whenEquals(Asset.PROPERTY_ID, "test-document_dismantler").build())
-                .build();
-        
-        ContractDefinition contractDefinition2 = ContractDefinition.Builder.newInstance()
-                .id("2")
-                .accessPolicy(policy2)
-                .contractPolicy(policy2)
-                .selectorExpression(AssetSelectorExpression.Builder.newInstance().whenEquals(Asset.PROPERTY_ID, "test-document_oem").build())
+                .selectorExpression(AssetSelectorExpression.Builder.newInstance().whenEquals(Asset.PROPERTY_ID, "test-document").build())
                 .build();
 
         contractStore.save(contractDefinition);
-        contractStore.save(contractDefinition2);
     }
 }
