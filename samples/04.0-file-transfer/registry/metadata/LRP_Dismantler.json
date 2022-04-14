@@ -4,13 +4,13 @@
 	"role": "Dismantler",
 	"providerRegion": "Munich",
 	"batteries": [{
-		"id": "test-battery-1",
-		"name": "test-battery 1",
+		"id": "test-battery-2",
+		"name": "test-battery 2",
 		"type": "car battery"
 	}
 	],
 	"providerConnector": "http://localhost:8282/api/v1/ids/data",
 	"contractOffers": [
-		"test-battery-1_dismantler"
+		"test-battery-2_dismantler"
 	]
 }

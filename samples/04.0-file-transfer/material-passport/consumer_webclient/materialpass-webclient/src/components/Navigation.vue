@@ -10,6 +10,9 @@
             <a class="nav-link active" href="#">Home</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="#" v-on:click="scanQRCode">Scan QRCode</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="#">About</a>
           </li>
           <li class="nav-item">
@@ -40,6 +43,9 @@ export default {
       logout(){
           localStorage.clear();
           this.$router.push({ name: "Login" });
+      },
+      scanQRCode(){
+          this.$router.push({ name: "ScanPassport" });
       }
   },
    mounted() {

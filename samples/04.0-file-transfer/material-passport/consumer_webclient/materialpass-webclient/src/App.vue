@@ -13,7 +13,7 @@
 
 <script>
 // import ProviderDropdown from './components/ProviderDropdown.vue'
-import Login from './components/Login.vue'
+// import Login from './components/Login.vue'
 
 
 export default {
@@ -72,7 +72,7 @@ body{
 }
 
 .logo {
-  width: 200px;
+  width: 150px;
 }
 
 .btn-login{

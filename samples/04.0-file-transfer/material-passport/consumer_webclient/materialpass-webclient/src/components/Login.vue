@@ -35,6 +35,8 @@
         <span> <router-link to="/sign-up">Sign Up</router-link></span>
         <span> | </span>
         <span> <router-link to="#">Forgot Password</router-link></span>
+        <span> | </span>
+        <span> <router-link to="/api/scanpassport">Scan QR Code</router-link></span>
       </p>
     </div>
   </div>

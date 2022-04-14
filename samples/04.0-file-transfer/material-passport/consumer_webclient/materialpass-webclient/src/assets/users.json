@@ -2,44 +2,50 @@
   "users": [
     {
       "name": "BASF_user",
-      "email": "user1@basf.de",
+      "email": "mustermann@basf.de",
       "role": "Raw Material Supplier",
-      "password": "basf",
+      "password": "mustermann",
       "id": 1
     },
     {
       "name": "BMW_user",
-      "email": "user2@bmw.de",
+      "email": "mustermann@bmw.de",
       "role": "OEM",
-      "password": "bmw",
+      "password": "mustermann",
       "id": 2
     },
     {
       "name": "Tech4u_user",
-      "email": "user3@tech4u.de",
+      "email": "mustermann@tech4u.de",
       "role": "Recycler",
-      "password": "tech4u",
+      "password": "mustermann",
       "id": 3
     },
     {
       "email": "john@abc.com",
       "password": "john",
-	  "role": "Recycler",
+      "role": "Recycler",
       "name": "John Doe",
       "id": 4
     },
     {
-      "email": "musterman@cgi.de",
-      "password": "cgi",
-      "name": "musterman",
+      "email": "mustermann@cgi.de",
+      "password": "mustermann",
+      "name": "mustermann",
       "id": 5
     },
     {
-      "email": "musterman@lrp.de",
-      "password": "lrp",
-	  "role": "Dismantler",
-      "name": "lrp",
+      "email": "mustermann@lrp.de",
+      "password": "mustermann",
+      "role": "Dismantler",
+      "name": "mustermann",
       "id": 6
+    },
+    {
+      "email": "",
+      "password": "",
+      "name": "",
+      "id": 7
     }
   ]
 }

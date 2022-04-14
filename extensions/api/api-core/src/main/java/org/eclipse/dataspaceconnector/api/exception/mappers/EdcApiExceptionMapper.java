@@ -49,10 +49,6 @@ public class EdcApiExceptionMapper implements ExceptionMapper<Throwable> {
         );
     }
 
-    public EdcApiExceptionMapper(Map<Class<? extends Throwable>, Integer> exceptionMap) {
-        this.exceptionMap = exceptionMap;
-    }
-
     @Override
     public Response toResponse(Throwable exception) {
         if (exception instanceof WebApplicationException) {
