@@ -80,36 +80,9 @@ public class ConsumerApiController {
     private static final String DATA_PATH = "/samples/04.0-file-transfer/data";
     private static final String METADATA_PATH = REGISTRY_PATH + "/metadata";
 
-    public ConsumerApiController(Monitor monitor, TransferProcessManager processManager,
-                                 ConsumerContractNegotiationManager consumerNegotiationManager, TransferProcessStore transferProcessStore) {
+    public ConsumerApiController(Monitor monitor, TransferProcessManager processManager) {
         this.monitor = monitor;
         this.processManager = processManager;
-        this.consumerNegotiationManager = consumerNegotiationManager;
-        this.transferProcessStore = transferProcessStore;
-    }
-
-    @POST
-    @Path("negotiation")
-    public Response initiateNegotiation(@QueryParam("connectorAddress") String connectorAddress,
-                                        ContractOffer contractOffer) {
-        if (contractOffer == null) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
-
-        var contractOfferRequest = ContractOfferRequest.Builder.newInstance()
-                .contractOffer(contractOffer)
-                .protocol("ids-multipart")
-                .connectorId("urn:connector:provider") // counter party id matching the address !!
-                .connectorAddress(connectorAddress)
-                .type(ContractOfferRequest.Type.INITIAL)
-                .build();
-
-        var result = consumerNegotiationManager.initiate(contractOfferRequest);
-        if (result.fatalError()) {
-            return Response.serverError().build();
-        }
-
-        return Response.ok(result.getContent().getId()).build();
     }
 
     @POST
