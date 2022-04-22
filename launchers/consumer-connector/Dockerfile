@@ -5,20 +5,17 @@ FROM openjdk:11-jre-slim-buster
 RUN apt update && apt install curl -y
 
 WORKDIR /app
-COPY ./build/libs/dataspaceconnector-basic.jar /app
+COPY ./build/libs/consumer.jar /app
+COPY ./config.properties /app
+COPY ./04.0-file-transfer/ /app/samples/04.0-file-transfer/
 
-EXPOSE 8181
-
-# health status is determined by the availability of the /health endpoint
-HEALTHCHECK --interval=5s --timeout=5s --retries=10 CMD curl --fail -X GET http://localhost:8181/api/check/health || exit 1
+EXPOSE 9191
+EXPOSE 9192
+EXPOSE 9292
 
 
 ENTRYPOINT java \
-    -Djava.security.edg=file:/dev/.urandom \
-    -Dedc.ids.id="urn:connector:edc-connector-24" \
+    -Dedc.fs.config=./config.properties \
     -Dedc.ids.title="Eclipse Dataspace Connector" \
     -Dedc.ids.description="Eclipse Dataspace Connector with IDS extensions" \
-    -Dedc.ids.maintainer="https://example.maintainer.com" \
-    -Dedc.ids.curator="https://example.maintainer.com" \
-    -Dids.webhook.address="http://localhost:9191" \
     -jar consumer.jar
