@@ -5,8 +5,7 @@ metadata:
     app: edc-consumer
     app.kubernetes.io/instance: edc-consumer
   name: edc-consumer
-  #namespace: product-material-pass
-  namespace: default
+  namespace: product-material-pass
 spec:
   replicas: 1
   revisionHistoryLimit: 3

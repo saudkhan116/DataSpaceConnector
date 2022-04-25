@@ -4,12 +4,8 @@ metadata:
   labels:
     app: edc-consumer
     app.kubernetes.io/instance: edc-consumer
-    #chart: edc-consumer
-    #heritage: Helm
-    #release: edc-consumer
   name: edc-consumer
-  #namespace: product-material-pass
-  namespace: default
+  namespace: product-material-pass
 spec:
   ports:
     - name: http
@@ -26,5 +22,4 @@ spec:
       targetPort: http-data
   selector:
     app: edc-consumer
-    #release: edc-consumer
   type: ClusterIP
