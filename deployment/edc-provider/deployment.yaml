@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edc-consumer
-    app.kubernetes.io/instance: edc-consumer
-  name: edc-consumer
+    app: edc-provider
+    app.kubernetes.io/instance: edc-provider
+  name: edc-provider
   #namespace: product-material-pass
   namespace: default
 spec:
@@ -12,23 +12,23 @@ spec:
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: edc-consumer
+      app: edc-provider
   template:
     metadata:
       labels:
-        app: edc-consumer
+        app: edc-provider
     spec:
       containers:
-        - image: muhammadsaudkhan/edc-consumer
+        - image: muhammadsaudkhan/edc-provider
           imagePullPolicy: IfNotPresent
-          name: edc-consumer
+          name: edc-provider
           ports:
-            - containerPort: 9191
+            - containerPort: 8181
               name: http
               protocol: TCP
-            - containerPort: 9292
+            - containerPort: 8282
               name: http-ids
               protocol: TCP
-            - containerPort: 9192
+            - containerPort: 8182
               name: http-data
               protocol: TCP
