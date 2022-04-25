@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "helm-guestbook.fullname" . }}
+  name: {{ template "helm-edc-consumer.fullname" . }}
   labels:
-    app: {{ template "helm-guestbook.name" . }}
-    chart: {{ template "helm-guestbook.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app: {{ template "helm-edc-consumer.name" . }}
+    chart: {{ template "helm-edc-consumer.chart" . }}
+    #release: {{ .Release.Name }}
+    #heritage: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: {{ template "helm-guestbook.name" . }}
-      release: {{ .Release.Name }}
+      app: {{ template "helm-edc-consumer.name" . }}
+      #release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ template "helm-guestbook.name" . }}
-        release: {{ .Release.Name }}
+        app: {{ template "helm-edc-consumer.name" . }}
+        #release: {{ .Release.Name }}
     spec:
       containers:
         - name: {{ .Chart.Name }}
@@ -26,16 +26,22 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 9191
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            - containerPort: 9292
+              name: http.ids
+              protocol: TCP
+            - containerPort: 9192
+              name: http.data
+              protocol: TCP
+          #livenessProbe:
+           # httpGet:
+            #  path: /
+            #  port: http
+          #readinessProbe:
+           # httpGet:
+            #  path: /
+             # port: http
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}
