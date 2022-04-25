@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: edc-consumer
+    app.kubernetes.io/instance: edc-consumer
+    #chart: edc-consumer
+    #heritage: Helm
+    #release: edc-consumer
+  name: edc-consumer
+  namespace: product-material-pass
+spec:
+  ports:
+    - name: http
+      port: 9191
+      protocol: TCP
+      targetPort: http
+    - name: http-data
+      port: 9292
+      protocol: TCP
+      targetPort: http-data
+    - name: http-ids
+      port: 9192
+      protocol: TCP
+      targetPort: http-ids
+  selector:
+    app: edc-consumer
+    #release: edc-consumer
+  type: ClusterIP
