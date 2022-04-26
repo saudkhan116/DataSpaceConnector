@@ -25,15 +25,15 @@ spec:
                 port:
                   number: 9191
     - host: materialpass.demo.catena-x.net
-        http:
-          paths:
-              - path: /provider
-                pathType: Prefix
-                backend:
-                  service:
-                    name: edc-provider
-                    port:
-                      number: 8181
+      http:
+        paths:
+          - path: /provider
+            pathType: Prefix
+            backend:
+              service:
+                name: edc-provider
+                port:
+                  number: 8181
   tls:
     - hosts:
         - materialpass.demo.catena-x.net
