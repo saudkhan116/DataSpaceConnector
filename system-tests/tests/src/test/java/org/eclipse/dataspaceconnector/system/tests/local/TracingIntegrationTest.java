@@ -18,7 +18,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.Span;
 import org.eclipse.dataspaceconnector.common.annotations.OpenTelemetryIntegrationTest;
-import org.eclipse.dataspaceconnector.system.tests.utils.FileTransferSimulationUtils;
+import org.eclipse.dataspaceconnector.system.tests.utils.TransferSimulationUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -39,6 +39,7 @@ import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.eclipse.dataspaceconnector.system.tests.local.FileTransferLocalSimulation.PROVIDER_ASSET_PATH;
 import static org.eclipse.dataspaceconnector.system.tests.utils.GatlingUtils.runGatling;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
@@ -62,15 +63,20 @@ public class TracingIntegrationTest extends FileTransferEdcRuntime {
     static ClientAndServer traceCollectorServer;
 
     List<String> contractNegotiationSpanNames = List.of(
-            "ConsumerContractNegotiationManagerImpl.initiate",
-            "ProviderContractNegotiationManagerImpl.requested",
-            "ConsumerContractNegotiationManagerImpl.confirmed");
+            "ConsumerContractNegotiationManagerImpl.initiate", // initial API request
+            "ProviderContractNegotiationManagerImpl.requested", // verify context propagation in ProviderContractNegotiationManagerImpl
+            "ConsumerContractNegotiationManagerImpl.confirmed" // verify context propagation in ConsumerContractNegotiationManagerImpl
+    );
 
     List<String> transferProcessSpanNames = List.of(
-            "TransferProcessManagerImpl.initiateConsumerRequest",
-            "TransferProcessManagerImpl.processInitial",
-            "TransferProcessManagerImpl.processProvisioned",
-            "TransferProcessManagerImpl.initiateProviderRequest");
+            "TransferProcessManagerImpl.initiateConsumerRequest", // initial API request
+            "TransferProcessManagerImpl.processInitial", // verify context propagation in TransferProcessManagerImpl
+            "TransferProcessManagerImpl.initiateProviderRequest", // verify context propagation in TransferProcessManagerImpl
+            "TransferProcessManagerImpl.processProvisioned", // verify context propagation in TransferProcessManagerImpl
+            "EmbeddedDataPlaneTransferClient.transfer", // DPF call
+            "PipelineServiceImpl.transfer", // verify context propagation in DataPlaneManagerImpl
+            "FileTransferDataSink.transferParts" // verify context propagation in ParallelSink
+    );
 
     @BeforeAll
     public static void setUp() {
@@ -92,7 +98,7 @@ public class TracingIntegrationTest extends FileTransferEdcRuntime {
         Files.write(Path.of(PROVIDER_ASSET_PATH), fileContent.getBytes(StandardCharsets.UTF_8));
 
         // Act
-        runGatling(FileTransferLocalSimulation.class, FileTransferSimulationUtils.DESCRIPTION);
+        runGatling(FileTransferLocalSimulation.class, TransferSimulationUtils.DESCRIPTION);
 
         // Assert
         await().atMost(30, SECONDS).untilAsserted(() -> {

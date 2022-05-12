@@ -16,9 +16,10 @@ plugins {
     `java-library`
     `maven-publish`
     jacoco
+    signing
     id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4"
-    id ("org.eclipse.dataspaceconnector.dependency-rules") apply(false)
-    id("com.autonomousapps.dependency-analysis") version "1.0.0-rc05" apply (false)
+    id("org.eclipse.dataspaceconnector.module-names")
+    id("com.autonomousapps.dependency-analysis") version "1.1.0" apply (false)
 }
 
 repositories {
@@ -36,6 +37,12 @@ val rsApi: String by project
 val swagger: String by project
 val faker: String by project
 
+val edcDeveloperId: String by project
+val edcDeveloperName: String by project
+val edcDeveloperEmail: String by project
+val edcScmConnection: String by project
+val edcWebsiteUrl: String by project
+val edcScmUrl: String by project
 val groupId: String = "org.eclipse.dataspaceconnector"
 var edcVersion: String = "0.0.1-SNAPSHOT"
 
@@ -71,6 +78,9 @@ allprojects {
     //apply(plugin = "checkstyle")
     apply(plugin = "java")
 
+
+    apply(plugin = "org.eclipse.dataspaceconnector.test-summary")
+
     if (System.getenv("JACOCO") == "true") {
         apply(plugin = "jacoco")
     }
@@ -92,6 +102,8 @@ allprojects {
             // Ref: https://docs.gradle.org/current/userguide/building_java_projects.html#sec:java_cross_compilation
             options.release.set(javaVersion.toInt())
         }
+        withJavadocJar()
+        withSourcesJar()
     }
 
     // EdcRuntimeExtension uses this to determine the runtime classpath of the module to run.
@@ -120,15 +132,55 @@ allprojects {
             testImplementation("com.github.javafaker:javafaker:${faker}")
         }
 
-        publishing {
-            repositories {
-                maven {
-                    name = "GitHubPackages"
-                    url = uri("https://maven.pkg.github.com/eclipse-dataspaceconnector/DataSpaceConnector")
-                    credentials {
-                        username = System.getenv("GITHUB_ACTOR")
-                        password = System.getenv("GITHUB_TOKEN")
+        if (!project.hasProperty("skip.signing")) {
+
+            apply(plugin = "signing")
+            publishing {
+                repositories {
+                    maven {
+                        name = "OSSRH"
+                        setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2")
+                        credentials {
+                            username = System.getenv("OSSRH_USER") ?: return@credentials
+                            password = System.getenv("OSSRH_PASSWORD") ?: return@credentials
+                        }
                     }
+                }
+                publications {
+                    create<MavenPublication>("mavenJava") {
+                        java {
+                            withJavadocJar()
+                            withSourcesJar()
+                        }
+                        pom {
+                            name.set(project.name)
+                            description.set("edc :: ${project.name}")
+                            url.set(edcWebsiteUrl)
+                            
+                            licenses {
+                                license {
+                                    name.set("The Apache License, Version 2.0")
+                                    url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                                }
+                                developers {
+                                    developer {
+                                        id.set(edcDeveloperId)
+                                        name.set(edcDeveloperName)
+                                        email.set(edcDeveloperEmail)
+                                    }
+                                }
+                                scm {
+                                    connection.set(edcScmConnection)
+                                    url.set(edcScmUrl)
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+                signing {
+                    sign(publishing.publications)
                 }
             }
         }
@@ -215,7 +267,6 @@ allprojects {
         }
     }
 }
-
 openApiMerger {
     val yamlDirectory = file("${rootProject.projectDir.path}/resources/openapi/yaml")
 
@@ -286,9 +337,10 @@ if (project.hasProperty("dependency.analysis")) {
         abi {
             exclusions {
                 excludeAnnotations(
-                        "io\\.opentelemetry\\.extension\\.annotations\\.WithSpan",
+                    "io\\.opentelemetry\\.extension\\.annotations\\.WithSpan",
                 )
             }
         }
     }
 }
+

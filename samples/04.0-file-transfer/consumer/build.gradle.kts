@@ -45,9 +45,8 @@ dependencies {
 
     implementation(project(":data-protocols:ids"))
 
-    implementation(project(":samples:04.0-file-transfer:api"))
     implementation(project(":samples:04.0-file-transfer:listener"))
-    
+
 }
 
 application {

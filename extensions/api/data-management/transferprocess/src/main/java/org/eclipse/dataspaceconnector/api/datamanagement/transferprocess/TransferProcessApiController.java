@@ -15,26 +15,28 @@
 
 package org.eclipse.dataspaceconnector.api.datamanagement.transferprocess;
 
+import jakarta.validation.Valid;
+import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.dataspaceconnector.api.datamanagement.transferprocess.model.TransferId;
 import org.eclipse.dataspaceconnector.api.datamanagement.transferprocess.model.TransferProcessDto;
 import org.eclipse.dataspaceconnector.api.datamanagement.transferprocess.model.TransferRequestDto;
+import org.eclipse.dataspaceconnector.api.datamanagement.transferprocess.model.TransferState;
 import org.eclipse.dataspaceconnector.api.datamanagement.transferprocess.service.TransferProcessService;
 import org.eclipse.dataspaceconnector.api.exception.ObjectExistsException;
 import org.eclipse.dataspaceconnector.api.exception.ObjectNotFoundException;
+import org.eclipse.dataspaceconnector.api.query.QuerySpecDto;
 import org.eclipse.dataspaceconnector.api.result.ServiceResult;
 import org.eclipse.dataspaceconnector.api.transformer.DtoTransformerRegistry;
-import org.eclipse.dataspaceconnector.common.string.StringUtils;
 import org.eclipse.dataspaceconnector.spi.EdcException;
 import org.eclipse.dataspaceconnector.spi.monitor.Monitor;
 import org.eclipse.dataspaceconnector.spi.query.QuerySpec;
-import org.eclipse.dataspaceconnector.spi.query.SortOrder;
 import org.eclipse.dataspaceconnector.spi.result.AbstractResult;
 import org.eclipse.dataspaceconnector.spi.result.Result;
 import org.eclipse.dataspaceconnector.spi.types.domain.transfer.DataRequest;
@@ -46,8 +48,8 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
-@Consumes({ MediaType.APPLICATION_JSON })
 @Produces({ MediaType.APPLICATION_JSON })
+@Consumes({ MediaType.APPLICATION_JSON })
 @Path("/transferprocess")
 public class TransferProcessApiController implements TransferProcessApi {
     private final Monitor monitor;
@@ -62,17 +64,14 @@ public class TransferProcessApiController implements TransferProcessApi {
 
     @GET
     @Override
-    public List<TransferProcessDto> getAllTransferProcesses(@QueryParam("offset") Integer offset,
-                                                            @QueryParam("limit") Integer limit,
-                                                            @QueryParam("filter") String filterExpression,
-                                                            @QueryParam("sort") SortOrder sortOrder,
-                                                            @QueryParam("sortField") String sortField) {
-        var spec = QuerySpec.Builder.newInstance()
-                .offset(offset)
-                .limit(limit)
-                .sortField(sortField)
-                .filter(filterExpression)
-                .sortOrder(sortOrder).build();
+    public List<TransferProcessDto> getAllTransferProcesses(@Valid @BeanParam QuerySpecDto querySpecDto) {
+        var result = transformerRegistry.transform(querySpecDto, QuerySpec.class);
+        if (result.failed()) {
+            monitor.warning("Error transforming QuerySpec: " + String.join(", ", result.getFailureMessages()));
+            throw new IllegalArgumentException("Cannot transform QuerySpecDto object");
+        }
+
+        var spec = result.getContent();
 
         return service.query(spec).stream()
                 .map(tp -> transformerRegistry.transform(tp, TransferProcessDto.class))
@@ -96,34 +95,11 @@ public class TransferProcessApiController implements TransferProcessApi {
     @GET
     @Path("/{id}/state")
     @Override
-    public String getTransferProcessState(@PathParam("id") String id) {
+    public TransferState getTransferProcessState(@PathParam("id") String id) {
         return Optional.of(id)
                 .map(service::getState)
+                .map(TransferState::new)
                 .orElseThrow(() -> new ObjectNotFoundException(TransferProcess.class, id));
-    }
-
-    @POST
-    @Override
-    public String initiateTransfer(TransferRequestDto transferRequest) {
-        if (!isValid(transferRequest)) {
-            throw new IllegalArgumentException("Transfer request body not valid");
-        }
-        var dataRequest = Optional.ofNullable(transformerRegistry.transform(transferRequest, DataRequest.class))
-                .filter(AbstractResult::succeeded).map(AbstractResult::getContent);
-        if (dataRequest.isEmpty()) {
-            throw new IllegalArgumentException("Error during transforming TransferRequestDto into DataRequest");
-        }
-        monitor.debug("Starting transfer for asset " + transferRequest.getAssetId());
-
-        var result = service.initiateTransfer(dataRequest.get());
-        if (result.succeeded()) {
-            monitor.debug(format("Transfer process initialised %s", result.getContent()));
-            return result.getContent();
-        } else {
-            String message = format("Error during initiating the transfer with assetId: %s", transferRequest.getAssetId());
-            monitor.severe(message);
-            throw new EdcException(message);
-        }
     }
 
     @POST
@@ -152,19 +128,35 @@ public class TransferProcessApiController implements TransferProcessApi {
         }
     }
 
-    private boolean isValid(TransferRequestDto transferRequest) {
-        return !StringUtils.isNullOrBlank(transferRequest.getAssetId()) &&
-                !StringUtils.isNullOrBlank(transferRequest.getConnectorAddress()) &&
-                !StringUtils.isNullOrBlank(transferRequest.getContractId()) &&
-                !StringUtils.isNullOrBlank(transferRequest.getProtocol()) &&
-                transferRequest.getDataDestination() != null;
+    @POST
+    @Override
+    public TransferId initiateTransfer(@Valid TransferRequestDto transferRequest) {
+        var dataRequest = Optional.ofNullable(transformerRegistry.transform(transferRequest, DataRequest.class))
+                .filter(AbstractResult::succeeded).map(AbstractResult::getContent);
+        if (dataRequest.isEmpty()) {
+            throw new IllegalArgumentException("Error during transforming TransferRequestDto into DataRequest");
+        }
+        monitor.debug("Starting transfer for asset " + transferRequest.getAssetId());
+
+        var result = service.initiateTransfer(dataRequest.get());
+        if (result.succeeded()) {
+            monitor.debug(format("Transfer process initialised %s", result.getContent()));
+            return new TransferId(result.getContent());
+        } else {
+            String message = format("Error during initiating the transfer with assetId: %s", transferRequest.getAssetId());
+            monitor.severe(message);
+            throw new EdcException(message);
+        }
     }
 
     private void handleFailedResult(ServiceResult<TransferProcess> result, String id) {
         switch (result.reason()) {
-            case NOT_FOUND: throw new ObjectNotFoundException(TransferProcess.class, id);
-            case CONFLICT: throw new ObjectExistsException(TransferProcess.class, id);
-            default: throw new EdcException("unexpected error");
+            case NOT_FOUND:
+                throw new ObjectNotFoundException(TransferProcess.class, id);
+            case CONFLICT:
+                throw new ObjectExistsException(TransferProcess.class, id);
+            default:
+                throw new EdcException("unexpected error");
         }
     }
 }
