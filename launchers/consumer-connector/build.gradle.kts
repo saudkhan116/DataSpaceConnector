@@ -9,6 +9,8 @@
  *
  *  Contributors:
  *       Microsoft Corporation - initial API and implementation
+ *       Fraunhofer Institute for Software and Systems Engineering - added dependencies
+ *       ZF Friedrichshafen AG - add dependency
  *
  */
 
@@ -19,27 +21,20 @@ plugins {
 }
 
 val jupiterVersion: String by project
+val rsApi: String by project
 
 dependencies {
     implementation(project(":core"))
 
-    implementation(project(":extensions:in-memory:assetindex-memory"))
-    implementation(project(":extensions:in-memory:transfer-store-memory"))
-    implementation(project(":extensions:in-memory:assetindex-memory"))
-    implementation(project(":extensions:in-memory:negotiation-store-memory"))
-    implementation(project(":extensions:in-memory:contractdefinition-store-memory"))
-    implementation(project(":extensions:http"))
-    implementation(project(":extensions:api:data-management"))
+    implementation(project(":extensions:api:observability"))
 
     implementation(project(":extensions:filesystem:configuration-fs"))
     implementation(project(":extensions:iam:iam-mock"))
 
-    implementation(project(":extensions:api:control"))
+    implementation(project(":extensions:api:auth-tokenbased"))
+    implementation(project(":extensions:api:data-management"))
 
     implementation(project(":data-protocols:ids"))
-
-    implementation(project(":samples:04.0-file-transfer:api"))
-    implementation(project(":samples:04.0-file-transfer:listener"))
 }
 
 application {

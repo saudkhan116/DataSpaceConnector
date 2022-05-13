@@ -53,7 +53,7 @@ import jakarta.ws.rs.core.Response;
 
 @Consumes({MediaType.APPLICATION_JSON})
 @Produces({MediaType.APPLICATION_JSON})
-@Path("/")
+@Path("/battery")
 public class ConsumerApiController {
 
     private final Monitor monitor;
@@ -68,7 +68,7 @@ public class ConsumerApiController {
     }
 
     @POST
-    @Path("file/{filename}")
+    @Path("/file/{filename}")
     public Response initiateTransfer(@PathParam("filename") String filename, @QueryParam("connectorAddress") String connectorAddress,
                                      @QueryParam("destination") String destinationPath, @QueryParam("contractId") String contractId) {
 
@@ -98,7 +98,7 @@ public class ConsumerApiController {
     }
 
     @GET
-    @Path("provider/metadata/{selectedProvider}")
+    @Path("/provider/metadata/{selectedProvider}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getProviderAccessInformation(@PathParam("selectedProvider") String selectedProvider,
     		                                     @QueryParam("role") String role) {
@@ -135,7 +135,7 @@ public class ConsumerApiController {
     }
 
     @GET
-    @Path("passport/display/{filename}")
+    @Path("/passport/display/{filename}")
     public Response printProductPassport(@PathParam("filename") String filename) {
 
     	 String result = "";
