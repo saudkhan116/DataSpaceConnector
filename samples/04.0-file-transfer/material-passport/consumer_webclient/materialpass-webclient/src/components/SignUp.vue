@@ -14,6 +14,7 @@
           <option value="recycler">Recycler</option>
           <option value="manufacturer">Manufacturer</option>
           <option value="producer">Producer</option>
+           <option value="dismentler">Dismentler</option>
         </select>
       </div>
       <br />

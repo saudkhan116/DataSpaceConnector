@@ -1,5 +1,6 @@
 <template>
 <div class="container">
+  
   <div class="main">
     <h5 class="center">Step # 1: Load contract offers from the battery provider</h5><br />
   <div class="container" style="width:25%;">
@@ -132,22 +133,30 @@ let listBatteryProviders = require('../assets/providers.json');
 export default {
   name: 'batteryPassport',
   created(){
-    //alert('21212')
-    if ( localStorage.getItem("battery-info") == null){
-        this.isDataFromQRCode = false
+    let user = localStorage.getItem("user-info")
+    let role = JSON.parse(user).role
+
+    // check query params for QR code scanning
+    this.selectedProvider = this.$route.query.provider
+    this.selectedBattery = this.$route.query.battery
+    this.selectedContract = this.$route.query.battery + '_' + role
+    
+    if (this.$route.query.provider === undefined && this.$route.query.battery === undefined) {
+       // do manual selection of fields
+       console.log('INFO: provider and battery are not defined')
     }
     else{
-      this.isDataFromQRCode = true
-      let batteryInfo = localStorage.getItem("battery-info")
-      this.selectedProvider = JSON.parse(batteryInfo).provider
-      this.selectedBattery = JSON.parse(batteryInfo).battery
-      this.selectedContract = "LRP_contractoffer"
-      //this.doTransferData()
+      // TODO
+      // fill dropdown values
+      // Get BatteryData
+      this.GetBatteryDataUsingQRCode()
+      
     }
+  },
+  mounted(){
   },
   data() {
     return {
-      isDataFromQRCode: localStorage.getItem("battery-info") == null ? false : true,
       listProviders: listBatteryProviders,
       provider: [],
       productPassport:'',
@@ -164,15 +173,16 @@ export default {
     }    
   },
   methods:{
-    GetProviderInfo(event) {
-      //this.selectedProvider = event.target.value
+    GetProviderInfo() {
        let user = localStorage.getItem("user-info")
        let role = JSON.parse(user).role
-      //alert(role)
-      axios.get('/api/provider/metadata/' + this.selectedProvider + '?role=' + role)
+      axios.get('/api/v1/data/contractnegotiations/provider/metadata/' + this.selectedProvider + '?role=' + role, {
+        headers: {
+            'X-Api-Key': 'password'
+          }
+      })
       .then(response => {
           this.provider = response.data
-          console.log(this.provider)
           if (this.provider != '' )
             document.getElementById('loadContracts').innerHTML='Contract offers loaded successfully..'
           else
@@ -199,41 +209,14 @@ export default {
     },
     setSelectedBattery(event){
       this.selectedBattery = event.target.value
-
-      let battery = this.selectedContract.split('_')[0]
-      /*if (this.provider.batteries.some(el => el.id === battery)){
-        this.selectedBattery = battery
-        //document.getElementById('selectedBatt').innerHTML = this.selectedBattery + ' is selected'
-      }*/
-      //if (battery != this.selectedBattery)
-      //  document.getElementById('negotiateContract').innerHTML = 'No contract exists for the selected battery..'
-     // else
-      //  document.getElementById('negotiateContract').innerHTML = 'Contract exists for the selected battery..'
     },
     setSelectedContract(event){
       this.selectedContract = event.target.value
-      
-    },
-    GetPassport: function () {
-      // if ( this.selectedProvider != '' &&this.selectedBattery != '' && this.selectedContract != ''){
-      if ( this.selectedProvider != '' && this.selectedContract != ''){
-        this.isLoading = true
-        this.isDisabled = true
-        this.isPassportVisible = false 
-        this.doTransferData()
-      }
-      else{
-        alert("Please fill out all fields...!")
-        this.isDisabled = false
-      }
     },
     async doNegotiation(){
 
-      let battery = this.selectedContract.split('_')[0]
-      if (battery != this.selectedBattery)
-        return
-
-      this.uuid = await this.negotiateContract()
+      var result = await this.negotiateContract()
+      this.uuid = result.id
       this.isLoading = true
       this.currentStatus = "Negotiating contract..."
       // Check agreement status //
@@ -244,36 +227,35 @@ export default {
         return;
       else
         this.contractId = data.contractAgreementId
-
+      
       // Check the agreement status until it is of status CONFIRMED
-      while(data.status != "CONFIRMED"){        
+      while(data.state != "CONFIRMED"){        
         data = await this.getAgreementId(this.uuid)
-        // setTimeout(
-        //   function(){console.log("Wait for 5 seconds...")},
-        //   5000);
-        this.currentStatus = "Agreement status: " + data.status + "..."
-        console.log(data.status + '_' + data.contractAgreementId)
+        this.currentStatus = "Agreement state: " + data.state + "..."
+        console.log(data.state + '_' + data.contractAgreementId)
         this.contractId = data.contractAgreementId
       }
       this.isLoading = false
       document.getElementById('negotiateContract').innerHTML='Finished with uuid:  ' + this.uuid
     },
     async initiateTransfer(){
+
+      this.$router.push({ name: "Home", query:{ provider: this.selectedProvider, battery: this.selectedBattery } });
       this.isLoading = true
-      const destinationPath = 'C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/data'
+       const destinationPath = 'C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/data'
+      //const destinationPath = '/app/data' // set different path for containers
 
       // Initiate transfer request //
       let asset = ''
       let user = localStorage.getItem("user-info")
       let role = JSON.parse(user).role
-      if (role == "Dismantler")
+      if (role.toLowerCase() == "dismantler")
         asset = "test-document_dismantler"
-      else if (role == "OEM")
+      else if (role.toLowerCase() == "oem")
         asset = "test-document_oem"
       else
         asset = "test-document_recycler"
       var res = await this.getProductPassport(asset, destinationPath, this.contractId)
-      console.log(res)
       if (res == null)
         this.currentStatus = "Something went wrong in finalizing product process..."
       else {
@@ -291,81 +273,24 @@ export default {
         this.isDisabled = false;
       }
     },
-    async doTransferData(){
-      const destinationPath = 'C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/data'
+    async GetBatteryDataUsingQRCode(){
+      // negotiate contract
+      await this.doNegotiation()
 
-      // Do contract negotiation //
-      // If contract is already negotiated in previous calls then no need to send API calls again //
-      //alert(this.uuid)
-      if (this.uuid == ''){
-        this.uuid = await this.negotiateContract()
-        
-        if (this.uuid != ''){
-          this.currentStatus = "Contract negotiated successfully..."
-          
-          // Check agreement status //
-          // Status: INITIAL, REQUESTED, CONFIRMED
-          // first call to get the initial status
-          var data = await this.getAgreementId(this.uuid)
-          if (data == "rejected")
-            return;
-          else
-            this.contractId = data.contractAgreementId
-
-          // Check the agreement status until it is of status CONFIRMED
-          while(data.status != "CONFIRMED"){        
-            data = await this.getAgreementId(this.uuid)
-            // setTimeout(
-            //   function(){console.log("Wait for 5 seconds...")},
-            //   5000);
-            this.currentStatus = "Agreement status: " + data.status + "..."
-            console.log(data.status + '_' + data.contractAgreementId)
-            this.contractId = data.contractAgreementId
-          }
-        }
-        else{
-          this.currentStatus = "Something went wrong in contract negotiation step..."
-        }
-      }
-      else{
-        this.currentStatus = "Contract is already negotiated..."
-      }
-      
-      // Initiate transfer request //
-      let asset = ''
-      let user = localStorage.getItem("user-info")
-      let role = JSON.parse(user).role
-      if (role == "Dismantler")
-        asset = "test-document_dismantler"
-      else
-        asset = "test-document_oem"
-      var res = await this.getProductPassport(asset, destinationPath, this.contractId)
-      console.log(res)
-      if (res == null)
-        this.currentStatus = "Something went wrong in finalizing product process..."
-      else {
-        this.currentStatus = "Finalizing product passport..."
-
-        // Display the product passport //
-        var productPass = await this.displayProductPassport(asset+ '.json')
-    
-        this.productPassport = productPass
-        this.isPassportVisible = true;
-        this.isLoading = false;
-        this.isDisabled = false;
-      }
+      // get battery passport
+      await this.initiateTransfer()
     },
     negotiateContract(){
 
       // TODO dynamic contractoffer file name
-       let contractOffer = require('C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/registry/contractoffers/' + this.selectedContract);
-       //let contractOffer = require('../assets/12345_contractoffer.json');
-        //var contractOffer = $JSON.parse('../../../../MP-CatenaX/DataSpaceConnector/samples/04.0-file-transfer/registry/12345_contractoffer.json');
-        //console.log(contractOffer)
-        //alert('in negotiate')
-        return new Promise(resolve => {
+      let contractOffer = require('C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/registry/contractoffers/' + this.selectedContract.toLowerCase());
+      return new Promise(resolve => {
 
-      axios.post('/api/negotiation?connectorAddress=' + this.provider.providerConnector, contractOffer)
+      axios.post('/api/v1/data/contractnegotiations', contractOffer,{
+        headers: {
+            'X-Api-Key': 'password'
+          }
+      } )
         .then((response) => {
           resolve(response.data);
         })
@@ -376,29 +301,55 @@ export default {
     });
     },
     getAgreementId(uuid){
-      
       return new Promise(resolve => {
 
-      axios.get('/api/control/negotiation/' + uuid + '/state', {
+       axios.get('/api/v1/data/contractnegotiations/' + uuid, {
           headers: {
-            'X-Api-Key': 'password'
+            'X-Api-Key': 'password',
+            "accept": "application/json"
           }})
         .then((response) => {
-          console.log('Agreement Id: ' + response.data.status)
-          this.currentStatus = 'Agreement status: ' + response.data.status
+          console.log('check_state : ' + response.data.state)
+          console.log('Agreement Id: ' + response.data.contractAgreementId)
+          this.currentStatus = 'Agreement state: ' + response.data.state
           resolve(response.data);
         })
         .catch((e) => {
           this.errors.push(e)
+          alert(e)
           resolve('rejected');
         });
     })
     },
   getProductPassport(asset, destinationPath, contractId){
-    
+
     return new Promise(resolve => {
 
-      axios.post('/api/file/' + asset + '?connectorAddress=http://localhost:8282/api/v1/ids/data&destination=' + destinationPath + '/' + asset + '.json&contractId=' + contractId)
+      var jsonData = {
+        "protocol": "ids-multipart",
+        "assetId": asset,
+        "contractId": contractId,
+        "dataDestination": {
+          "properties": {
+            "path": destinationPath + '/' + asset + '.json',
+            "keyName": "keyName",
+            "type": "File"
+          }
+        },
+        "transferType": {
+          "contentType": "application/octet-stream",
+          "isFinite": true
+        },
+        "managedResources": false,
+        "connectorAddress": "http://localhost:8282/api/v1/ids/data",
+        "connectorId": "consumer"
+    }
+
+      axios.post('api/v1/data/transferprocess', jsonData, {
+        headers: {
+            'X-Api-Key': 'password'
+          }
+      })
         .then((response) => {
           console.log(response.data)
           resolve(response.data);
@@ -407,14 +358,18 @@ export default {
           this.errors.push(e)
           resolve('rejected');
         });
-    })    
+    })     
     
   },
   displayProductPassport(filename){
 
      return new Promise(resolve => {
 
-      axios.get('/api/passport/display/' + filename)
+      axios.get('/api/v1/data/contractnegotiations/passport/display/' + filename, {
+        headers: {
+            'X-Api-Key': 'password'
+          }
+      })
         .then((response) => {
           console.log(response.data)
           resolve(response.data);
@@ -424,9 +379,6 @@ export default {
           resolve('rejected');
         });
     })
-  },
-  // Fetches provider when the component is created.
-  created() {
   }
 }
 }

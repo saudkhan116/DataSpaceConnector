@@ -1,21 +1,21 @@
 {
   "users": [
     {
-      "name": "BASF_user",
+      "name": "demo_user",
       "email": "mustermann@basf.de",
       "role": "Raw Material Supplier",
       "password": "mustermann",
       "id": 1
     },
     {
-      "name": "BMW_user",
+      "name": "demo_user",
       "email": "mustermann@bmw.de",
       "role": "OEM",
       "password": "mustermann",
       "id": 2
     },
     {
-      "name": "Tech4u_user",
+      "name": "demo_user",
       "email": "mustermann@tech4u.de",
       "role": "Recycler",
       "password": "mustermann",
@@ -31,14 +31,14 @@
     {
       "email": "mustermann@cgi.de",
       "password": "mustermann",
-      "name": "mustermann",
+      "name": "demo_user",
       "id": 5
     },
     {
       "email": "mustermann@lrp.de",
       "password": "mustermann",
       "role": "Dismantler",
-      "name": "mustermann",
+      "name": "demo_user",
       "id": 6
     },
     {

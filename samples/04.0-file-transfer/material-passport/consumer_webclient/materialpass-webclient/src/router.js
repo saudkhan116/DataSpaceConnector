@@ -8,7 +8,8 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    props: (route) => ({ provider: route.query.provider, battery: route.query.battery })
   },
   {
     path: '/sign-up',
