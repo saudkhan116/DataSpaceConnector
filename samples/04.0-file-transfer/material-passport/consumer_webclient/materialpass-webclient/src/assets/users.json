@@ -3,7 +3,7 @@
     {
       "name": "demo_user",
       "email": "mustermann@basf.de",
-      "role": "Raw Material Supplier",
+      "role": "Supplier",
       "password": "mustermann",
       "id": 1
     },

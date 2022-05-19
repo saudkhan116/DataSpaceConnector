@@ -1,25 +1,5 @@
 [{
 		"id": 1,
 		"name": "BMW"
-	},
-	{
-		"id": 2,
-		"name": "Bosch"
-	},
-	{
-		"id": 3,
-		"name": "BASF"
-	},
-	{
-		"id": 4,
-		"name": "ZF"
-	},
-	{
-		"id": 5,
-		"name": "LRP"
-	},
-	{
-		"id": 6,
-		"name": "Tech4U"
 	}
 ]

@@ -198,15 +198,14 @@ public class ContractNegotiationApiController implements ContractNegotiationApi 
     @GET
     @Path("provider/metadata/{selectedProvider}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getProviderAccessInformation(@PathParam("selectedProvider") String selectedProvider,
-                                                 @QueryParam("role") String role) {
+    public Response getProviderAccessInformation(@PathParam("selectedProvider") String selectedProvider) {
 
         String result = "";
-        if (selectedProvider == null && role == null) {
+        if (selectedProvider == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
         String currentDir = System.getProperty("user.dir") + METADATA_PATH;
-        String filename = currentDir + "/" + selectedProvider + "_" + role + ".json";
+        String filename = currentDir + "/" + selectedProvider + ".json";
         ProviderMetadata metadata = new ProviderMetadata();
         result = readFile(filename);
         //getJsonData(metadata, filename);

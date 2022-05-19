@@ -21,7 +21,7 @@
   <h5 class="center">Step # 2: Negotiate the edc contract</h5><br />
    <div class="container" style="width:25%;">
       <label for="contractOffer"><strong>Contract Offers:</strong></label>
-      <select required class="form-select" id="selectOffer" placeholder="Select Offer" @change="setSelectedContract($event)">
+      <select required class="form-select" id="selectOffer" v-model="selectedContract" placeholder="Select Offer" @change="setSelectedContract($event)">
         <option value="" disabled selected>Select an Offer...</option>
         <option v-for="(offer, index) in provider.contractOffers"
                 v-bind:key="index">{{ offer }}
@@ -31,7 +31,7 @@
     </div>
     <div class="container" style="width:25%;">
       <label for="Battery"><strong>Battery:</strong></label>
-    <select required class="form-select"  id="selectBattery" placeholder="Select Battery" @change="setSelectedBattery($event)">
+    <select required class="form-select"  id="selectBattery" v-model="selectedBattery" placeholder="Select Battery" @change="setSelectedBattery($event)">
       <option value="" disabled selected >Select Battery...</option>
       <option v-for="(battery, id) in provider.batteries" :value="battery.id"
               v-bind:key="id">{{ battery.name }}
@@ -133,32 +133,40 @@ let listBatteryProviders = require('../assets/providers.json');
 export default {
   name: 'batteryPassport',
   created(){
-    let user = localStorage.getItem("user-info")
-    let role = JSON.parse(user).role
-
-    // check query params for QR code scanning
-    this.selectedProvider = this.$route.query.provider
-    this.selectedBattery = this.$route.query.battery
-    this.selectedContract = this.$route.query.battery + '_' + role
-    
-    if (this.$route.query.provider === undefined && this.$route.query.battery === undefined) {
-       // do manual selection of fields
-       console.log('INFO: provider and battery are not defined')
-    }
-    else{
-      // TODO
-      // fill dropdown values
-      // Get BatteryData
-      this.GetBatteryDataUsingQRCode()
-      
-    }
   },
   mounted(){
+
+    let user = localStorage.getItem("user-info");
+        if (!user){
+            this.$router.push({name:'Login'});
+        }
+        else{
+          let user = localStorage.getItem("user-info")
+          let role = JSON.parse(user).role
+
+          // check query params for QR code scanning
+          this.selectedProvider = this.$route.query.provider
+          this.selectedBattery = this.$route.query.battery
+          this.selectedContract = this.$route.query.battery + '_' + role.toLowerCase()
+          
+          if (this.$route.query.provider === undefined && this.$route.query.battery === undefined) {
+            // do manual selection of fields
+            console.log('INFO: provider and battery are not defined')
+            this.resetFields()
+          }
+          else if (this.$route.query.provider === '' && this.$route.query.battery === '')
+            alert('Battery provider and battery name are required...!')
+          else{
+            // Get BatteryData
+            this.GetBatteryDataUsingQRCode()
+            
+          }
+        }
   },
   data() {
     return {
       listProviders: listBatteryProviders,
-      provider: [],
+      provider: {},
       productPassport:'',
       selectedProvider:'',
       selectedBattery:'',
@@ -176,30 +184,53 @@ export default {
     GetProviderInfo() {
        let user = localStorage.getItem("user-info")
        let role = JSON.parse(user).role
-      axios.get('/api/v1/data/contractnegotiations/provider/metadata/' + this.selectedProvider + '?role=' + role, {
+      //axios.get('/api/v1/data/contractnegotiations/provider/metadata/' + this.selectedProvider + '?role=' + role, {
+        axios.get('/api/v1/data/contractnegotiations/provider/metadata/' + this.selectedProvider, {
         headers: {
             'X-Api-Key': 'password'
           }
       })
       .then(response => {
           this.provider = response.data
+          this.getContractOfferByLoggedInRole()
           if (this.provider != '' )
             document.getElementById('loadContracts').innerHTML='Contract offers loaded successfully..'
-          else
+          else{
             document.getElementById('loadContracts').innerHTML='No contract offers'
+            this.resetFields()
+          }
       })
       .catch(e => {
         this.errors.push(e)
         document.getElementById('loadContracts').innerHTML='Something went wrong!..'
       })
     },
+    getContractOfferByLoggedInRole: function(){
+      let user = localStorage.getItem("user-info")
+      let role = JSON.parse(user).role
+      const offer = this.provider.contractOffers.filter( h => h.includes(role.toLowerCase()) );
+      this.provider.contractOffers = offer
+
+      // to handle filling the battery provider dropdown here because this.provider is loaded before provider dropdown and get emplty value.  
+      this.selectedProvider = this.provider.name
+
+    //data validation - TODO
+     /* if ((this.$route.query.provider != undefined || this.$route.query.provider != '')  && (this.$route.query.battery != undefined || this.$route.query.battery != '')){
+        // Query Params for the QR code functionality
+        let batteryProviderQP = this.$route.query.provider
+        let batteryQP = this.$route.query.battery
+        // Dorpdown values
+        let batteryProvider = this.provider.name
+        let battery = this.provider.batteries[0].name
+       alert(this.$route.query.provider)
+      }
+      else
+        alert('xyx')*/
+    },
     resetFields: function () {
 
       // TODO
-      this.provider.providerConnector = ''
-      this.negotiationStatus =''
       this.selectedProvider = ''
-      this.provider.contractOffers = ''
       
       this.selectedBattery = ''
       this.selectedContract = ''
@@ -253,8 +284,10 @@ export default {
         asset = "test-document_dismantler"
       else if (role.toLowerCase() == "oem")
         asset = "test-document_oem"
-      else
+      else if (role.toLowerCase() == "recycler")
         asset = "test-document_recycler"
+      else if (role.toLowerCase() == "Battery Producer")
+        asset = "test-document_battery_producer"
       var res = await this.getProductPassport(asset, destinationPath, this.contractId)
       if (res == null)
         this.currentStatus = "Something went wrong in finalizing product process..."
@@ -274,6 +307,14 @@ export default {
       }
     },
     async GetBatteryDataUsingQRCode(){
+
+      // load provider dropdown to fill the relevant dropdown values i.e., contract offer and battery
+       await this.GetProviderInfo()
+       // provider drondown is not auto fill because this.selectedProvider is loaded before the provider dropdown.
+       
+
+      // check if the selected provider has contract offer. 
+
       // negotiate contract
       await this.doNegotiation()
 
