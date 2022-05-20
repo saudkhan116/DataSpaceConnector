@@ -17,7 +17,7 @@ spec:
     - host: materialpass.demo.catena-x.net
       http:
         paths:
-          - path: /
+          - path: /consumer
             pathType: Prefix
             backend:
               service:
