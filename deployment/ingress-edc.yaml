@@ -14,7 +14,7 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
   rules:
-    - host: materialpass.demo.catena-x.net
+    - host: materialpass.int.demo.catena-x.net
       http:
         paths:
           - path: /consumer
@@ -33,5 +33,5 @@ spec:
                   number: 8182
   tls:
     - hosts:
-        - materialpass.demo.catena-x.net
+        - materialpass.int.demo.catena-x.net
       secretName: tls-secret
