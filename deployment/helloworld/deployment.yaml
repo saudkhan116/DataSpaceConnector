@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: helloworld
+    app.kubernetes.io/instance: helloworld
+  name: helloworld
+  namespace: product-material-pass
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: helloworld
+  template:
+    metadata:
+      labels:
+        app: helloworld
+    spec:
+      containers:
+        - image: gcr.io/google-samples/hello-app:1.0
+          imagePullPolicy: IfNotPresent
+          name: helloworld
+          ports:
+            - containerPort: 8080
+              protocol: TCP
