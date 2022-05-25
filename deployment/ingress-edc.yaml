@@ -34,20 +34,20 @@ spec:
           - path: /provider
             pathType: Prefix
             - backend:
-                service:
-                  name: edc-provider
-                  port:
-                    number: 8181
+              service:
+                name: edc-provider
+                port:
+                  number: 8181
             - backend:
-                service:
-                  name: edc-provider
-                  port:
-                    number: 8182
+              service:
+                name: edc-provider
+                port:
+                  number: 8182
             - backend:
-                service:
-                  name: edc-provider
-                  port:
-                    number: 8282
+              service:
+                name: edc-provider
+                port:
+                  number: 8282
   tls:
     - hosts:
         - materialpass.int.demo.catena-x.net
