@@ -30,7 +30,7 @@ spec:
               service:
                 name: consumer-ui
                 port:
-                  number: 8080
+                  number: 80
           - path: /provider
             pathType: Prefix
             backend:
@@ -38,6 +38,7 @@ spec:
                 name: edc-provider
                 port:
                   number: 8182
+           
   tls:
     - hosts:
         - materialpass.int.demo.catena-x.net
