@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: argocd-server-ingress
@@ -33,21 +33,11 @@ spec:
                   number: 8080
           - path: /provider
             pathType: Prefix
-            - backend:
+            backend:
               service:
                 name: edc-provider
                 port:
                   number: 8181
-            - backend:
-              service:
-                name: edc-provider
-                port:
-                  number: 8182
-            - backend:
-              service:
-                name: edc-provider
-                port:
-                  number: 8282
   tls:
     - hosts:
         - materialpass.int.demo.catena-x.net
