@@ -11,15 +11,15 @@ spec:
     - name: http
       port: 8181
       protocol: TCP
-      targetPort: http
+      targetPort: 8181
     - name: http-ids
       port: 8282
       protocol: TCP
-      targetPort: http-ids
+      targetPort: 8282
     - name: http-data
       port: 8182
       protocol: TCP
-      targetPort: http-data
+      targetPort: 8182
   selector:
     app: edc-provider
   type: ClusterIP
