@@ -37,7 +37,7 @@ spec:
               service:
                 name: edc-provider
                 port:
-                  number: 8181
+                  number: 8182
   tls:
     - hosts:
         - materialpass.int.demo.catena-x.net
