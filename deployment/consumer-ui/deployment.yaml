@@ -18,7 +18,7 @@ spec:
         app: consumer-ui
     spec:
       containers:
-        - image: nginx
+        - image: muhammadsaudkhan/test-ui
           imagePullPolicy: IfNotPresent
           name: consumer-ui
           ports:
