@@ -31,6 +31,13 @@ spec:
                 name: consumer-ui
                 port:
                   number: 8080
+          - path: /nginx
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-ui
+                port:
+                  number: 80
           - path: /provider
             pathType: Prefix
             backend:

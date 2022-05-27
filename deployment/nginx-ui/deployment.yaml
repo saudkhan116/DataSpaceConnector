@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-ui
+    app.kubernetes.io/instance: nginx-ui
+  name: nginx-ui
+  namespace: product-material-pass
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: nginx-ui
+  template:
+    metadata:
+      labels:
+        app: nginx-ui
+    spec:
+      containers:
+        - image: nginx
+          imagePullPolicy: IfNotPresent
+          name: nginx-ui
+          ports:
+            - containerPort: 80
+              protocol: TCP
