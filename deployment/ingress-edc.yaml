@@ -7,6 +7,10 @@ metadata:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+    
+    # rewrite routes to optional rewrite to /provider
+    # e.g., <domain-name>/provider/data/assets -> routes to <backend-service>/data/assets
+    nginx.ingress.kubernetes.io/rewrite-target: /provider
 
     # If you encounter a redirect loop or are getting a 307 response code
     # then you need to force the nginx ingress to connect to the backend using HTTPS.
@@ -38,7 +42,7 @@ spec:
                 name: nginx-ui
                 port:
                   number: 8080
-          - path: /provider/data/assets
+          - path: /provider
             pathType: Prefix
             backend:
               service:
