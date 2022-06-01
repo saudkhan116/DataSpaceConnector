@@ -38,7 +38,7 @@ spec:
                 name: nginx-ui
                 port:
                   number: 8080
-          - path: /provider/data
+          - path: /provider/data/assets
             pathType: Prefix
             backend:
               service:
