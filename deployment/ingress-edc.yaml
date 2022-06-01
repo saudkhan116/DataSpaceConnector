@@ -21,9 +21,9 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: edc-provider
+                name: helloworld
                 port:
-                  number: 8182
+                  number: 8080
           - path: /ui
             pathType: Prefix
             backend:
@@ -38,6 +38,13 @@ spec:
                 name: nginx-ui
                 port:
                   number: 8080
+          - path: /provider
+            pathType: Prefix
+            backend:
+              service:
+                name: edc-provider
+                port:
+                  number: 8182
            
   tls:
     - hosts:
