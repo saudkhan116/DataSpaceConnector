@@ -28,7 +28,7 @@ spec:
                 name: helloworld
                 port:
                   number: 8080
-          - path: /provider(/*|$)(.*)
+          - path: /provider(/|$)(.*)
             pathType: Prefix
             backend:
               service:
