@@ -25,7 +25,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: helloworld
+                name: consumer-ui
                 port:
                   number: 8080
           - path: /provider(/|$)(.*)
@@ -42,13 +42,6 @@ spec:
                 name: edc-consumer
                 port:
                   number: 9192
-          - path: /ui
-            pathType: Prefix
-            backend:
-              service:
-                name: consumer-ui
-                port:
-                  number: 8080
   tls:
     - hosts:
         - materialpass.int.demo.catena-x.net
