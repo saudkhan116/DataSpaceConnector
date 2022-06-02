@@ -18,7 +18,7 @@ spec:
         app: consumer-ui
     spec:
       containers:
-        - image: muhammadsaudkhan/dockerize-vuejs-app
+        - image: muhammadsaudkhan/dockerize-vuejs-app:v1
           imagePullPolicy: IfNotPresent
           name: consumer-ui
           ports:
