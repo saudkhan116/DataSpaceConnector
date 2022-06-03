@@ -18,8 +18,8 @@ spec:
         app: consumer-ui
     spec:
       containers:
-        - image: muhammadsaudkhan/dockerize-vuejs-app:v1
-          imagePullPolicy: IfNotPresent
+        - image: muhammadsaudkhan/consumer-ui
+          imagePullPolicy: Always
           name: consumer-ui
           ports:
             - containerPort: 8080
