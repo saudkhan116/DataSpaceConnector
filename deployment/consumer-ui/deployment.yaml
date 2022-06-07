@@ -18,7 +18,7 @@ spec:
         app: consumer-ui
     spec:
       containers:
-        - image: muhammadsaudkhan/consumer-ui
+        - image: muhammadsaudkhan/vuejs-test
           imagePullPolicy: Always
           name: consumer-ui
           ports:
