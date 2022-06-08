@@ -27,7 +27,7 @@ spec:
               service:
                 name: consumer-ui
                 port:
-                  number: 3000
+                  number: 8080
           - path: /provider(/|$)(.*)
             pathType: Prefix
             backend:
