@@ -22,6 +22,6 @@ spec:
           imagePullPolicy: Always
           name: consumer-ui
           ports:
-            - containerPort: 8080
+            - containerPort: 80
               name: http
               protocol: TCP
