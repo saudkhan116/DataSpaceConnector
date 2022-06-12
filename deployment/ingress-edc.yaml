@@ -21,7 +21,7 @@ spec:
     - host: materialpass.int.demo.catena-x.net
       http:
         paths:
-          - path: /
+          - path: /ui(/|$)(.*)
             pathType: Prefix
             backend:
               service:
