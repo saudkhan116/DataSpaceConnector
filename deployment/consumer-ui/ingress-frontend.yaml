@@ -1,17 +1,13 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: argocd-server-ingress
+  name: argocd-server-ingress-frontend
   namespace: product-material-pass
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/ssl-passthrough: "false"
-    
-    # rewrite routes to optional rewrite to /provider
-    # e.g., <domain-name>/provider/data/assets -> routes to <backend-service>/data/assets
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-
+  
     # If you encounter a redirect loop or are getting a 307 response code
     # then you need to force the nginx ingress to connect to the backend using HTTPS.
     #
@@ -21,20 +17,13 @@ spec:
     - host: materialpass.int.demo.catena-x.net
       http:
         paths:
-          - path: /provider(/|$)(.*)
+          - path: /(/|$)(.*)
             pathType: Prefix
             backend:
               service:
-                name: edc-provider
+                name: consumer-ui
                 port:
-                  number: 8182
-          - path: /consumer(/|$)(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: edc-consumer
-                port:
-                  number: 9192
+                  number: 8080
   tls:
     - hosts:
         - materialpass.int.demo.catena-x.net
