@@ -8,6 +8,10 @@ spec:
   containers:
   - name: command-demo-container
     image: nginx
-    command: ["curl"]
-    args: ["-H 'X-Api-Key: password' ","http://edc-provider:8182/data/assets"]
+    command: ["/bin/sh", "-c"]
+    args: 
+    - curl "http://edc-provider:8182/data/assets";
+    - echo starting;
+    - ls -l;
+    - echo done;
   restartPolicy: OnFailure
