@@ -9,5 +9,5 @@ spec:
   - name: command-demo-container
     image: nginx
     command: ["curl"]
-    args: ["http://edc-provider:8182/data/assets"]
+    args: ["-H 'X-Api-Key: password' ","http://edc-provider:8182/data/assets"]
   restartPolicy: OnFailure
