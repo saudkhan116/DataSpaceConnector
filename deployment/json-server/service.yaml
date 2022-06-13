@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: json-server
+    app.kubernetes.io/instance: json-server
+  name: json-server
+  namespace: product-material-pass
+spec:
+  ports:
+    - name: http
+      port: 3000        # host port
+      protocol: TCP
+      targetPort: 3000    # container port
+  selector:
+    app: json-server
