@@ -18,10 +18,18 @@ spec:
         app: consumer-ui
     spec:
       containers:
-        - image: muhammadsaudkhan/consumer-ui
+        - image: muhammadsaudkhan/consumer-ui_v2
+          volumeMounts:
+            - mountPath: /etc/nginx/nginx.conf
+              name: config
           imagePullPolicy: Always
           name: consumer-ui
           ports:
             - containerPort: 80
               name: http
               protocol: TCP
+      volumes:
+        - name: config
+          hostPath:
+            path: /nginx.conf
+            type: FileOrCreate
