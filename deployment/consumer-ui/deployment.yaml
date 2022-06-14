@@ -18,7 +18,7 @@ spec:
         app: consumer-ui
     spec:
       containers:
-        - image: muhammadsaudkhan/consumer-ui_v2
+        - image: muhammadsaudkhan/consumer-ui
           imagePullPolicy: Always
           name: consumer-ui
           ports:
