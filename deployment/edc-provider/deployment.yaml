@@ -19,7 +19,10 @@ spec:
     spec:
       containers:
         - image: muhammadsaudkhan/edc-provider
-          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: data
+              mountPath: /app/samples/04.0-file-transfer/data/
+          imagePullPolicy: Always
           name: edc-provider
           ports:
             - containerPort: 8181
@@ -31,3 +34,6 @@ spec:
             - containerPort: 8182
               name: http-data
               protocol: TCP
+      volumes:
+        - name: data
+          emptyDir: {}
