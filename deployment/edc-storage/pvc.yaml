@@ -4,7 +4,6 @@ metadata:
   name: edc-pvc
   namespace: product-material-pass
 spec:
-  storageClassName: manual
   accessModes:
     - ReadWriteOnce
   resources:
