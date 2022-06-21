@@ -15,6 +15,17 @@ imagePullSecrets: []
 nameOverride: "edc-provider"
 fullnameOverride: "edc-provider"
 
+# persistent volume claim
+volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: edc-pvc
+
+# volume mounted inside container
+volumeMounts:
+  - name: data
+    mountPath: /app/samples/04.0-file-transfer/data/
+
 service:
   type: ClusterIP
   ports:
