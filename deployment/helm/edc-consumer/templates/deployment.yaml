@@ -23,6 +23,9 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: data
+              mountPath: /app/samples/04.0-file-transfer/data/
           ports:
             - containerPort: 9191
               name: http
@@ -36,6 +39,10 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: edc-pvc
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
