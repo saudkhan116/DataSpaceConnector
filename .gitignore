@@ -33,6 +33,10 @@ build
 .vscode
 
 /secrets
+/deployment/local/
+/deployment/check_status/
+/deployment/json-server/
+/deployment/nginx-ui/
 
 distributions/**/github.properties
 
