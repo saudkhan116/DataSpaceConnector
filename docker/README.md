@@ -1,7 +1,12 @@
-# Docker commands
+# Local Setup
 
 These docker commands are used to setup the system locally.
 
+## Cloning repository
+
+```bash
+git clone https://github.com/saudkhan116/DataSpaceConnector.git
+```
 ## Create Docker network
 
 ```bash
