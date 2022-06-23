@@ -31,20 +31,20 @@ Fill out the following required fields.
 
 Click on 'Create' button
 
-![Create New App](https://github.com/saudkhan116/DataSpaceConnector/raw/branch/main/deployment/images/create-app.png)
+![Create New App](https://raw.githubusercontent.com/saudkhan116/DataSpaceConnector/main/deployment/images/create-app.png)
 
 - Go inside the application and sync it. It would take some time to get synced.
 
-![Sync App](https://github.com/saudkhan116/DataSpaceConnector/raw/branch/main/deployment/images/syncapp.png)
+![Sync App](https://raw.githubusercontent.com/saudkhan116/DataSpaceConnector/main/deployment/images/syncapp.png)
 
-![Sync App](https://github.com/saudkhan116/DataSpaceConnector/raw/branch/main/deployment/images/syncapp2.png)
+![Sync App](https://raw.githubusercontent.com/saudkhan116/DataSpaceConnector/main/deployment/images/syncapp2.png)
 
 - Navigate inside the pod
 
-![Consumer Pod](https://github.com/saudkhan116/DataSpaceConnector/raw/branch/main/deployment/images/consumer-pod.png)
+![Consumer Pod](https://raw.githubusercontent.com/saudkhan116/DataSpaceConnector/main/deployment/images/consumer-pod.png)
 - Go to the logs tab
 
-![Consumer connector logs](https://github.com/saudkhan116/DataSpaceConnector/raw/branch/main/deployment/images/logs.png)
+![Consumer connector logs](https://raw.githubusercontent.com/saudkhan116/DataSpaceConnector/main/deployment/images/logs.png)
 
 If everything works fine then the application is deployed...
 
@@ -62,7 +62,7 @@ In the end, the app should be accessible at https://materialpass.int.demo.catena
 
 #### Example Screenshots:
 
-![Login Page](https://github.com/saudkhan116/DataSpaceConnector/raw/branch/main/deployment/images/login.png)
+![Login Page](https://raw.githubusercontent.com/saudkhan116/DataSpaceConnector/main/deployment/images/login.png)
 
-![Battery Passport](https://github.com/saudkhan116/DataSpaceConnector/raw/branch/main/deployment/images/batterypassport.png)
+![Battery Passport](https://raw.githubusercontent.com/saudkhan116/DataSpaceConnector/main/deployment/images/batterypassport.png)
 
