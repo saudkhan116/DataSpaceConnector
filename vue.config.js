@@ -4,7 +4,7 @@ module.exports = defineConfig({
   lintOnSave: false,
   devServer: {
     allowedHosts: 'all',
-    //proxy: 'http://localhost:9192'
-    proxy: 'https://materialpass.int.demo.catena-x.net'
+    proxy: 'http://localhost:9192'
+    // proxy: 'https://materialpass.int.demo.catena-x.net'
   }
 })

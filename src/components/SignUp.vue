@@ -1,13 +1,14 @@
 <template>
-  <img src="../assets/catenaX-logo.png" class="logo" />
+<div class="bg">
+  <img style="margin-left: 45%" src="../assets/catenaX-logo.png" class="logo" />
   <br />
   <div class="margin-top">
-    <p class="h1">Sign Up</p>
+    <p class="h1" style="margin-left: 49%; font-weight: bolder; font-size: x-large;">Sign Up</p>
   </div>
   <div class="margin-top">
     <div class="container">
       <div class="col-md-4 center">
-        <select class="form-select" v-model="role">
+        <select class="form-select textbox" v-model="role">
           <option disabled selected value="">Select Role..</option>
           <option value="oem">OEM</option>
           <option value="rawMaterialSupplier">Raw Material Supplier</option>
@@ -20,7 +21,7 @@
       <br />
       <div class="col-md-4 center">
         <input
-          class="form-control"
+          class="form-control textbox"
           v-model="name"
           type="text"
           placeholder="Enter Name"
@@ -29,7 +30,7 @@
       <br />
       <div class="col-md-4 center">
         <input
-          class="form-control"
+          class="form-control textbox"
           v-model="email"
           type="text"
           placeholder="Enter Email"
@@ -38,7 +39,7 @@
       <br />
       <div class="col-md-4 center">
         <input
-          class="form-control"
+          class="form-control textbox"
           v-model="password"
           type="password"
           placeholder="Enter Password"
@@ -53,11 +54,12 @@
       <br />
       <div class="col-md-4 center">
         <p>
-          <span> <router-link to="/login">Already a User?</router-link></span>
+          <span> <router-link to="/login" style="margin-left:13%">Already a User?</router-link></span>
         </p>
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script type="text/jsx">
@@ -95,3 +97,34 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.bg{
+  background: white;
+  margin-top:5%;
+}
+.btn-signup {
+  width: 35%;
+  padding: 6px 6px 6px 6px;
+  background: #b3cb2d;
+  color: white;
+  font-weight: bolder;
+}
+.register input {
+  width: 300px !important;
+}
+.center {
+  margin-left: 40%;
+  margin-top: inherit;
+}
+
+.margin-top {
+  margin-top: 30px;
+}
+
+.textbox{
+  width: 35%;
+  margin-top:10px;
+  padding: 6px 6px 6px 6px;
+}
+</style>

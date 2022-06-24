@@ -1,36 +1,112 @@
 <template>
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-      <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-        <a class="navbar-brand" href="#" style="padding: 0px 0px 0px 30px;"><img src="../assets/catenaXlogo.png" style="width: 265px; margin: 0px 0px 0px 60px;"></a>
-        <ul class="navbar-nav mr-auto mt-2 mt-lg-0" style="padding-left: 92px">
-          <li class="nav-item active">
-            <a class="nav-link active" href="#">Home</a>
-          </li>
-          <!-- <li class="nav-item">
-            <a class="nav-link" href="#" v-on:click="scanQRCode">Scan QRCode</a>
-          </li> -->
-          <li class="nav-item">
-            <a class="nav-link" href="#">About</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" v-on:click="logout">Logout</a>
-          </li>
-        </ul>
-        <!-- <form class="form-inline my-2 my-lg-0">
-      <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-    </form> -->
-    <span style="padding-left: 430px;">
-        Logged in as <strong>{{username}}</strong>   | <span>Role: <strong>{{role}}</strong></span> 
-    </span>
-      </div>
-    </nav>
+    <div class="header-container">
+    <img :src="CatenaLogo" alt="logo" class="logo" />
+    <img :src="Settings" alt="settings" class="buttons" title="Settings" />
+    <img :src="Notifications" alt="Notifications" class="buttons" title="Notifications" />
+    <img :src="Profile" alt="profile" class="buttons" title="User profile" />
+    <img :src="Logout" alt="logout" class="buttons" title="Logout" v-on:click="logout"/>
+  </div>
 </template>
 
-<script type="text/jsx">
+<script>
+import CatenaLogo from "../assets/logotype.png";
+import Profile from "../assets/profile.svg";
+import Notifications from "../assets/notifications.svg";
+import Settings from "../assets/settings.svg";
+import Logout from "../assets/logout.png";
+
+export default {
+  name: "Header",
+  components: {
+    CatenaLogo,
+    Profile,
+    Settings,
+    Logout,
+  },
+  setup() {
+    return {
+      CatenaLogo,
+      Profile,
+      Notifications,
+      Settings,
+      Logout
+    };
+  },
+  methods: {
+      logout(){
+          localStorage.clear();
+          this.$router.push({ name: "Login" });
+      },
+      scanQRCode(){
+          this.$router.push({ name: "ScanPassport" });
+      }
+  },
+   mounted() {
+    let user = localStorage.getItem("user-info");
+    if (user) {
+      this.username = JSON.parse(user).name
+      this.role = JSON.parse(user).role
+    }
+  }
+};
+</script>
+
+<style scoped>
+.header-container {
+  display: flex;
+}
+.id-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 80px;
+}
+.logo {
+  display: block;
+  width: 209px;
+  height: 49px;
+  margin: 0 54% 70px 70px;
+}
+.buttons {
+  width: 26px;
+  height: 26px;
+  margin: 15px;
+  cursor: pointer;
+}
+</style>
+
+<!-- <template>
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light" style="background-color: #ffffff;">
+  <a class="navbar-brand" href="#">
+    <a class="d-inline-block align-top" href="#" style="padding: 0px 0px 0px 30px;"><img src="../assets/catenaXlogo.png" style="width: 265px; margin: 0px 0px 0px 60px;"></a>
+  </a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="padding-left:100px;">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link active" href="#">Home <span class="sr-only"> 
+    (current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">About </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" v-on:click="logout">Logout </a>
+      </li>
+    </ul>
+    <ul>
+     <li id="userDetailsItem" class="nav-item" style="list-style: none; margin: 10px 0px 0px 400px;">
+          Logged in as <strong>{{username}}</strong>   | <span>Role: <strong>{{role}}</strong>
+      </span>
+      </li>
+    </ul>
+  </div>
+  
+</nav>
+</template> -->
+
+<!-- <script type="text/jsx">
 export default {
   name: "Navigation",
   data() {
@@ -64,4 +140,12 @@ nav{
     font-size: medium;
 }
 
-</style>
+@media screen and (max-width: 992px) {
+ ul li {
+    margin: 10px 0px 0px 0px !important;
+    list-style: none;
+
+  }
+}
+
+</style> -->

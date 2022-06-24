@@ -1,14 +1,15 @@
 <template>
-  <img src="../assets/catenaX-logo.png" />
+<div class="bg">
+  <img style="margin-left: 45%" src="../assets/catenaX-logo.png" />
   <br />
   <div class="margin-top">
-    <p class="h1">Login</p>
+    <p class="h1" style="margin-left: 49%; font-weight: bolder; font-size: x-large;">Login</p>
   </div>
   <div class="margin-top">
     <div class="container">
       <div class="col-md-4 center">
         <input
-          class="form-control"
+          class="form-control textbox"
           v-model="email"
           type="text"
           placeholder="Enter email"
@@ -17,7 +18,7 @@
       <br />
       <div class="col-md-4 center">
         <input
-          class="form-control"
+          class="form-control textbox"
           v-model="password"
           type="password"
           placeholder="Enter Password"
@@ -30,7 +31,7 @@
         </button>
       </div>
     </div>
-    <div class="col-md-4 center margin-top">
+    <div class="col-md-4 center margin-top" style="margin-left: 45%">
       <p>
         <span> <router-link to="/sign-up">Sign Up</router-link></span>
         <span> | </span>
@@ -40,6 +41,7 @@
       </p>
     </div>
   </div>
+</div>
 </template>
 
 <script type="text/jsx">
@@ -55,7 +57,7 @@ export default {
   methods: {
     async login() {
       let result = await axios.get(
-        `http://localhost:3000/users?email=${this.email}&password=${this.password}`
+        `https://mock--server.herokuapp.com/users?email=${this.email}&password=${this.password}`
       );
       if (result.status == 200 && result.data.length > 0) {
         //alert("login successful..!")
@@ -82,3 +84,33 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+
+.bg{
+  background: white;
+  margin-top:8%;
+}
+.btn-login{
+  width: 35%;
+  padding: 6px 6px 6px 6px;
+  background: #b3cb2d;
+  color: white;
+  font-weight: bolder;
+}
+
+.center {
+  margin-left: 40%;
+  margin-top: inherit;
+}
+
+.margin-top {
+  margin-top: 30px;
+}
+
+.textbox{
+  width: 35%;
+  margin-top:10px;
+  padding: 6px 6px 6px 6px;
+}
+</style>
