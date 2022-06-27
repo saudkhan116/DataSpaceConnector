@@ -1,0 +1,28 @@
+{
+	"id": "14",
+	"provider": "BMW",
+	"role": "OEM",
+	"providerRegion": "Stuttgart South",
+	"batteries": [{
+		"id": "test-battery 1",
+		"name": "test-battery-1",
+		"type": "car battery"
+		},
+		{
+		"id": "test-battery 2",
+		"name": "test-battery-2",
+		"type": "car battery"
+		},
+		{
+		"id": "test-battery 3",
+		"name": "test-battery-3",
+		"type": "car battery"
+		}
+	],
+	"providerConnector": "http://localhost:8282/api/v1/ids/data",
+	"contractOffers": [
+			"test-battery-1_oem_contractoffer",
+			"test-battery-2_oem_contractoffer",
+			"test-battery-3_oem_contractoffer"
+	]
+}

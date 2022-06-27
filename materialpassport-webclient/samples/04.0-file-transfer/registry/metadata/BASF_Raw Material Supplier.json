@@ -1,0 +1,15 @@
+{
+	"id": "11",
+	"provider": "BASF",
+	"role": "Raw Material Supplier",
+	"providerRegion": "Stuttgart South",
+	"batteries": [{
+		"id": "test-battery",
+		"name": "test-battery",
+		"type": "car battery"
+	}],
+	"providerConnector": "http://localhost:8282/api/v1/ids/data",
+	"contractOffers": [
+			"test-battery_contractoffer"
+	]
+}
