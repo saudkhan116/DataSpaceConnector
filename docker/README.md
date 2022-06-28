@@ -7,11 +7,18 @@ These docker commands are used to setup the system locally.
 ```bash
 git clone https://github.com/saudkhan116/DataSpaceConnector.git
 ```
-## Create Docker network
+## Create docker network
 
 ```bash
 docker create network edc-network
 ```
+
+## Create shared docker volume
+
+```bash
+docker create volume DataVolume
+```
+
 ## Launch containers
 
 #### Container 1: edc-consumer
@@ -25,7 +32,7 @@ cd edc-consumer/
 docker build -t edc-consumer:latest .
 
 # run docker container
-docker run -p 9191:9191 -p 9292:9292 -p 9192:9192 --name edc-consumer --network edc-network --volume /$(pwd)/config:/app/config -d edc-consumer:latest
+docker run -p 9191:9191 -p 9292:9292 -p 9192:9192 --name edc-consumer --network edc-network --volume /$(pwd)/config:/app/config -v DataVolume:/app/samples/04.0-file-transfer/data/ -d edc-consumer:latest
 
 # check logs
 docker logs edc-consumer
@@ -36,7 +43,7 @@ docker stop edc-consumer; docker rm edc-consumer;
 
 #### Alternative: Using existing docker image
 - Pull image using the command  ```docker pull muhammadsaudkhan/edc-consumer:latest```
-- Run the container using the command ```docker run -p 9191:9191 -p 9292:9292 -p 9192:9192 --name edc-consumer --network edc-network --volume /$(pwd)/config:/app/config -d muhammadsaudkhan/edc-consumer:latest```
+- Run the container using the command ```docker run -p 9191:9191 -p 9292:9292 -p 9192:9192 --name edc-consumer --network edc-network --volume /$(pwd)/config:/app/config -v DataVolume:/app/samples/04.0-file-transfer/data/ -d muhammadsaudkhan/edc-consumer:latest```
 
 #### Container 2: edc-provider
 ```bash
@@ -47,7 +54,7 @@ cd edc-provider/
 docker build -t edc-provider:latest .
 
 # run docker container
-docker run -p 8181:8181 -p 8282:8282 -p 8182:8182 --name edc-provider -volume /$(pwd)/config:/app/config --network edc-network -d edc-provider:latest
+docker run -p 8181:8181 -p 8282:8282 -p 8182:8182 --volume /$(pwd)/config:/app/config --volumes-from edc-consumer --name edc-provider --network edc-network -d edc-provider:latest
 
 # check logs
 docker logs edc-provider
@@ -58,7 +65,7 @@ docker stop edc-provider; docker rm edc-provider;
 
 #### Alternative: Using existing docker image
 - Pull image using the command  ```docker pull muhammadsaudkhan/edc-provider:latest```
-- Run the container using the command ```docker run -p 8181:8181 -p 8282:8282 -p 8182:8182 --name edc-provider -volume /$(pwd)/config:/app/config --network edc-network -d muhammadsaudkhan/edc-provider:latest```
+- Run the container using the command ```docker run -p 8181:8181 -p 8282:8282 -p 8182:8182 --volume /$(pwd)/config:/app/config --volumes-from edc-consumer --name edc-provider --network edc-network -d muhammadsaudkhan/edc-provider:latest```
 
 #### Container 3: consumer-ui
 ```bash

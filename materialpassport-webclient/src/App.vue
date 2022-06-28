@@ -33,6 +33,10 @@ export default {
 
   color: #2c3e50;
   background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
 }
 * {
   box-sizing: border-box;

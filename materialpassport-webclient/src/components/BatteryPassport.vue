@@ -198,9 +198,7 @@ export default {
     GetProviderInfo() {
        let user = localStorage.getItem("user-info")
        let role = JSON.parse(user).role
-      //axios.get('/api/v1/data/contractnegotiations/provider/metadata/' + this.selectedProvider + '?role=' + role, {
-      //axios.get('/consumer/data/contractnegotiations/provider/metadata/' + this.selectedProvider, {
-      axios.get('/data/contractnegotiations/provider/metadata/' + this.selectedProvider, {
+      axios.get('/consumer/data/contractnegotiations/provider/metadata/' + this.selectedProvider, {
         headers: {
             'X-Api-Key': 'password'
           }
@@ -345,8 +343,7 @@ export default {
       let contractOffer = require('C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/registry/contractoffers/' + this.selectedContract.toLowerCase());
       return new Promise(resolve => {
 
-      //axios.post('/provider/data/contractnegotiations', contractOffer,{
-      axios.post('/data/contractnegotiations', contractOffer,{
+      axios.post('/consumer/data/contractnegotiations', contractOffer,{
         headers: {
             'X-Api-Key': 'password'
           }
@@ -364,7 +361,7 @@ export default {
       return new Promise(resolve => {
 
        //axios.get('/provider/data/contractnegotiations/' + uuid, {
-       axios.get('/data/contractnegotiations/' + uuid, {
+       axios.get('/consumer/data/contractnegotiations/' + uuid, {
           headers: {
             'X-Api-Key': 'password',
             "accept": "application/json"
@@ -402,7 +399,7 @@ export default {
           "isFinite": true
         },
         "managedResources": false,
-        "connectorAddress": "http://localhost:8282/api/v1/ids/data",
+        "connectorAddress": "http://edc-provider:8282/api/v1/ids/data",
         "connectorId": "consumer"
     }
 
@@ -430,7 +427,7 @@ export default {
      return new Promise(resolve => {
 
       //axios.get('/consumer/data/contractnegotiations/passport/display/' + filename, {
-      axios.get('/data/contractnegotiations/passport/display/' + filename, {
+      axios.get('/consumer/data/contractnegotiations/passport/display/' + filename, {
         headers: {
             'X-Api-Key': 'password'
           }

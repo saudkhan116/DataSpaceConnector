@@ -99,7 +99,7 @@ export default {
             isFinite: true,
           },
           managedResources: false,
-          connectorAddress: "http://localhost:8282/api/v1/ids/data",
+          connectorAddress: "http://edc-provider:8282/api/v1/ids/data",
           connectorId: "consumer",
         };
 
@@ -107,7 +107,7 @@ export default {
 
         //axios.post('/consumer/data/transferprocess', jsonData, {
         axios
-          .post("/data/transferprocess", jsonData, {
+          .post("/consumer/data/transferprocess", jsonData, {
             headers: {
               "X-Api-Key": "password",
             },
@@ -126,7 +126,7 @@ export default {
       return new Promise((resolve) => {
         //axios.get('/consumer/data/contractnegotiations/passport/display/' + filename, {
         axios
-          .get("/data/contractnegotiations/passport/display/" + filename, {
+          .get("/consumer/data/contractnegotiations/passport/display/" + filename, {
             headers: {
               "X-Api-Key": "password",
             },
@@ -146,7 +146,6 @@ export default {
     //this.data = await this.fetchData();
     //console.log(data);
     let contractId = this.$route.params.contractId;
-    //const destinationPath = 'C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/data'
     const destinationPath = "/app/samples/04.0-file-transfer/data"; // set different path for containers
     let asset = "";
     let user = localStorage.getItem("user-info");
