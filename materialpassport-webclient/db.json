@@ -1,5 +1,7 @@
 {
-  "334593247": {
+	"meta":{
+		"uuid": "334593247"
+	},
     "generalInformation": {
       "passportNumber": "12345",
       "passportIssuer": "Catena-X",
@@ -459,5 +461,4 @@
       "humanHealth": "",
       "humanRights": ""
     }
-  }
 }
