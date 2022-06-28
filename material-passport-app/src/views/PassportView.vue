@@ -1,5 +1,5 @@
 <template>
-  <Header :batteryId="data.generalInformation.batteryId" />
+  <Header :batteryId="data.generalInformation" />
   <div class="container">
     <GeneralInformation
       sectionTitle="General information"
@@ -89,7 +89,7 @@ export default {
 
 <style scoped>
 .container {
-  max-width: 88%;
-  padding-left: 130px;
+  width: 76%;
+  margin: 0 12% 0 12%;
 }
 </style>
