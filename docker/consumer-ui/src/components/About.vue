@@ -3,7 +3,7 @@
       About Page
   </div>
 </template>
-<script type="text/jsx">
+<script>
 // @ is an alias to /src
 export default {
   name: "AboutPage",

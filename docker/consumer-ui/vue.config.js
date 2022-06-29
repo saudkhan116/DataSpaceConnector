@@ -5,6 +5,7 @@ module.exports = defineConfig({
   publicPath: './',
   devServer: {
     allowedHosts: 'all',
-    proxy: 'https://materialpass.int.demo.catena-x.net'
+	proxy: 'localhost:9192'
+    //proxy: 'https://materialpass.int.demo.catena-x.net'
   }
 })

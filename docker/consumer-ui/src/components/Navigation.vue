@@ -1,4 +1,80 @@
 <template>
+    <div class="header-container">
+    <img :src="CatenaLogo" alt="logo" class="logo" />
+    <img :src="Settings" alt="settings" class="buttons" title="Settings" />
+    <img :src="Notifications" alt="Notifications" class="buttons" title="Notifications" />
+    <img :src="Profile" alt="profile" class="buttons" title="User profile" />
+    <img :src="Logout" alt="logout" class="buttons" title="Logout" v-on:click="logout"/>
+  </div>
+</template>
+
+<script>
+import CatenaLogo from "../assets/logotype.png";
+import Profile from "../assets/profile.svg";
+import Notifications from "../assets/notifications.svg";
+import Settings from "../assets/settings.svg";
+import Logout from "../assets/logout.png";
+
+export default {
+  name: "Header",
+  components: {
+    CatenaLogo,
+    Profile,
+    Settings,
+    Logout,
+  },
+  setup() {
+    return {
+      CatenaLogo,
+      Profile,
+      Notifications,
+      Settings,
+      Logout
+    };
+  },
+  methods: {
+      logout(){
+          localStorage.clear();
+          this.$router.push({ name: "Login" });
+      },
+      scanQRCode(){
+          this.$router.push({ name: "ScanPassport" });
+      }
+  },
+   mounted() {
+    let user = localStorage.getItem("user-info");
+    if (user) {
+      this.username = JSON.parse(user).name
+      this.role = JSON.parse(user).role
+    }
+  }
+};
+</script>
+
+<style scoped>
+.header-container {
+  display: flex;
+}
+.id-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 80px;
+}
+.logo {
+  display: block;
+  width: 209px;
+  height: 49px;
+  margin: 0 54% 70px 70px;
+}
+.buttons {
+  width: 26px;
+  height: 26px;
+  margin: 15px;
+  cursor: pointer;
+}
+</style>
+
+<!-- <template>
     <nav class="navbar fixed-top navbar-expand-lg navbar-light" style="background-color: #ffffff;">
   <a class="navbar-brand" href="#">
     <a class="d-inline-block align-top" href="#" style="padding: 0px 0px 0px 30px;"><img src="../assets/catenaXlogo.png" style="width: 265px; margin: 0px 0px 0px 60px;"></a>
@@ -28,9 +104,9 @@
   </div>
   
 </nav>
-</template>
+</template> -->
 
-<script type="text/jsx">
+<!-- <script type="text/jsx">
 export default {
   name: "Navigation",
   data() {
@@ -58,7 +134,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 nav{
     background-color: white;
     font-size: medium;
@@ -71,4 +147,5 @@ nav{
 
   }
 }
-</style>
+
+</style> -->

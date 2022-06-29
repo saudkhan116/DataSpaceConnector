@@ -1,11 +1,10 @@
 <template>
 <div class="container">
-  
-  <div class="main">
+    <div class="main">
     <h5 class="center">Step # 1: Load contract offers from the battery provider</h5><br />
-  <div class="container" style="width: 25%;">
-    <label for="Provider"><strong>Battery Provider:</strong></label>
-    <select class="form-select" id="selectProvider" v-model="selectedProvider" placeholder="Select Battery Provider">
+  <div class="container">
+    <label class="center" for="Provider"><strong>Battery Provider:</strong></label> <br />
+    <select class="form-select center ddl" id="selectProvider" v-model="selectedProvider" placeholder="Select Battery Provider">
       <option value="" disabled selected>Select Battery Provider...</option>
       <option v-for="provider in listProviders" :value="provider.name" v-bind:key="provider.id">{{ provider.name }}</option>
     </select>
@@ -13,15 +12,15 @@
   </div>
   <br />
     <div class="container">
-        <button type="button" class="btn btn-success" style="width: 24%; margin-left: 38%;" :disabled="isDisabled"  v-on:click="GetProviderInfo">Load Contract Offers</button>
-    <span class="container" id="loadContracts"></span>
+        <button type="button" class="btn btn-success center success-btn"  :disabled="isDisabled"  v-on:click="GetProviderInfo">Load Contract Offers</button>
+    <span class="container" style="margin-left: 20px" id="loadContracts"></span>
     </div>
    
   <br />
   <h5 class="center">Step # 2: Negotiate the edc contract</h5><br />
-   <div class="container" style="width: 25%;">
-      <label for="contractOffer"><strong>Contract Offers:</strong></label>
-      <select required class="form-select" id="selectOffer" v-model="selectedContract" placeholder="Select Offer" @change="setSelectedContract($event)">
+   <div class="container">
+      <label class="center" for="contractOffer"><strong>Contract Offers:</strong></label><br />
+      <select required class="form-select center ddl" id="selectOffer" v-model="selectedContract" placeholder="Select Offer" @change="setSelectedContract($event)">
         <option value="" disabled selected>Select an Offer...</option>
         <option v-for="(offer, index) in provider.contractOffers"
                 v-bind:key="index">{{ offer }}
@@ -29,9 +28,10 @@
       </select>
       <!-- <span id="selectedBatt"></span> -->
     </div>
-    <div class="container" style="width: 25%;">
-      <label for="Battery"><strong>Battery:</strong></label>
-    <select required class="form-select"  id="selectBattery" v-model="selectedBattery" placeholder="Select Battery" @change="setSelectedBattery($event)">
+    <br />
+    <div class="container">
+      <label class="center" for="Battery"><strong>Battery:</strong></label><br />
+    <select required class="form-select center ddl"  id="selectBattery" v-model="selectedBattery" placeholder="Select Battery" @change="setSelectedBattery($event)">
       <option value="" disabled selected >Select Battery...</option>
       <option v-for="(battery, id) in provider.batteries" :value="battery.id"
               v-bind:key="id">{{ battery.name }}
@@ -41,10 +41,10 @@
     <br />
 
     <div class="container">
-        <button type="button" class="btn btn-success" style="width: 24%; margin-left: 38%;" :disabled="isDisabled"  v-on:click="doNegotiation">Start Negotiation</button>
-        <span class="container" id="negotiateContract"></span>
+        <button type="button" class="btn btn-success center success-btn" :disabled="isDisabled"  v-on:click="doNegotiation">Start Negotiation</button>
+        <span class="container" style="margin-left: 20px" id="negotiateContract"></span>
     </div>
-  <!-- <div class="container" style="width: 25%;">
+  <!-- <div class="container" style="width:25%;">
       <label for="Battery"><strong>Battery:</strong></label>
     <select required class="form-select" id="selectBattery" placeholder="Select Battery" @change="setSelectedBattery($event)">
       <option value="" disabled selected >Select Battery...</option>
@@ -54,23 +54,36 @@
     </select>
   </div> -->
     <!-- <br />
-    <div class="container" style="width: 25%;">
+    <div class="container" style="width:25%;">
       <label for="connectorURL"><strong>Connector URL:</strong></label>
       <input type="text" class="form-control" v-model="this.provider.providerConnector" disabled id="txtConnectorURL" placeholder="Connector URL">
     </div> -->
     <br />
     <h5 class="center">Step # 3: Get battery passport from the provider</h5><br />
     <div class="container">
-        <button type="button" class="btn btn-success" style="width: 24%; margin-left: 38%;" :disabled="isDisabled"  v-on:click="initiateTransfer">Get Battery Passport</button>
+        <button type="button" class="btn btn-success center success-btn" :disabled="isDisabled"  v-on:click="initiateTransfer">Get Battery Passport</button>
     </div>
     <br />
+
+  <div v-if="isLoading" class="center" style="margin-top: -50px;">
+  <div style="width: 3rem; height: 3rem;" role="status" >
+    <span><img src="../assets/loading.gif" height="200" width="250"></span>
+  </div>
+  <br />
+  <div class="h5" style="margin: 75px 0px 0px 10px;">{{currentStatus}}</div>
+</div>
   </div>
   <div v-if="isPassportVisible" class="container margin-top">
-    <table v-bind="productPassport" class="table table-bordered table-striped" style="border: 1px ghostwhite; text-align: left;">
+    <span>
+      {{productPassport}}
+    </span>
+  </div>
+  <!-- <div v-if="isPassportVisible" class="container margin-top">
+    <table v-bind="productPassport" class="table table-bordered table-striped" style="border:1px ghostwhite; text-align:left;">
       <thead>
         <th colspan="6" class="h3 table-heading">Battery Passport</th>
       </thead>
-      <tbody>
+      <tbody> -->
       <!-- <tr v-for="(value, key) in this.productPassport" v-bind:key="key">
           <th scope="col">{{key}}</th>
           <td v-if="typeof value == 'object'">
@@ -78,7 +91,7 @@
             <td>{{k}}</td></tr></table></td>
           <td v-else>{{value}}</td>
         </tr> -->
-    <template v-for="(value1, key1) in this.productPassport" v-bind:key="key1">
+    <!-- <template v-for="(value1, key1) in this.productPassport" v-bind:key="key1">
     <tr scope="row" v-if="typeof value1 != 'object'">
       <th scope="col">{{key1}}</th>
       <td>{{value1}}</td> 
@@ -113,20 +126,14 @@
   </template>
   </tbody>
     </table>
-  </div>
+  </div> -->
   <br />
-</div>
-<div v-if="isLoading">
-  <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status" >
-    <span class="sr-only"></span>
-  </div>
-  <br />
-  <div class="h5">{{currentStatus}}</div>
 </div>
 </template>
 
 <script type="text/jsx">
 import axios from 'axios';
+//import 'bootstrap/dist/css/bootstrap.min.css'
 
 let listBatteryProviders = require('../assets/providers.json');
 
@@ -191,8 +198,7 @@ export default {
     GetProviderInfo() {
        let user = localStorage.getItem("user-info")
        let role = JSON.parse(user).role
-      //axios.get('/api/v1/data/contractnegotiations/provider/metadata/' + this.selectedProvider + '?role=' + role, {
-        axios.get('/consumer/data/contractnegotiations/provider/metadata/' + this.selectedProvider, {
+      axios.get('/consumer/data/contractnegotiations/provider/metadata/' + this.selectedProvider, {
         headers: {
             'X-Api-Key': 'password'
           }
@@ -256,7 +262,7 @@ export default {
       var result = await this.negotiateContract()
       this.uuid = result.id
       this.isLoading = true
-      this.currentStatus = "Negotiating contract..."
+      this.currentStatus = "Negotiating contract"
       // Check agreement status //
       // Status: INITIAL, REQUESTED, CONFIRMED
       // first call to get the initial status
@@ -269,7 +275,7 @@ export default {
       // Check the agreement status until it is of status CONFIRMED
       while(data.state != "CONFIRMED"){        
         data = await this.getAgreementId(this.uuid)
-        this.currentStatus = "Agreement state: " + data.state + "..."
+        this.currentStatus = "Agreement state: " + data.state
         console.log(data.state + '_' + data.contractAgreementId)
         this.contractId = data.contractAgreementId
       }
@@ -278,42 +284,43 @@ export default {
     },
     async initiateTransfer(){
 
-      this.$router.push({ name: "Home", query:{ provider: this.selectedProvider, battery: this.selectedBattery } });
+      
       this.isLoading = true
-      //const destinationPath = 'C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/data'
-      const destinationPath = '/app/samples/04.0-file-transfer/data' // set different path for containers
+      // //const destinationPath = 'C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/data'
+      // const destinationPath = '/app/samples/04.0-file-transfer/data' // set different path for containers
 
-      // Initiate transfer request //
-      let asset = ''
-      let user = localStorage.getItem("user-info")
-      let role = JSON.parse(user).role
-      if (role.toLowerCase() == "dismantler")
-        asset = "test-document_dismantler"
-      else if (role.toLowerCase() == "oem")
-        asset = "test-document_oem"
-      else if (role.toLowerCase() == "recycler")
-        asset = "test-document_recycler"
-      else if (role.toLowerCase() == "Battery Producer")
-        asset = "test-document_battery_producer"
-      var res = await this.getProductPassport(asset, destinationPath, this.contractId)
-      if (res == null)
-        this.currentStatus = "Something went wrong in finalizing product process..."
-      else {
-        this.currentStatus = "Finalizing product passport..."
+      // // Initiate transfer request //
+      // let asset = ''
+      // let user = localStorage.getItem("user-info")
+      // let role = JSON.parse(user).role
+      // if (role.toLowerCase() == "dismantler")
+      //   asset = "test-document_dismantler"
+      // else if (role.toLowerCase() == "oem")
+      //   asset = "test-document_oem"
+      // else if (role.toLowerCase() == "recycler")
+      //   asset = "test-document_recycler"
+      // else if (role.toLowerCase() == "Battery Producer")
+      //   asset = "test-document_battery_producer"
+      // var res = await this.getProductPassport(asset, destinationPath, this.contractId)
+      // if (res == null)
+      //   this.currentStatus = "Something went wrong in finalizing product process"
+      // else {
+      //   this.currentStatus = "Finalizing product passport"
 
-        // Display the product passport //
-        var productPass = await this.displayProductPassport(asset+ '.json')
-        if (productPass == ''){
-          setTimeout(this.displayProductPassport(asset+ '.json'), 60000);
-        }
+      //   // Display the product passport //
+      //   var productPass = await this.displayProductPassport(asset+ '.json')
+      //   if (productPass == ''){
+      //     setTimeout(this.displayProductPassport(asset+ '.json'), 60000);
+      //   }
 
-        this.productPassport = productPass
-        this.isPassportVisible = true;
-        this.isLoading = false;
-        this.isDisabled = false;
+      //   this.productPassport = productPass
+      //   this.isPassportVisible = true;
+      //   this.isLoading = false;
+      //   this.isDisabled = false;
         // Clear QRCode-info from localStorage
         localStorage.removeItem("QRCode-info");
-      }
+      //}
+      this.$router.replace({ name: "Passport", params:{  contractId: this.contractId }, query:{ provider: this.selectedProvider, battery: this.selectedBattery } });
     },
     async GetBatteryDataUsingQRCode(){
 
@@ -333,11 +340,10 @@ export default {
     negotiateContract(){
 
       // TODO dynamic contractoffer file name
-      //let contractOffer = require('C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/registry/contractoffers/' + this.selectedContract.toLowerCase());
-      let contractOffer = require('/app/samples/04.0-file-transfer/registry/contractoffers/' + this.selectedContract.toLowerCase()) // set different path for containers
+      let contractOffer = require('/app/samples/04.0-file-transfer/registry/contractoffers/' + this.selectedContract.toLowerCase());
       return new Promise(resolve => {
 
-      axios.post('/provider/data/contractnegotiations', contractOffer,{
+      axios.post('/consumer/data/contractnegotiations', contractOffer,{
         headers: {
             'X-Api-Key': 'password'
           }
@@ -354,7 +360,8 @@ export default {
     getAgreementId(uuid){
       return new Promise(resolve => {
 
-       axios.get('/provider/data/contractnegotiations/' + uuid, {
+       //axios.get('/provider/data/contractnegotiations/' + uuid, {
+       axios.get('/consumer/data/contractnegotiations/' + uuid, {
           headers: {
             'X-Api-Key': 'password',
             "accept": "application/json"
@@ -396,7 +403,10 @@ export default {
         "connectorId": "consumer"
     }
 
+    // "connectorAddress": "http://edc-provider:8282/api/v1/ids/data",
+
       axios.post('/consumer/data/transferprocess', jsonData, {
+        //axios.post('/data/transferprocess', jsonData, {
         headers: {
             'X-Api-Key': 'password'
           }
@@ -415,6 +425,8 @@ export default {
   displayProductPassport(filename){
 
      return new Promise(resolve => {
+
+      //axios.get('/consumer/data/contractnegotiations/passport/display/' + filename, {
       axios.get('/consumer/data/contractnegotiations/passport/display/' + filename, {
         headers: {
             'X-Api-Key': 'password'
@@ -435,6 +447,11 @@ export default {
 </script>
 
 <style scoped>
+
+.center {
+  margin-left: 33%;
+  margin-top: inherit;
+}
 .md-dialog-container {
   padding: 20px;
 }
@@ -449,8 +466,21 @@ export default {
 }
 
 .main{
-  text-align: left;
-  background: aliceblue;
-  padding: 50px 0px 0px 0px;
+  text-align:left;
+  padding: 50px 0px 0px 10%;
+}
+.ddl{
+  width: 20%;
+  margin-top:10px;
+  padding: 6px 6px 6px 6px;
+  border-radius: 4px;
+}
+
+.success-btn{
+  width: 20%;
+  padding: 6px 6px 6px 6px;
+  background: #b3cb2d;
+  color: white;
+  font-weight: bolder;
 }
 </style>
