@@ -340,7 +340,7 @@ export default {
     negotiateContract(){
 
       // TODO dynamic contractoffer file name
-      let contractOffer = require('C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/registry/contractoffers/' + this.selectedContract.toLowerCase());
+      let contractOffer = require('../assets/registry/contractoffers/' + this.selectedContract.toLowerCase());
       return new Promise(resolve => {
 
       axios.post('/consumer/data/contractnegotiations', contractOffer,{
