@@ -1,8 +1,17 @@
 # materialpass-webclient
 
+## Cloning repository
+
+```bash
+git clone https://github.com/saudkhan116/DataSpaceConnector.git
+```
+## Navigate to the materialpassport-webclient directory
+```bash
+cd materialpassport-webclient/
+```
 ## Project setup
 ```
-npm install
+npm install --legacy-peer-deps
 ```
 
 ### Compiles and hot-reloads for development
@@ -13,11 +22,6 @@ npm run serve
 ### Compiles and minifies for production
 ```
 npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
 ```
 
 ### Customize configuration
