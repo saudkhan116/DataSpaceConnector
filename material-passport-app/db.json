@@ -3,7 +3,7 @@
     "generalInformation": {
       "passportNumber": "12345",
       "passportIssuer": "Catena-X",
-      "batteryId": null,
+      "batteryId": 1235234987,
       "batteryType": "Lithium-Ion",
       "batteryModel": "2432-5665",
       "batteryProducer": "Panasonic",

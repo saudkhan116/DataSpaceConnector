@@ -56,6 +56,7 @@
             >Hazardous substances contained in the battery</span
           >
           <li
+            :key="substances + index"
             v-for="substances in additionalInformation.hazardousSubstancesContainedInTheBattery"
           >
             {{ substances }}

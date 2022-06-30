@@ -1,50 +1,113 @@
 <template>
-<div class="container">
-    <div class="main">
-    <h5 class="center">Step # 1: Load contract offers from the battery provider</h5><br />
   <div class="container">
-    <label class="center" for="Provider"><strong>Battery Provider:</strong></label> <br />
-    <select class="form-select center ddl" id="selectProvider" v-model="selectedProvider" placeholder="Select Battery Provider">
-      <option value="" disabled selected>Select Battery Provider...</option>
-      <option v-for="provider in listProviders" :value="provider.name" v-bind:key="provider.id">{{ provider.name }}</option>
-    </select>
+    <div class="main">
+      <h5 class="center">
+        Step # 1: Load contract offers from the battery provider
+      </h5>
+      <br />
+      <div class="container">
+        <label class="center" for="Provider"
+          ><strong>Battery Provider:</strong></label
+        >
+        <br />
+        <select
+          class="form-select center ddl"
+          id="selectProvider"
+          v-model="selectedProvider"
+          placeholder="Select Battery Provider"
+        >
+          <option value="" disabled selected>Select Battery Provider...</option>
+          <option
+            v-for="provider in listProviders"
+            :value="provider.name"
+            v-bind:key="provider.id"
+          >
+            {{ provider.name }}
+          </option>
+        </select>
+      </div>
+      <br />
+      <div class="container">
+        <button
+          type="button"
+          class="btn btn-success center success-btn"
+          :disabled="isDisabled"
+          v-on:click="GetProviderInfo"
+        >
+          Load Contract Offers
+        </button>
+        <span
+          class="container"
+          style="margin-left: 20px"
+          id="loadContracts"
+        ></span>
+      </div>
 
-  </div>
-  <br />
-    <div class="container">
-        <button type="button" class="btn btn-success center success-btn"  :disabled="isDisabled"  v-on:click="GetProviderInfo">Load Contract Offers</button>
-    <span class="container" style="margin-left: 20px" id="loadContracts"></span>
-    </div>
-   
-  <br />
-  <h5 class="center">Step # 2: Negotiate the edc contract</h5><br />
-   <div class="container">
-      <label class="center" for="contractOffer"><strong>Contract Offers:</strong></label><br />
-      <select required class="form-select center ddl" id="selectOffer" v-model="selectedContract" placeholder="Select Offer" @change="setSelectedContract($event)">
-        <option value="" disabled selected>Select an Offer...</option>
-        <option v-for="(offer, index) in provider.contractOffers"
-                v-bind:key="index">{{ offer }}
-        </option>
-      </select>
-      <!-- <span id="selectedBatt"></span> -->
-    </div>
-    <br />
-    <div class="container">
-      <label class="center" for="Battery"><strong>Battery:</strong></label><br />
-    <select required class="form-select center ddl"  id="selectBattery" v-model="selectedBattery" placeholder="Select Battery" @change="setSelectedBattery($event)">
-      <option value="" disabled selected >Select Battery...</option>
-      <option v-for="(battery, id) in provider.batteries" :value="battery.id"
-              v-bind:key="id">{{ battery.name }}
-      </option>
-    </select>
-  </div>
-    <br />
+      <br />
+      <h5 class="center">Step # 2: Negotiate the edc contract</h5>
+      <br />
+      <div class="container">
+        <label class="center" for="contractOffer"
+          ><strong>Contract Offers:</strong></label
+        ><br />
+        <select
+          required
+          class="form-select center ddl"
+          id="selectOffer"
+          v-model="selectedContract"
+          placeholder="Select Offer"
+          @change="setSelectedContract($event)"
+        >
+          <option value="" disabled selected>Select an Offer...</option>
+          <option
+            v-for="(offer, index) in provider.contractOffers"
+            v-bind:key="index"
+          >
+            {{ offer }}
+          </option>
+        </select>
+        <!-- <span id="selectedBatt"></span> -->
+      </div>
+      <br />
+      <div class="container">
+        <label class="center" for="Battery"><strong>Battery:</strong></label
+        ><br />
+        <select
+          required
+          class="form-select center ddl"
+          id="selectBattery"
+          v-model="selectedBattery"
+          placeholder="Select Battery"
+          @change="setSelectedBattery($event)"
+        >
+          <option value="" disabled selected>Select Battery...</option>
+          <option
+            v-for="(battery, id) in provider.batteries"
+            :value="battery.id"
+            v-bind:key="id"
+          >
+            {{ battery.name }}
+          </option>
+        </select>
+      </div>
+      <br />
 
-    <div class="container">
-        <button type="button" class="btn btn-success center success-btn" :disabled="isDisabled"  v-on:click="doNegotiation">Start Negotiation</button>
-        <span class="container" style="margin-left: 20px" id="negotiateContract"></span>
-    </div>
-  <!-- <div class="container" style="width:25%;">
+      <div class="container">
+        <button
+          type="button"
+          class="btn btn-success center success-btn"
+          :disabled="isDisabled"
+          v-on:click="doNegotiation"
+        >
+          Start Negotiation
+        </button>
+        <span
+          class="container"
+          style="margin-left: 20px"
+          id="negotiateContract"
+        ></span>
+      </div>
+      <!-- <div class="container" style="width:25%;">
       <label for="Battery"><strong>Battery:</strong></label>
     <select required class="form-select" id="selectBattery" placeholder="Select Battery" @change="setSelectedBattery($event)">
       <option value="" disabled selected >Select Battery...</option>
@@ -53,38 +116,50 @@
       </option>
     </select>
   </div> -->
-    <!-- <br />
+      <!-- <br />
     <div class="container" style="width:25%;">
       <label for="connectorURL"><strong>Connector URL:</strong></label>
       <input type="text" class="form-control" v-model="this.provider.providerConnector" disabled id="txtConnectorURL" placeholder="Connector URL">
     </div> -->
-    <br />
-    <h5 class="center">Step # 3: Get battery passport from the provider</h5><br />
-    <div class="container">
-        <button type="button" class="btn btn-success center success-btn" :disabled="isDisabled"  v-on:click="initiateTransfer">Get Battery Passport</button>
-    </div>
-    <br />
+      <br />
+      <h5 class="center">Step # 3: Get battery passport from the provider</h5>
+      <br />
+      <div class="container">
+        <button
+          type="button"
+          class="btn btn-success center success-btn"
+          :disabled="isDisabled"
+          v-on:click="initiateTransfer"
+        >
+          Get Battery Passport
+        </button>
+      </div>
+      <br />
 
-  <div v-if="isLoading" class="center" style="margin-top: -50px;">
-  <div style="width: 3rem; height: 3rem;" role="status" >
-    <span><img src="../assets/loading.gif" height="200" width="250"></span>
-  </div>
-  <br />
-  <div class="h5" style="margin: 75px 0px 0px 10px;">{{currentStatus}}</div>
-</div>
-  </div>
-  <div v-if="isPassportVisible" class="container margin-top">
-    <span>
-      {{productPassport}}
-    </span>
-  </div>
-  <!-- <div v-if="isPassportVisible" class="container margin-top">
+      <div v-if="isLoading" class="center" style="margin-top: -50px">
+        <div style="width: 3rem; height: 3rem" role="status">
+          <span
+            ><img src="../assets/loading.gif" height="200" width="250"
+          /></span>
+        </div>
+        <br />
+        <div class="h5" style="margin: 75px 0px 0px 10px">
+          {{ currentStatus }}
+        </div>
+      </div>
+    </div>
+    <div v-if="isPassportVisible" class="container margin-top">
+      <span>
+        {{ productPassport }}
+      </span>
+    </div>
+    <!-- <div v-if="isPassportVisible" class="container margin-top">
     <table v-bind="productPassport" class="table table-bordered table-striped" style="border:1px ghostwhite; text-align:left;">
       <thead>
         <th colspan="6" class="h3 table-heading">Battery Passport</th>
       </thead>
       <tbody> -->
-      <!-- <tr v-for="(value, key) in this.productPassport" v-bind:key="key">
+    <!-- <tr v-for="(value, key) in this.productPassport" v-bind:key="key">
           <th scope="col">{{key}}</th>
           <td v-if="typeof value == 'object'">
             <table class="table table-bordered table-striped"><tr scope="row" v-for="(k,val) in value" v-bind:key="k"><th>{{val}}</th>
@@ -127,8 +202,8 @@
   </tbody>
     </table>
   </div> -->
-  <br />
-</div>
+    <br />
+  </div>
 </template>
 
 <script type="text/jsx">
@@ -162,7 +237,7 @@ export default {
           this.selectedProvider = this.$route.query.provider
           this.selectedBattery = this.$route.query.battery
           this.selectedContract = this.$route.query.battery + '_' + role.toLowerCase()
-          
+
           if (this.$route.query.provider === undefined && this.$route.query.battery === undefined) {
             // do manual selection of fields
             console.log('INFO: provider and battery are not defined')
@@ -173,7 +248,7 @@ export default {
           else{
             // Get BatteryData
             this.GetBatteryDataUsingQRCode()
-            
+
           }
         }
   },
@@ -192,7 +267,7 @@ export default {
       isDisabled: false,
       isPassportVisible: false,
       errors: []
-    }    
+    }
   },
   methods:{
     GetProviderInfo() {
@@ -224,7 +299,7 @@ export default {
       const offer = this.provider.contractOffers.filter( h => h.includes(role.toLowerCase()) );
       this.provider.contractOffers = offer
 
-      // to handle filling the battery provider dropdown here because this.provider is loaded before provider dropdown and get emplty value.  
+      // to handle filling the battery provider dropdown here because this.provider is loaded before provider dropdown and get emplty value.
       this.selectedProvider = this.provider.name
 
     //data validation - TODO
@@ -244,12 +319,12 @@ export default {
 
       // TODO
       this.selectedProvider = ''
-      
+
       this.selectedBattery = ''
       this.selectedContract = ''
       //alert('Hello')
 
-      
+
     },
     setSelectedBattery(event){
       this.selectedBattery = event.target.value
@@ -271,9 +346,9 @@ export default {
         return;
       else
         this.contractId = data.contractAgreementId
-      
+
       // Check the agreement status until it is of status CONFIRMED
-      while(data.state != "CONFIRMED"){        
+      while(data.state != "CONFIRMED"){
         data = await this.getAgreementId(this.uuid)
         this.currentStatus = "Agreement state: " + data.state
         console.log(data.state + '_' + data.contractAgreementId)
@@ -284,7 +359,7 @@ export default {
     },
     async initiateTransfer(){
 
-      
+
       this.isLoading = true
       // //const destinationPath = 'C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/data'
       // const destinationPath = '/app/samples/04.0-file-transfer/data' // set different path for containers
@@ -327,9 +402,9 @@ export default {
       // load provider dropdown to fill the relevant dropdown values i.e., contract offer and battery
        await this.GetProviderInfo()
        // provider drondown is not auto fill because this.selectedProvider is loaded before the provider dropdown.
-       
 
-      // check if the selected provider has contract offer. 
+
+      // check if the selected provider has contract offer.
 
       // negotiate contract
       await this.doNegotiation()
@@ -340,7 +415,7 @@ export default {
     negotiateContract(){
 
       // TODO dynamic contractoffer file name
-      let contractOffer = require('C:/Users/muhammadsaud.khan/Documents/Workspace/catenax-edc-mp/DataSpaceConnector/samples/04.0-file-transfer/registry/contractoffers/' + this.selectedContract.toLowerCase());
+      let contractOffer = require('../assets/registry/contractoffers/' + this.selectedContract.toLowerCase());
       return new Promise(resolve => {
 
       axios.post('/consumer/data/contractnegotiations', contractOffer,{
@@ -419,8 +494,8 @@ export default {
           this.errors.push(e)
           resolve('rejected');
         });
-    })     
-    
+    })
+
   },
   displayProductPassport(filename){
 
@@ -447,7 +522,6 @@ export default {
 </script>
 
 <style scoped>
-
 .center {
   margin-left: 33%;
   margin-top: inherit;
@@ -460,23 +534,23 @@ export default {
   margin: 0 auto;
 }
 
-.table-heading{
-  background: #E9ECEC;
+.table-heading {
+  background: #e9ecec;
   text-align: center;
 }
 
-.main{
-  text-align:left;
+.main {
+  text-align: left;
   padding: 50px 0px 0px 10%;
 }
-.ddl{
+.ddl {
   width: 20%;
-  margin-top:10px;
+  margin-top: 10px;
   padding: 6px 6px 6px 6px;
   border-radius: 4px;
 }
 
-.success-btn{
+.success-btn {
   width: 20%;
   padding: 6px 6px 6px 6px;
   background: #b3cb2d;

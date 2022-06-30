@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div v-if="loading">Spinner</div>
+  <div v-else>
     <Header :batteryId="data.generalInformation" />
     <div class="container">
       <GeneralInformation
@@ -54,6 +55,7 @@ import AdditionalInformation from "@/components/AdditionalInformation.vue";
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
 import axios from "axios";
+import { reactive } from "vue";
 
 export default {
   name: "PassportView",
@@ -69,9 +71,15 @@ export default {
     AdditionalInformation,
     Footer,
   },
+  provide() {
+    return {
+      loadingState: new reactive(() => this.loadingState),
+    };
+  },
   data() {
     return {
-      data: {},
+      data: null,
+      loading: true,
     };
   },
   methods: {
@@ -126,11 +134,14 @@ export default {
       return new Promise((resolve) => {
         //axios.get('/consumer/data/contractnegotiations/passport/display/' + filename, {
         axios
-          .get("/consumer/data/contractnegotiations/passport/display/" + filename, {
-            headers: {
-              "X-Api-Key": "password",
-            },
-          })
+          .get(
+            "/consumer/data/contractnegotiations/passport/display/" + filename,
+            {
+              headers: {
+                "X-Api-Key": "password",
+              },
+            }
+          )
           .then((response) => {
             console.log(response.data);
             resolve(response.data);
@@ -166,6 +177,7 @@ export default {
       // Display the product passport //
       let response = await this.displayProductPassport(asset + ".json");
       this.data = response;
+      this.loading = false;
     }
   },
 };
