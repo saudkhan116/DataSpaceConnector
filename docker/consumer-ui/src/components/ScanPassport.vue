@@ -1,5 +1,5 @@
 <template>
-  <img style="margin-top: 150px" src="../assets/catenaX-logo.png" class="logo"/>
+  <img style="margin-top:150px" src="../assets/catenaX-logo.png" class="logo"/>
   <br />
   <div class="margin-top">
     <p class="h4">Scan Battery Passport</p>

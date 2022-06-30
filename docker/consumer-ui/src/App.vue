@@ -7,11 +7,12 @@
   <router-view /> -->
   <!-- <ProviderDropdown msg="Welcome to Your Vue.js App"/> -->
   <!-- <SignUp /> -->
+  
   <router-view />
 
 </template>
 
-<script type="text/jsx">
+<script>
 // import ProviderDropdown from './components/ProviderDropdown.vue'
 // import Login from './components/Login.vue'
 
@@ -25,6 +26,39 @@ export default {
 </script>
 
 <style>
+#app {
+  font-family: "Libre Franklin", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  color: #2c3e50;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+nav {
+  padding: 30px;
+}
+
+nav a {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+nav a.router-link-exact-active {
+  color: #42b983;
+}
+</style>
+
+<!--<style>
 body{
   margin: 0px;
   padding: 0px;
@@ -79,4 +113,5 @@ body{
     width: -webkit-fill-available;
 }
 
-</style>
+@import './assets/styles/style.css';
+</style>!-->
