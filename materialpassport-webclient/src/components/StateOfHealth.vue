@@ -6,88 +6,62 @@
       <span class="sub-title">Timestamp 23.06.2022 - 14:30:45</span>
     </div>
     <div class="sub-section-container">
-      <div class="field-container">
-        <span class="field-label">Remaining capacity</span>
-        <span class="field-value"
-          >{{ stateOfHealth.remainingCapacity.value
-          }}{{ stateOfHealth.remainingCapacity.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Overall capacity fade</span>
-        <span class="field-value"
-          >{{ stateOfHealth.overallCapacityFade.value
-          }}{{ stateOfHealth.overallCapacityFade.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label"
-          >Remaining power capability and power fade</span
-        >
-        <span class="field-value"
-          >{{ stateOfHealth.remainingPowerCapabilityAndPowerFade.value
-          }}{{ stateOfHealth.remainingPowerCapabilityAndPowerFade.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Remaining round trip efficiency</span>
-        <span class="field-value"
-          >{{ stateOfHealth.remainingRoundTripEfficiency.value
-          }}{{ stateOfHealth.remainingRoundTripEfficiency.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Actual cooling demand</span>
-        <span class="field-value"
-          >{{ stateOfHealth.actualCoolingDemand.value
-          }}{{ stateOfHealth.actualCoolingDemand.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Evolution of self-discharging rates</span>
-        <span class="field-value"
-          >{{ stateOfHealth.evolutionOfSelfDischargingRates.value
-          }}{{ stateOfHealth.evolutionOfSelfDischargingRates.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label"
-          >Ohmic resistance and/or electrochemical impedance</span
-        >
-        <span class="field-value"
-          >{{ stateOfHealth.ohmicResistanceAndOrElectrochemicalImpedance.value
-          }}{{
-            stateOfHealth.ohmicResistanceAndOrElectrochemicalImpedance.unit
-          }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label"
-          >The dates of manufacturing of the battery</span
-        >
-        <span class="field-value"
-          >{{ stateOfHealth.theDatesOfManufacturingOfTheBattery.day }}/{{
-            stateOfHealth.theDatesOfManufacturingOfTheBattery.month
-          }}/{{ stateOfHealth.theDatesOfManufacturingOfTheBattery.year }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label"
-          >The dates of putting battery into service</span
-        >
-        <span class="field-value"
-          >{{ stateOfHealth.theDatesOfPuttingBatteryIntoService.day }}/{{
-            stateOfHealth.theDatesOfPuttingBatteryIntoService.month
-          }}/{{ stateOfHealth.theDatesOfPuttingBatteryIntoService.year }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Energy throughput</span>
-        <span class="field-value"
-          >{{ stateOfHealth.energyThroughput.value
-          }}{{ stateOfHealth.energyThroughput.unit }}</span
-        >
-      </div>
+      <Field
+        label="Remaining capacity"
+        v-bind:value="stateOfHealth.remainingCapacity.value"
+        v-bind:unit="stateOfHealth.remainingCapacity.unit"
+      />
+      <Field
+        label="Overall capacity fade"
+        v-bind:value="stateOfHealth.overallCapacityFade.value"
+        v-bind:unit="stateOfHealth.overallCapacityFade.unit"
+      />
+      <Field
+        label="Remaining power capability and power fade"
+        v-bind:value="stateOfHealth.remainingPowerCapabilityAndPowerFade.value"
+        v-bind:unit="stateOfHealth.remainingPowerCapabilityAndPowerFade.unit"
+      />
+      <Field
+        label="Remaining round trip efficiency"
+        v-bind:value="stateOfHealth.remainingRoundTripEfficiency.value"
+        v-bind:unit="stateOfHealth.remainingRoundTripEfficiency.unit"
+      />
+      <Field
+        label="Actual cooling demand"
+        v-bind:value="stateOfHealth.actualCoolingDemand.value"
+        v-bind:unit="stateOfHealth.actualCoolingDemand.unit"
+      />
+      <Field
+        label="Evolution of self-discharging rates"
+        v-bind:value="stateOfHealth.evolutionOfSelfDischargingRates.value"
+        v-bind:unit="stateOfHealth.evolutionOfSelfDischargingRates.unit"
+      />
+      <Field
+        label="Ohmic resistance and/or electrochemical impedance"
+        v-bind:value="
+          stateOfHealth.ohmicResistanceAndOrElectrochemicalImpedance.value
+        "
+        v-bind:unit="
+          stateOfHealth.ohmicResistanceAndOrElectrochemicalImpedance.unit
+        "
+      />
+      <Field
+        label="The dates of manufacturing of the battery"
+        v-bind:day="stateOfHealth.theDatesOfManufacturingOfTheBattery.day"
+        v-bind:month="stateOfHealth.theDatesOfManufacturingOfTheBattery.month"
+        v-bind:year="stateOfHealth.theDatesOfManufacturingOfTheBattery.year"
+      />
+      <Field
+        label="The dates of putting battery into service"
+        v-bind:day="stateOfHealth.theDatesOfPuttingBatteryIntoService.day"
+        v-bind:month="stateOfHealth.theDatesOfPuttingBatteryIntoService.month"
+        v-bind:year="stateOfHealth.theDatesOfPuttingBatteryIntoService.year"
+      />
+      <Field
+        label="Energy throughput"
+        v-bind:value="stateOfHealth.energyThroughput.value"
+        v-bind:unit="stateOfHealth.energyThroughput.unit"
+      />
     </div>
   </div>
 </template>
@@ -95,6 +69,7 @@
 <script>
 import SectionHeader from "./SectionHeader.vue";
 import SectionContent from "./SectionContent.vue";
+import Field from "./Field.vue";
 
 export default {
   name: "StateOfHealth",
@@ -103,6 +78,7 @@ export default {
     stateOfHealth: {},
   },
   components: {
+    Field,
     SectionHeader,
     SectionContent,
   },
@@ -110,20 +86,6 @@ export default {
 </script>
 
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
 .section-content {
   width: 100%;
   border: solid 1px #b3cb2d;
@@ -135,26 +97,6 @@ a {
   display: flex;
   flex-wrap: wrap;
   border-bottom: solid 1px #edefe5;
-}
-.field-container {
-  display: flex;
-  flex-direction: column;
-  width: 33%;
-  min-height: 120px;
-}
-.field-label {
-  padding: 30px 0px 10px 40px;
-  font-size: 12px;
-  color: #777777;
-}
-.field-value {
-  padding-left: 40px;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: bold;
-}
-.longer {
-  padding-bottom: 50px;
 }
 .sub-title {
   font-weight: bold;

@@ -70,11 +70,7 @@ export default {
     }
   },
   props: {
-    batteryId: {
-      type: [String, Number, Boolean],
-      required: true,
-      default: null,
-    },
+    batteryId: {},
   },
 };
 </script>

@@ -9,7 +9,10 @@
       <div class="list-container">
         <ul>
           <span class="list-label"></span>
-          <li v-for="electrolytes in batteryComposition.electrolyteComposition">
+          <li
+            :key="electrolytes"
+            v-for="electrolytes in batteryComposition.electrolyteComposition"
+          >
             {{ electrolytes }}
           </li>
         </ul>
@@ -20,19 +23,20 @@
       <div class="sub-title-container">
         <span class="sub-title"> Composition of Anode</span>
       </div>
-      <div class="field-container">
-        <span class="field-label">Natural Graphite content</span>
-        <span class="field-value"
-          >{{ batteryComposition.anodeContent.naturalGraphiteContent.value
-          }}{{
-            batteryComposition.anodeContent.naturalGraphiteContent.unit
-          }}</span
-        >
-      </div>
+      <Field
+        label="Natural Graphite content"
+        v-bind:value="
+          batteryComposition.anodeContent.naturalGraphiteContent.value
+        "
+        v-bind:unit="
+          batteryComposition.anodeContent.naturalGraphiteContent.unit
+        "
+      />
       <div class="list-container">
         <ul>
           <span class="list-label">Recyclate Content Ni</span>
           <li
+            :key="electrolytes"
             v-for="electrolytes in batteryComposition.anodeContent
               .anodeComposition"
           >
@@ -46,31 +50,26 @@
       <div class="sub-title-container">
         <span class="sub-title"> Composition of Cathode</span>
       </div>
-      <div class="field-container">
-        <span class="field-label">Li content</span>
-        <span class="field-value"
-          >{{ batteryComposition.cathodeComposition.liContent.value
-          }}{{ batteryComposition.cathodeComposition.liContent.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Ni content</span>
-        <span class="field-value"
-          >{{ batteryComposition.cathodeComposition.niContent.value
-          }}{{ batteryComposition.cathodeComposition.niContent.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Co content</span>
-        <span class="field-value"
-          >{{ batteryComposition.cathodeComposition.coContent.value
-          }}{{ batteryComposition.cathodeComposition.coContent.unit }}</span
-        >
-      </div>
+      <Field
+        label="Li content"
+        v-bind:value="batteryComposition.cathodeComposition.liContent.value"
+        v-bind:unit="batteryComposition.cathodeComposition.liContent.unit"
+      />
+      <Field
+        label="Ni content"
+        v-bind:value="batteryComposition.cathodeComposition.niContent.value"
+        v-bind:unit="batteryComposition.cathodeComposition.niContent.unit"
+      />
+      <Field
+        label="Co content"
+        v-bind:value="batteryComposition.cathodeComposition.coContent.value"
+        v-bind:unit="batteryComposition.cathodeComposition.coContent.unit"
+      />
       <div class="list-container">
         <ul>
           <span class="list-label">Recyclate Content Ni</span>
           <li
+            :key="electrolytes"
             v-for="electrolytes in batteryComposition.cathodeComposition
               .otherCathodeComposition"
           >
@@ -89,7 +88,10 @@
       <div class="list-container">
         <ul>
           <span class="list-label">List of CRM</span>
-          <li v-for="electrolytes in batteryComposition.crm">
+          <li
+            :key="electrolytes"
+            v-for="electrolytes in batteryComposition.crm"
+          >
             {{ electrolytes }}
           </li>
         </ul>
@@ -103,34 +105,26 @@
           >Recycled content in active materials/battery model</span
         >
       </div>
-      <div class="field-container">
-        <span class="field-label">Recyclate Content Ni</span>
-        <span class="field-value"
-          >{{ batteryComposition.niRecyclateContent.value
-          }}{{ batteryComposition.niRecyclateContent.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Recyclate Content Li</span>
-        <span class="field-value"
-          >{{ batteryComposition.liRecyclateContent.value
-          }}{{ batteryComposition.liRecyclateContent.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Recyclate Content Co</span>
-        <span class="field-value"
-          >{{ batteryComposition.coRecyclateContent.value
-          }}{{ batteryComposition.coRecyclateContent.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Recyclate Content Pb</span>
-        <span class="field-value"
-          >{{ batteryComposition.pbRecyclateContent.value
-          }}{{ batteryComposition.pbRecyclateContent.unit }}</span
-        >
-      </div>
+      <Field
+        label="Recyclate Content Ni"
+        v-bind:value="batteryComposition.niRecyclateContent.value"
+        v-bind:unit="batteryComposition.niRecyclateContent.unit"
+      />
+      <Field
+        label="Recyclate Content Li"
+        v-bind:value="batteryComposition.liRecyclateContent.value"
+        v-bind:unit="batteryComposition.liRecyclateContent.unit"
+      />
+      <Field
+        label="Recyclate Content Co"
+        v-bind:value="batteryComposition.coRecyclateContent.value"
+        v-bind:unit="batteryComposition.coRecyclateContent.unit"
+      />
+      <Field
+        label="Recyclate Content Pb"
+        v-bind:value="batteryComposition.pbRecyclateContent.value"
+        v-bind:unit="batteryComposition.pbRecyclateContent.unit"
+      />
     </div>
   </div>
 </template>
@@ -138,6 +132,7 @@
 <script>
 import SectionHeader from "./SectionHeader.vue";
 import SectionContent from "./SectionContent.vue";
+import Field from "./Field.vue";
 
 export default {
   name: "BatteryComposition",
@@ -146,6 +141,7 @@ export default {
     batteryComposition: {},
   },
   components: {
+    Field,
     SectionHeader,
     SectionContent,
   },
@@ -170,21 +166,6 @@ export default {
   flex-direction: column;
   width: 33%;
   min-height: 120px;
-}
-.field-label {
-  padding: 30px 0px 10px 40px;
-  font-size: 12px;
-  color: #777777;
-}
-
-.field-value {
-  padding-left: 40px;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: bold;
-}
-.longer {
-  padding-bottom: 50px;
 }
 .sub-title {
   font-weight: bold;
