@@ -1,41 +1,45 @@
 <template>
-  <Header :batteryId="data.generalInformation" />
-  <div class="container">
-    <GeneralInformation
-      sectionTitle="General information"
-      :generalInformation="data.generalInformation"
-    />
-    <BatteryComposition
-      sectionTitle="Battery Composition"
-      :batteryComposition="data.batteryComposition"
-    />
-    <StateOfHealth
-      sectionTitle="State of Health"
-      :stateOfHealth="data.stateOfHealth"
-    />
-    <ParametersOfTheBattery
-      sectionTitle="Parameters of The Battery"
-      :parametersOfTheBattery="data.parametersOfTheBattery"
-    />
-    <DismantlingProcedures
-      sectionTitle="Dismantling procedures"
-      :dismantlingProcedures="data.dismantlingProcedures"
-    />
-    <SafetyInformation
-      sectionTitle="Safety information"
-      :safetyInformation="data.safetyInformation"
-    />
-    <InformationResponsibleSourcing
-      sectionTitle="Information responsible sourcing"
-      :informationResponsibleSourcing="data.informationResponsibleSourcing"
-    />
+  <div v-if="loading">Spinner</div>
+  <div v-else>
+    <Header :batteryId="data.generalInformation" />
 
-    <AdditionalInformation
-      sectionTitle="Additional information"
-      :additionalInformation="data.additionalInformation"
-    />
+    <div class="container">
+      <GeneralInformation
+        sectionTitle="General information"
+        :generalInformation="data.generalInformation"
+      />
+      <BatteryComposition
+        sectionTitle="Battery Composition"
+        :batteryComposition="data.batteryComposition"
+      />
+      <StateOfHealth
+        sectionTitle="State of Health"
+        :stateOfHealth="data.stateOfHealth"
+      />
+      <ParametersOfTheBattery
+        sectionTitle="Parameters of The Battery"
+        :parametersOfTheBattery="data.parametersOfTheBattery"
+      />
+      <DismantlingProcedures
+        sectionTitle="Dismantling procedures"
+        :dismantlingProcedures="data.dismantlingProcedures"
+      />
+      <SafetyInformation
+        sectionTitle="Safety information"
+        :safetyInformation="data.safetyInformation"
+      />
+      <InformationResponsibleSourcing
+        sectionTitle="Information responsible sourcing"
+        :informationResponsibleSourcing="data.informationResponsibleSourcing"
+      />
+
+      <AdditionalInformation
+        sectionTitle="Additional information"
+        :additionalInformation="data.additionalInformation"
+      />
+    </div>
+    <Footer />
   </div>
-  <Footer />
 </template>
 
 <script>
@@ -68,7 +72,8 @@ export default {
   },
   data() {
     return {
-      data: {},
+      data: null,
+      loading: true,
     };
   },
   methods: {
@@ -82,7 +87,7 @@ export default {
   },
   async created() {
     this.data = await this.fetchData();
-    console.log(data);
+    this.loading = false;
   },
 };
 </script>

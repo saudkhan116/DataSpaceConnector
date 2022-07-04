@@ -1,4 +1,4 @@
-<template>
+<template v-if="batteryComposition">
   <SectionHeader title="2. Battery composition"> </SectionHeader>
   <!-- Composition of Electrolyte -->
   <div class="section-content">
@@ -9,7 +9,10 @@
       <div class="list-container">
         <ul>
           <span class="list-label"></span>
-          <li v-for="electrolytes in batteryComposition.electrolyteComposition">
+          <li
+            :key="electrolytes + index"
+            v-for="electrolytes in batteryComposition.electrolyteComposition"
+          >
             {{ electrolytes }}
           </li>
         </ul>
@@ -33,6 +36,7 @@
         <ul>
           <span class="list-label">Recyclate Content Ni</span>
           <li
+            :key="electrolytes + index"
             v-for="electrolytes in batteryComposition.anodeContent
               .anodeComposition"
           >
@@ -71,6 +75,7 @@
         <ul>
           <span class="list-label">Recyclate Content Ni</span>
           <li
+            :key="electrolytes + index"
             v-for="electrolytes in batteryComposition.cathodeComposition
               .otherCathodeComposition"
           >
@@ -89,7 +94,10 @@
       <div class="list-container">
         <ul>
           <span class="list-label">List of CRM</span>
-          <li v-for="electrolytes in batteryComposition.crm">
+          <li
+            :key="electrolytes + index"
+            v-for="electrolytes in batteryComposition.crm"
+          >
             {{ electrolytes }}
           </li>
         </ul>
@@ -143,7 +151,7 @@ export default {
   name: "BatteryComposition",
   props: {
     sectionTitle: String,
-    batteryComposition: {},
+    batteryComposition: null,
   },
   components: {
     SectionHeader,

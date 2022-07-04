@@ -16,7 +16,7 @@
       <div class="id-wrapper">
         <h1>
           BatteryID:
-          {{ batteryId.batteryId ? batteryId.batteryId : "missing data" }}
+          {{ batteryId.batteryId ? batteryId.batteryId : "—" }}
         </h1>
       </div>
       <div class="code-container">
@@ -36,9 +36,7 @@ import Logout from "../assets/logout.png";
 
 export default {
   name: "Header",
-  props: {
-    batteryId: {},
-  },
+
   components: {
     CatenaLogo,
     Profile,
@@ -70,6 +68,9 @@ export default {
       this.username = JSON.parse(user).name;
       this.role = JSON.parse(user).role;
     }
+  },
+  props: {
+    batteryId: {},
   },
 };
 </script>

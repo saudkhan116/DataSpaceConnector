@@ -16,7 +16,7 @@
       <div class="id-wrapper">
         <h1>
           BatteryID:
-          {{ batteryId.batteryId ? batteryId.batteryId : "missing data" }}
+          {{ batteryId.batteryId }}
         </h1>
       </div>
       <div class="code-container">
