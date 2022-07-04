@@ -72,19 +72,19 @@ jobs:
           labels: labels
 
       - name: Build and push Docker image - edc-provider
-          id: build-and-push
-          uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-          with:
-            context: docker/edc-provider
-            push: true
-            tags: ${{ env.REPOSITORY_NAME }}/${{ env.EDC_PROVIDER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            labels: labels
+        id: build-and-push
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: docker/edc-provider
+          push: true
+          tags: ${{ env.REPOSITORY_NAME }}/${{ env.EDC_PROVIDER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          labels: labels
 
       - name: Build and push Docker image - consumer-ui
-          id: build-and-push
-          uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-          with:
-            context: docker/consumer-ui
-            push: true
-            tags: ${{ env.REPOSITORY_NAME }}/${{ env.CONSUMER_UI_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            labels: labels
+        id: build-and-push
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: docker/consumer-ui
+          push: true
+          tags: ${{ env.REPOSITORY_NAME }}/${{ env.CONSUMER_UI_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          labels: labels
