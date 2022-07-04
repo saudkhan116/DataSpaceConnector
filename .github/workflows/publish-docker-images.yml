@@ -63,7 +63,7 @@ jobs:
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image - edc-consumer
-        id: build-and-push
+        id: build-and-push-consumer
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
         with:
           context: docker/edc-consumer
@@ -72,7 +72,7 @@ jobs:
           labels: labels
 
       - name: Build and push Docker image - edc-provider
-        id: build-and-push
+        id: build-and-push-provider
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
         with:
           context: docker/edc-provider
@@ -81,7 +81,7 @@ jobs:
           labels: labels
 
       - name: Build and push Docker image - consumer-ui
-        id: build-and-push
+        id: build-and-push-frontend
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
         with:
           context: docker/consumer-ui
