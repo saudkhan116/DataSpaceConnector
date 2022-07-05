@@ -1,10 +1,21 @@
 <template>
-    <div class="header-container">
+  <div class="header-container">
     <img :src="CatenaLogo" alt="logo" class="logo" />
     <img :src="Settings" alt="settings" class="buttons" title="Settings" />
-    <img :src="Notifications" alt="Notifications" class="buttons" title="Notifications" />
+    <img
+      :src="Notifications"
+      alt="Notifications"
+      class="buttons"
+      title="Notifications"
+    />
     <img :src="Profile" alt="profile" class="buttons" title="User profile" />
-    <img :src="Logout" alt="logout" class="buttons" title="Logout" v-on:click="logout"/>
+    <img
+      :src="Logout"
+      alt="logout"
+      class="buttons"
+      title="Logout"
+      v-on:click="logout"
+    />
   </div>
 </template>
 
@@ -29,25 +40,25 @@ export default {
       Profile,
       Notifications,
       Settings,
-      Logout
+      Logout,
     };
   },
   methods: {
-      logout(){
-          localStorage.clear();
-          this.$router.push({ name: "Login" });
-      },
-      scanQRCode(){
-          this.$router.push({ name: "ScanPassport" });
-      }
+    logout() {
+      localStorage.clear();
+      this.$router.push({ name: "Login" });
+    },
+    scanQRCode() {
+      this.$router.push({ name: "ScanPassport" });
+    },
   },
-   mounted() {
+  mounted() {
     let user = localStorage.getItem("user-info");
     if (user) {
-      this.username = JSON.parse(user).name
-      this.role = JSON.parse(user).role
+      this.username = JSON.parse(user).name;
+      this.role = JSON.parse(user).role;
     }
-  }
+  },
 };
 </script>
 

@@ -1,57 +1,84 @@
 <template>
-<div class="bg">
-  <img style="margin-left: 45%" src="../assets/catenaX-logo.png" />
-  <br />
-  <div class="margin-top">
-    <p class="h1" style="margin-left: 49%; font-weight: bolder; font-size: x-large;">Login</p>
-  </div>
-  <div class="margin-top">
-    <div class="container">
-      <div class="col-md-4 center">
-        <input
-          class="form-control textbox"
-          v-model="email"
-          type="text"
-          placeholder="Enter email"
-        />
-      </div>
-      <br />
-      <div class="col-md-4 center">
-        <input
-          class="form-control textbox"
-          v-model="password"
-          type="password"
-          placeholder="Enter Password"
-        />
-      </div>
-      <br />
-      <div class="col-md-4 center">
-        <button class="btn btn-success btn-login" v-on:click="login">
-          Login
-        </button>
+  <div class="sign-in-page-container">
+    <img :src="LogoBG" alt="logo" class="bg-logo" />
+    <div class="logo-container">
+      <img :src="CatenaLogo" alt="logo" class="logo" />
+    </div>
+    <div class="sign-in-wrapper">
+      <div class="sign-in-container">
+        <h1>Sign In</h1>
+        <h3>
+          New user?<span
+            ><router-link to="/sign-up" class="sign-up"
+              >Sign Up</router-link
+            ></span
+          >
+        </h3>
+
+        <div class="col-md-4">
+          <input
+            class="form-control input"
+            v-model="email"
+            type="text"
+            placeholder="Username or email"
+          />
+        </div>
+
+        <div class="col-md-4">
+          <input
+            class="form-control input"
+            v-model="password"
+            type="password"
+            placeholder="Password"
+          />
+        </div>
+
+        <div class="col-md-4">
+          <button class="btn btn-success btn-login" v-on:click="login">
+            Sign In
+          </button>
+        </div>
+        <div class="col-md-4">
+          <span>
+            <router-link to="#" class="public-data"
+              >See public data</router-link
+            ></span
+          >
+
+          <!-- <span>
+              <router-link to="/api/scanpassport"
+                >Scan QR Code</router-link
+              ></span
+            > -->
+        </div>
       </div>
     </div>
-    <div class="col-md-4 center margin-top" style="margin-left: 45%">
-      <p>
-        <span> <router-link to="/sign-up">Sign Up</router-link></span>
-        <span> | </span>
-        <span> <router-link to="#">Forgot Password</router-link></span>
-        <!-- <span> | </span> -->
-        <!-- <span> <router-link to="/api/scanpassport">Scan QR Code</router-link></span> -->
-      </p>
-    </div>
   </div>
-</div>
 </template>
 
 <script type="text/jsx">
 import axios from "axios";
+import CatenaLogo from "../assets/logotype.png";
+import LogoBG from "../assets/logo.png";
+
+
+
 export default {
   name: "LoginPage",
   data() {
     return {
       email: "",
       password: "",
+    };
+  },
+  components: {
+CatenaLogo,
+LogoBG
+  },
+  setup() {
+    return {
+      CatenaLogo, LogoBG
+
     };
   },
   methods: {
@@ -64,9 +91,9 @@ export default {
         localStorage.setItem("user-info", JSON.stringify(result.data[0]));
         if (localStorage.getItem("QRCode-info")){
           const isAccessUsingQRCode = localStorage.getItem("QRCode-info")
-            
+
             let query = { "provider": JSON.parse(isAccessUsingQRCode).provider, "battery": JSON.parse(isAccessUsingQRCode).battery}
-            this.$router.push({ name: "Home", query: query }); 
+            this.$router.push({ name: "Home", query: query });
         }
         else
            this.$router.push({ name: "Home" });
@@ -82,35 +109,85 @@ export default {
       this.$router.push({ name: "Home" });
     }
   },
+
 };
 </script>
 
 <style scoped>
-
-.bg{
-  background: white;
-  margin-top:8%;
+.sign-in-page-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
-.btn-login{
-  width: 35%;
-  padding: 6px 6px 6px 6px;
+.sign-in-wrapper {
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sign-in-container {
+  width: 280px;
+  justify-content: center;
+  align-items: center;
+}
+.btn-login {
+  width: 280px;
+  height: 48px;
+  margin: 30px 0 30px 0;
   background: #b3cb2d;
   color: white;
   font-weight: bolder;
+  font-size: 16px;
+  border: solid 1px #b3cb2d;
+  border-radius: 4px;
+}
+.bg-logo {
+  width: 46%;
+  z-index: 0;
+  position: absolute;
+  right: -4%;
+  bottom: -4%;
+  opacity: 0.2;
+}
+.sign-up {
+  color: #ffa600;
+  margin-left: 10px;
+  text-decoration: none;
+}
+h3 {
+  margin: 20px 0 20px 0px;
+}
+.public-data {
+  margin: 30px 0 0 78px;
+  text-decoration: none;
+  color: #7a7a7a;
+  font-weight: bold;
 }
 
-.center {
-  margin-left: 40%;
-  margin-top: inherit;
+.input {
+  width: 280px;
+  height: 48px;
+  margin-top: 10px;
+  padding: 6px;
+  border: solid 1px #b3cb2d;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 16px;
 }
-
-.margin-top {
-  margin-top: 30px;
+::placeholder {
+  color: #cccccc;
+  padding-left: 10px;
+  font-size: 16px;
 }
-
-.textbox{
-  width: 35%;
-  margin-top:10px;
-  padding: 6px 6px 6px 6px;
+.logo-container {
+  margin: 48px;
+  display: block;
+}
+.logo {
+  display: block;
+  width: 209px;
+  height: 49px;
+  margin: 0 0 7% 64px;
 }
 </style>

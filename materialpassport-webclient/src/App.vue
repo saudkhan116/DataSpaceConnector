@@ -7,22 +7,20 @@
   <router-view /> -->
   <!-- <ProviderDropdown msg="Welcome to Your Vue.js App"/> -->
   <!-- <SignUp /> -->
-  
-  <router-view />
 
+  <router-view />
 </template>
 
 <script>
 // import ProviderDropdown from './components/ProviderDropdown.vue'
 // import Login from './components/Login.vue'
 
-
 export default {
-  name: 'App'
+  name: "App",
   // components: {
   //   Login
   // }
-}
+};
 </script>
 
 <style>
@@ -30,7 +28,6 @@ export default {
   font-family: "Libre Franklin", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
   color: #2c3e50;
   background-color: #f8f9fa;
   display: flex;

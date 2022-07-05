@@ -9,6 +9,13 @@
           <img :src="Settings" alt="settings" class="buttons" />
           <img :src="Notifications" alt="profile" class="buttons" />
           <img :src="Profile" alt="profile" class="buttons" />
+          <img
+            :src="Logout"
+            alt="logout"
+            class="buttons"
+            title="Logout"
+            v-on:click="logout"
+          />
         </div>
       </div>
     </div>
