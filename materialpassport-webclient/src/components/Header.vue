@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="header-container">
+    <div class="header-container profile-container">
       <div class="logo-container">
         <img :src="CatenaLogo" alt="logo" class="logo" />
       </div>
@@ -8,18 +8,33 @@
         <div class="right-menu-container">
           <img :src="Settings" alt="settings" class="buttons" />
           <img :src="Notifications" alt="profile" class="buttons" />
-          <img :src="Profile" alt="profile" class="buttons" />
-          <img
-            :src="Logout"
-            alt="logout"
-            class="buttons"
-            title="Logout"
-            v-on:click="logout"
-          />
+          <span>
+            <span @mouseover="hover = true">
+              <img
+                :src="Profile"
+                alt="profile"
+                class="buttons"
+                title="User profile"
+              />
+            </span>
+            <div class="profile-menu" v-if="hover" @mouseleave="hover = false">
+              <div class="menu-btn">
+                <img :src="Profile" alt="profile" class="menu-profile" />
+                <!--TODO: It would be nice to have it not hardcoded-->
+                <h3>
+                  mustermann@test-recycler.de
+                  <p>Manage your account</p>
+                </h3>
+              </div>
+              <div class="menu-btn">
+                <h3 v-on:click="logout">Sign out</h3>
+              </div>
+            </div>
+          </span>
         </div>
       </div>
     </div>
-    <div class="id-container">
+    <div v-if="batteryId" class="id-container">
       <div class="id-wrapper">
         <h1>
           BatteryID:
@@ -49,6 +64,11 @@ export default {
     Profile,
     Settings,
     Logout,
+  },
+  data() {
+    return {
+      hover: false,
+    };
   },
   setup() {
     return {
@@ -128,5 +148,42 @@ export default {
   width: 26px;
   height: 26px;
   margin: 15px 0px 15px 30px;
+}
+.profile-container {
+  position: relative;
+}
+.profile-menu {
+  position: absolute;
+  min-width: 342px;
+
+  border: solid 1px #ffa600;
+  right: 0;
+
+  z-index: 1;
+  background-color: white;
+  cursor: pointer;
+}
+.menu-btn {
+  display: flex;
+  border-top: solid 1px #ffa600;
+  padding: 16px;
+  align-items: center;
+}
+.menu-btn:first-child {
+  border-top: none;
+}
+.menu-btn:hover {
+  background-color: #f8f9fa;
+}
+h3 {
+  padding-left: 12px;
+}
+p {
+  color: #cccccc;
+  font-size: 14px;
+  font-weight: normal;
+}
+.menu-profile {
+  padding: 16px;
 }
 </style>

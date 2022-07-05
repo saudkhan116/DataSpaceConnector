@@ -169,15 +169,15 @@ h3 {
   width: 280px;
   height: 48px;
   margin-top: 10px;
-  padding: 6px;
+  padding: 12px;
   border: solid 1px #b3cb2d;
   border-radius: 4px;
   font-weight: bold;
   font-size: 16px;
+  color: #545d64;
 }
 ::placeholder {
   color: #cccccc;
-  padding-left: 10px;
   font-size: 16px;
 }
 .logo-container {

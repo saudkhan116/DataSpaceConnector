@@ -1,14 +1,30 @@
 {
   "meta": {
-    "uuid": "334593247"
+    "batteryId": 334593247,
+    "passportCreatedDate": {
+      "day": 12,
+      "month": 5,
+      "year": 2022
+    },
+    "issuer": {
+      "name": "ImpBattMan GmbH",
+      "address": {
+        "street": "Street 9",
+        "city": "Berlin",
+        "postal": "12-345",
+        "country": "Germany",
+        "phoneNumber": "0056 345 567 456",
+        "email": "contact@import.de"
+      }
+    }
   },
   "generalInformation": {
     "passportNumber": "12345",
-    "passportIssuer": "Catena-X",
-    "batteryId": null,
+    "batteryId": 334593247,
     "batteryType": "Lithium-Ion",
     "batteryModel": "2432-5665",
-    "batteryProducer": "Panasonic",
+    "batteryProducer": "BattProducer",
+    "chemistry": "Lithium nickel manganese cobalt (LiNMC)",
     "manufacuringDate": {
       "day": 12,
       "month": 5,
@@ -24,7 +40,8 @@
         "postal": "12-345",
         "country": "Germany",
         "phoneNumber": "0056 345 567 456",
-        "email": "contact@import.de"
+        "email": "contact@import.de",
+        "website": "www.impbattman.com"
       }
     },
     "placedToMarketDate": {
@@ -346,7 +363,7 @@
       "url": "https://www.google.com/"
     }
   },
-  "safetyInformation": {
+  "safetyMeasures": {
     "occupationalSafety": {
       "value": "Occupational safety",
       "url": "https://www.google.com/"
@@ -390,11 +407,11 @@
     "carbonFootprintPerformanceClass": {
       "value": "A+++"
     },
-    "chemistryOfTheBattery": {
-      "value": "Lithium nickel manganese cobalt (LiNMC)"
-    },
-    "hazardousSubstancesContainedInTheBattery": ["Cd", "Pb", "Hg"],
     "informationAsAResultOfBatteryUse": {
+      "value": "Link to the document",
+      "url": "https://www.google.com/"
+    },
+    "preventionAndManagementOfWasteBatteriesInformation": {
       "value": "Link to the document",
       "url": "https://www.google.com/"
     },

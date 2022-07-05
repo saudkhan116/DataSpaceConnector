@@ -8,14 +8,26 @@
       class="buttons"
       title="Notifications"
     />
-    <img :src="Profile" alt="profile" class="buttons" title="User profile" />
-    <img
-      :src="Logout"
-      alt="logout"
-      class="buttons"
-      title="Logout"
-      v-on:click="logout"
-    />
+
+    <div>
+      <span @mouseover="hover = true" @mouseleave="hover = false">
+        <img
+          :src="Profile"
+          alt="profile"
+          class="buttons"
+          title="User profile"
+        />
+      </span>
+      <div class="profile-menu" v-if="hover">
+        <img
+          :src="Logout"
+          alt="logout"
+          class="buttons"
+          title="Logout"
+          v-on:click="logout"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -33,6 +45,11 @@ export default {
     Profile,
     Settings,
     Logout,
+  },
+  data() {
+    return {
+      hover: false,
+    };
   },
   setup() {
     return {
@@ -82,6 +99,13 @@ export default {
   height: 26px;
   margin: 15px;
   cursor: pointer;
+}
+.profile-menu {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border: solid 1px #ffa600;
+  z-index: 1;
 }
 </style>
 

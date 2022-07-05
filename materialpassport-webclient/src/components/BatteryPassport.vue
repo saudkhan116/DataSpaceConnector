@@ -1,4 +1,5 @@
 <template>
+  <Header />
   <div class="container">
     <div class="main">
       <h5 class="center">
@@ -209,12 +210,16 @@
 <script type="text/jsx">
 import axios from 'axios';
 //import 'bootstrap/dist/css/bootstrap.min.css'
+import Header from '@/components/Header.vue'
 
 let listBatteryProviders = require('../assets/providers.json');
 
 export default {
   name: 'batteryPassport',
   created(){
+  },
+  components: {
+Header
   },
   mounted(){
 
