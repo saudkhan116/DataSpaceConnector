@@ -1,10 +1,33 @@
 <template>
-    <div class="header-container">
-    <img :src="CatenaLogo" alt="logo" class="logo" />
+  <div class="header-container">
+    <img :src="CatenaLogo" alt="logo" class="logo" title="Catenax" />
     <img :src="Settings" alt="settings" class="buttons" title="Settings" />
-    <img :src="Notifications" alt="Notifications" class="buttons" title="Notifications" />
-    <img :src="Profile" alt="profile" class="buttons" title="User profile" />
-    <img :src="Logout" alt="logout" class="buttons" title="Logout" v-on:click="logout"/>
+    <img
+      :src="Notifications"
+      alt="Notifications"
+      class="buttons"
+      title="Notifications"
+    />
+
+    <div>
+      <span @mouseover="hover = true" @mouseleave="hover = false">
+        <img
+          :src="Profile"
+          alt="profile"
+          class="buttons"
+          title="User profile"
+        />
+      </span>
+      <div class="profile-menu" v-if="hover">
+        <img
+          :src="Logout"
+          alt="logout"
+          class="buttons"
+          title="Logout"
+          v-on:click="logout"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -23,31 +46,36 @@ export default {
     Settings,
     Logout,
   },
+  data() {
+    return {
+      hover: false,
+    };
+  },
   setup() {
     return {
       CatenaLogo,
       Profile,
       Notifications,
       Settings,
-      Logout
+      Logout,
     };
   },
   methods: {
-      logout(){
-          localStorage.clear();
-          this.$router.push({ name: "Login" });
-      },
-      scanQRCode(){
-          this.$router.push({ name: "ScanPassport" });
-      }
+    logout() {
+      localStorage.clear();
+      this.$router.push({ name: "Login" });
+    },
+    scanQRCode() {
+      this.$router.push({ name: "ScanPassport" });
+    },
   },
-   mounted() {
+  mounted() {
     let user = localStorage.getItem("user-info");
     if (user) {
-      this.username = JSON.parse(user).name
-      this.role = JSON.parse(user).role
+      this.username = JSON.parse(user).name;
+      this.role = JSON.parse(user).role;
     }
-  }
+  },
 };
 </script>
 
@@ -71,6 +99,13 @@ export default {
   height: 26px;
   margin: 15px;
   cursor: pointer;
+}
+.profile-menu {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border: solid 1px #ffa600;
+  z-index: 1;
 }
 </style>
 
