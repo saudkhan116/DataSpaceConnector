@@ -19,7 +19,7 @@ env:
   EDC_PROVIDER_IMAGE_NAME: "edc-provider"
   CONSUMER_UI_IMAGE_NAME: "consumer-ui"
   REPOSITORY_NAME: "muhammadsaudkhan"
-  IMAGE_TAG: "v1.PI4.S4"
+  IMAGE_TAG: "test"
     
 jobs:
   build:
