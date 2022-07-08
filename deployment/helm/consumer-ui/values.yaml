@@ -9,7 +9,8 @@ image:
   repository: muhammadsaudkhan/consumer-ui
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: test
+  #tag: test
+  tag: $ARGOCD_APP_REVISION
 
 imagePullSecrets: []
 nameOverride: "consumer-ui"
