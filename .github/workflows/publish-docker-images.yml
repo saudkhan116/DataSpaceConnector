@@ -19,8 +19,8 @@ env:
   EDC_PROVIDER_IMAGE_NAME: "edc-provider"
   CONSUMER_UI_IMAGE_NAME: "consumer-ui"
   REPOSITORY_NAME: "muhammadsaudkhan"
-  IMAGE_TAG: "test"
-  COMMIT_SHA: ${{ github.sha }}
+  IMAGE_TAG: "v1.PI4.S4"
+  #COMMIT_SHA: ${{ github.sha }}
     
 jobs:
   build:
@@ -55,11 +55,11 @@ jobs:
 
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.REPOSITORY_NAME }}/${{ env.CONSUMER_UI_IMAGE_NAME }}
+      #- name: Extract Docker metadata
+      #  id: meta
+      #  uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      #  with:
+      #    images: ${{ env.REPOSITORY_NAME }}/${{ env.CONSUMER_UI_IMAGE_NAME }}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
@@ -69,7 +69,7 @@ jobs:
         with:
           context: docker/edc-consumer
           push: true
-          tags: ${{ env.REPOSITORY_NAME }}/${{ env.EDC_CONSUMER_IMAGE_NAME }}:${{ env.COMMIT_SHA }}
+          tags: ${{ env.REPOSITORY_NAME }}/${{ env.EDC_CONSUMER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           labels: labels
 
       - name: Build and push Docker image - edc-provider
@@ -78,7 +78,7 @@ jobs:
         with:
           context: docker/edc-provider
           push: true
-          tags: ${{ env.REPOSITORY_NAME }}/${{ env.EDC_PROVIDER_IMAGE_NAME }}:${{ env.COMMIT_SHA }}
+          tags: ${{ env.REPOSITORY_NAME }}/${{ env.EDC_PROVIDER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           labels: labels
 
       - name: Build and push Docker image - consumer-ui
@@ -87,7 +87,7 @@ jobs:
         with:
           context: docker/consumer-ui
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          #tags: ${{ env.REPOSITORY_NAME }}/${{ env.CONSUMER_UI_IMAGE_NAME }}:${{ env.COMMIT_SHA }}
-          #labels: labels
+          tags: ${{ env.REPOSITORY_NAME }}/${{ env.CONSUMER_UI_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          labels: labels
+          #tags: ${{ steps.meta.outputs.tags }}
+          #labels: ${{ steps.meta.outputs.labels }}
