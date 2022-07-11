@@ -18,11 +18,11 @@
 
 
 export default {
-  name: 'App'
+  name: "App",
   // components: {
   //   Login
   // }
-}
+};
 </script>
 
 <style>
@@ -35,8 +35,7 @@ export default {
   background-color: #f8f9fa;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-content: center;
+  min-height: 100vh;
 }
 * {
   box-sizing: border-box;

@@ -3,401 +3,281 @@
 
   <div class="section-content">
     <div class="sub-section-container">
-      <div class="field-container">
-        <span class="field-label">State of charge</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.stateOfCharge.value
-          }}{{ parametersOfTheBattery.stateOfCharge.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Maximum Allowed Battery Power</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.maximumAllowedBatteryPower.value
-          }}{{ parametersOfTheBattery.maximumAllowedBatteryPower.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label"
-          >Minimal voltage with temperature ranges when relevant</span
-        >
-        <span class="field-value"
-          >{{
-            parametersOfTheBattery
-              .minimalVoltageWithTemperatureRangesWhenRelevant.value
-          }}{{
-            parametersOfTheBattery
-              .minimalVoltageWithTemperatureRangesWhenRelevant.unit
-          }}</span
-        >
-        <span class="test"
-          >Temp ranges:
-          {{
-            parametersOfTheBattery
-              .minimalVoltageWithTemperatureRangesWhenRelevant.tempRanges.min
-              .value
-          }}
-          {{
-            parametersOfTheBattery
-              .minimalVoltageWithTemperatureRangesWhenRelevant.tempRanges.min
-              .unit
-          }}
-          —
-          {{
-            parametersOfTheBattery
-              .minimalVoltageWithTemperatureRangesWhenRelevant.tempRanges.max
-              .value
-          }}
-          {{
-            parametersOfTheBattery
-              .minimalVoltageWithTemperatureRangesWhenRelevant.tempRanges.max
-              .unit
-          }}
-        </span>
-        <span class="test"
-          >Referance test:
-          {{
-            parametersOfTheBattery
-              .minimalVoltageWithTemperatureRangesWhenRelevant.refTest
-          }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label"
-          >Nominal voltage with temperature ranges when relevant</span
-        >
-        <span class="field-value"
-          >{{
-            parametersOfTheBattery
-              .nominalVoltageWithTemperatureRangesWhenRelevant.value
-          }}{{
-            parametersOfTheBattery
-              .nominalVoltageWithTemperatureRangesWhenRelevant.unit
-          }}</span
-        >
-        <span class="test"
-          >Temp ranges:
-          {{
-            parametersOfTheBattery
-              .nominalVoltageWithTemperatureRangesWhenRelevant.tempRanges.min
-              .value
-          }}
-          {{
-            parametersOfTheBattery
-              .nominalVoltageWithTemperatureRangesWhenRelevant.tempRanges.min
-              .unit
-          }}
-          —
-          {{
-            parametersOfTheBattery
-              .nominalVoltageWithTemperatureRangesWhenRelevant.tempRanges.max
-              .value
-          }}
-          {{
-            parametersOfTheBattery
-              .nominalVoltageWithTemperatureRangesWhenRelevant.tempRanges.max
-              .unit
-          }}
-        </span>
-        <span class="test"
-          >Referance test:
-          {{
-            parametersOfTheBattery
-              .nominalVoltageWithTemperatureRangesWhenRelevant.refTest
-          }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label"
-          >Maximum voltage with temperature ranges when relevant</span
-        >
-        <span class="field-value"
-          >{{
-            parametersOfTheBattery
-              .maximumVoltageWithTemperatureRangesWhenRelevant.value
-          }}{{
-            parametersOfTheBattery
-              .maximumVoltageWithTemperatureRangesWhenRelevant.unit
-          }}</span
-        >
-        <span class="test"
-          >Temp ranges:
-          {{
-            parametersOfTheBattery
-              .maximumVoltageWithTemperatureRangesWhenRelevant.tempRanges.min
-              .value
-          }}
-          {{
-            parametersOfTheBattery
-              .maximumVoltageWithTemperatureRangesWhenRelevant.tempRanges.min
-              .unit
-          }}
-          —
-          {{
-            parametersOfTheBattery
-              .maximumVoltageWithTemperatureRangesWhenRelevant.tempRanges.max
-              .value
-          }}
-          {{
-            parametersOfTheBattery
-              .maximumVoltageWithTemperatureRangesWhenRelevant.tempRanges.max
-              .unit
-          }}
-        </span>
-        <span class="test"
-          >Referance test:
-          {{
-            parametersOfTheBattery
-              .maximumVoltageWithTemperatureRangesWhenRelevant.refTest
-          }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label"
-          >Original power capability with temperature ranges when relevant</span
-        >
-        <span class="field-value"
-          >{{
-            parametersOfTheBattery
-              .originalPowerCapabilityWithTemperatureRangesWhenRelevant.value
-          }}{{
-            parametersOfTheBattery
-              .originalPowerCapabilityWithTemperatureRangesWhenRelevant.unit
-          }}</span
-        >
-        <span class="test"
-          >Temp ranges:
-          {{
-            parametersOfTheBattery
-              .originalPowerCapabilityWithTemperatureRangesWhenRelevant
-              .tempRanges.min.value
-          }}
-          {{
-            parametersOfTheBattery
-              .originalPowerCapabilityWithTemperatureRangesWhenRelevant
-              .tempRanges.min.unit
-          }}
-          —
-          {{
-            parametersOfTheBattery
-              .originalPowerCapabilityWithTemperatureRangesWhenRelevant
-              .tempRanges.max.value
-          }}
-          {{
-            parametersOfTheBattery
-              .originalPowerCapabilityWithTemperatureRangesWhenRelevant
-              .tempRanges.max.unit
-          }}
-        </span>
-        <span class="test"
-          >Referance test:
-          {{
-            parametersOfTheBattery
-              .originalPowerCapabilityWithTemperatureRangesWhenRelevant.refTest
-          }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Capacity threshold for exhaustion </span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.capacityThresholdForExhaustion.value
-          }}{{
-            parametersOfTheBattery.capacityThresholdForExhaustion.unit
-          }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label"
-          >Temperature range the battery can withstand when not in use
-        </span>
-        <span class="field-value">
-          {{
-            parametersOfTheBattery
-              .temperatureRangeTheBatteryCanWithstandWhenNotInUse.tempRanges.min
-              .value
-          }}
-          {{
-            parametersOfTheBattery
-              .temperatureRangeTheBatteryCanWithstandWhenNotInUse.tempRanges.min
-              .unit
-          }}
-          —
-          {{
-            parametersOfTheBattery
-              .temperatureRangeTheBatteryCanWithstandWhenNotInUse.tempRanges.max
-              .value
-          }}
-          {{
-            parametersOfTheBattery
-              .temperatureRangeTheBatteryCanWithstandWhenNotInUse.tempRanges.max
-              .unit
-          }}
-        </span>
+      <Field
+        label="State of charge"
+        v-bind:value="parametersOfTheBattery.stateOfCharge.value"
+        v-bind:unit="parametersOfTheBattery.stateOfCharge.unit"
+      />
+      <Field
+        label="Maximum Allowed Battery Power"
+        v-bind:value="parametersOfTheBattery.maximumAllowedBatteryPower.value"
+        v-bind:unit="parametersOfTheBattery.maximumAllowedBatteryPower.unit"
+      />
+      <Field
+        label="Minimal voltage with temperature ranges when relevant"
+        v-bind:value="
+          parametersOfTheBattery.minimalVoltageWithTemperatureRangesWhenRelevant
+            .value
+        "
+        v-bind:unit="
+          parametersOfTheBattery.minimalVoltageWithTemperatureRangesWhenRelevant
+            .unit
+        "
+        v-bind:tempMin="
+          parametersOfTheBattery.minimalVoltageWithTemperatureRangesWhenRelevant
+            .tempRanges.min.value
+        "
+        v-bind:tempMax="
+          parametersOfTheBattery.minimalVoltageWithTemperatureRangesWhenRelevant
+            .tempRanges.max.value
+        "
+        v-bind:tempUnit="
+          parametersOfTheBattery.minimalVoltageWithTemperatureRangesWhenRelevant
+            .tempRanges.min.unit
+        "
+        v-bind:test="
+          parametersOfTheBattery.minimalVoltageWithTemperatureRangesWhenRelevant
+            .refTest
+        "
+      />
+      <Field
+        label="Nominal voltage with temperature ranges when relevant"
+        v-bind:value="
+          parametersOfTheBattery.nominalVoltageWithTemperatureRangesWhenRelevant
+            .value
+        "
+        v-bind:unit="
+          parametersOfTheBattery.nominalVoltageWithTemperatureRangesWhenRelevant
+            .unit
+        "
+        v-bind:tempMin="
+          parametersOfTheBattery.nominalVoltageWithTemperatureRangesWhenRelevant
+            .tempRanges.min.value
+        "
+        v-bind:tempMax="
+          parametersOfTheBattery.nominalVoltageWithTemperatureRangesWhenRelevant
+            .tempRanges.max.value
+        "
+        v-bind:tempUnit="
+          parametersOfTheBattery.nominalVoltageWithTemperatureRangesWhenRelevant
+            .tempRanges.min.unit
+        "
+        v-bind:test="
+          parametersOfTheBattery.nominalVoltageWithTemperatureRangesWhenRelevant
+            .refTest
+        "
+      />
+      <Field
+        label="Maximum voltage with temperature ranges when relevant"
+        v-bind:value="
+          parametersOfTheBattery.maximumVoltageWithTemperatureRangesWhenRelevant
+            .value
+        "
+        v-bind:unit="
+          parametersOfTheBattery.maximumVoltageWithTemperatureRangesWhenRelevant
+            .unit
+        "
+        v-bind:tempMin="
+          parametersOfTheBattery.maximumVoltageWithTemperatureRangesWhenRelevant
+            .tempRanges.min.value
+        "
+        v-bind:tempMax="
+          parametersOfTheBattery.maximumVoltageWithTemperatureRangesWhenRelevant
+            .tempRanges.max.value
+        "
+        v-bind:tempUnit="
+          parametersOfTheBattery.maximumVoltageWithTemperatureRangesWhenRelevant
+            .tempRanges.min.unit
+        "
+        v-bind:test="
+          parametersOfTheBattery.maximumVoltageWithTemperatureRangesWhenRelevant
+            .refTest
+        "
+      />
+      <Field
+        label="Original power capability with temperature ranges when relevant"
+        v-bind:value="
+          parametersOfTheBattery
+            .originalPowerCapabilityWithTemperatureRangesWhenRelevant.value
+        "
+        v-bind:unit="
+          parametersOfTheBattery
+            .originalPowerCapabilityWithTemperatureRangesWhenRelevant.unit
+        "
+        v-bind:tempMin="
+          parametersOfTheBattery
+            .originalPowerCapabilityWithTemperatureRangesWhenRelevant.tempRanges
+            .min.value
+        "
+        v-bind:tempMax="
+          parametersOfTheBattery
+            .originalPowerCapabilityWithTemperatureRangesWhenRelevant.tempRanges
+            .max.value
+        "
+        v-bind:tempUnit="
+          parametersOfTheBattery
+            .originalPowerCapabilityWithTemperatureRangesWhenRelevant.tempRanges
+            .min.unit
+        "
+        v-bind:test="
+          parametersOfTheBattery
+            .originalPowerCapabilityWithTemperatureRangesWhenRelevant.refTest
+        "
+      />
 
-        <span class="test"
-          >Referance test:
-          {{
-            parametersOfTheBattery
-              .temperatureRangeTheBatteryCanWithstandWhenNotInUse.refTest
-          }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">C-rate of Relevant Cycle-life Test</span>
-        <span class="field-value">{{
-          parametersOfTheBattery.cRateOfRelevantCycleLifeTest.value
-        }}</span>
-      </div>
-      <div class="field-container">
-        <span class="field-label">Energy Roundtrip Efficiency</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.energyRoundtripEfficiency.value
-          }}{{ parametersOfTheBattery.energyRoundtripEfficiency.unit }}</span
-        >
-      </div>
-    </div>
-    <div class="sub-section-container">
-      <div class="field-container">
-        <span class="field-label">Rated Capacity</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.ratedCapacity.value
-          }}{{ parametersOfTheBattery.ratedCapacity.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Applied discharge rate</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.appliedDischargeRate.value
-          }}{{ parametersOfTheBattery.appliedDischargeRate.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Applied charge rate</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.appliedChargeRate.value
-          }}{{ parametersOfTheBattery.appliedChargeRate.unit }}</span
-        >
-      </div>
+      <Field
+        label="Capacity threshold for exhaustion"
+        v-bind:value="
+          parametersOfTheBattery.capacityThresholdForExhaustion.value
+        "
+        v-bind:unit="parametersOfTheBattery.capacityThresholdForExhaustion.unit"
+      />
+
+      <Field
+        label="Temperature range the battery can withstand when not in use"
+        v-bind:tempRangeMin="
+          parametersOfTheBattery
+            .temperatureRangeTheBatteryCanWithstandWhenNotInUse.tempRanges.min
+            .value
+        "
+        v-bind:tempRangeMax="
+          parametersOfTheBattery
+            .temperatureRangeTheBatteryCanWithstandWhenNotInUse.tempRanges.max
+            .value
+        "
+        v-bind:tempUnit="
+          parametersOfTheBattery
+            .temperatureRangeTheBatteryCanWithstandWhenNotInUse.tempRanges.min
+            .unit
+        "
+        v-bind:test="
+          parametersOfTheBattery
+            .temperatureRangeTheBatteryCanWithstandWhenNotInUse.refTest
+        "
+      />
+      <Field
+        label="C-rate of Relevant Cycle-life Test"
+        v-bind:value="parametersOfTheBattery.cRateOfRelevantCycleLifeTest.value"
+      />
+      <Field
+        label="Energy Roundtrip Efficiency"
+        v-bind:value="parametersOfTheBattery.energyRoundtripEfficiency.value"
+        v-bind:unit="parametersOfTheBattery.energyRoundtripEfficiency.unit"
+      />
     </div>
     <!-- Subsection -->
     <div class="sub-section-container">
-      <div class="field-container">
-        <span class="field-label">Capacity fade</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.originalPower.value
-          }}{{ parametersOfTheBattery.originalPower.unit }}</span
-        >
-      </div>
+      <Field
+        label="Rated Capacity"
+        v-bind:value="parametersOfTheBattery.ratedCapacity.value"
+        v-bind:unit="parametersOfTheBattery.ratedCapacity.unit"
+      />
+      <Field
+        label="Applied discharge rate"
+        v-bind:value="parametersOfTheBattery.appliedDischargeRate.value"
+        v-bind:unit="parametersOfTheBattery.appliedDischargeRate.unit"
+      />
+      <Field
+        label="Applied charge rate"
+        v-bind:value="parametersOfTheBattery.appliedChargeRate.value"
+        v-bind:unit="parametersOfTheBattery.appliedChargeRate.unit"
+      />
     </div>
     <!-- Subsection -->
     <div class="sub-section-container">
-      <div class="field-container">
-        <span class="field-label">Original power</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.capacityFade.value
-          }}{{ parametersOfTheBattery.capacityFade.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Power capability at 80% state of charge</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.powerCapabilityAt80StateOfCharge.value
-          }}{{
-            parametersOfTheBattery.powerCapabilityAt80StateOfCharge.unit
-          }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Power capability at 20% state of charge</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.powerCapabilityAt20StateOfCharge.value
-          }}{{
-            parametersOfTheBattery.powerCapabilityAt20StateOfCharge.unit
-          }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Temperature ranges</span>
-        <span class="field-value">
-          {{ parametersOfTheBattery.temperatureRanges.min.value }}
-          {{ parametersOfTheBattery.temperatureRanges.min.unit }}
-          —
-          {{ parametersOfTheBattery.temperatureRanges.max.value }}
-          {{ parametersOfTheBattery.temperatureRanges.max.unit }}</span
-        >
-      </div>
+      <Field
+        label="Capacity fade"
+        v-bind:value="parametersOfTheBattery.originalPower.value"
+        v-bind:unit="parametersOfTheBattery.originalPower.unit"
+      />
     </div>
     <!-- Subsection -->
     <div class="sub-section-container">
-      <div class="field-container">
-        <span class="field-label">Power fade</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.powerFade.value
-          }}{{ parametersOfTheBattery.powerFade.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Maximum allowed battery energy</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.maximumAllowedBatteryEnergy.value
-          }}{{ parametersOfTheBattery.maximumAllowedBatteryEnergy.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label"
-          >Ratio between maximum allowed battery power (W) and battery energy
-          (Wh)</span
-        >
-        <span class="field-value"
-          >{{
-            parametersOfTheBattery
-              .ratioBetweenMaximumAllowedBatteryPowerWAndBatteryEnergyWh.value
-          }}{{
-            parametersOfTheBattery
-              .ratioBetweenMaximumAllowedBatteryPowerWAndBatteryEnergyWh.unit
-          }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Internal Resistance: Cell</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.internalResistanceCell.value
-          }}{{ parametersOfTheBattery.internalResistanceCell.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Internal Resistance: Pack</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.internalResistancePack.value
-          }}{{ parametersOfTheBattery.internalResistancePack.unit }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Internal Resistance Increase: Pack</span>
-        <span class="field-value"
-          >{{ parametersOfTheBattery.internalResistanceIncreasePack.value
-          }}{{
-            parametersOfTheBattery.internalResistanceIncreasePack.unit
-          }}</span
-        >
-      </div>
-      <div class="field-container">
-        <span class="field-label">Expected Lifetime</span>
-        <span class="field-value">{{
-          parametersOfTheBattery.expectedLifetime.value
-        }}</span>
-      </div>
-      <div class="field-container">
-        <span class="field-label"
-          >Depth of discharge in the cycle-life test</span
-        >
-        <span class="field-value"
-          >{{ parametersOfTheBattery.depthOfDischargeInTheCycleLifeTest.value
-          }}{{
-            parametersOfTheBattery.depthOfDischargeInTheCycleLifeTest.unit
-          }}</span
-        >
-      </div>
+      <Field
+        label="Original power"
+        v-bind:value="parametersOfTheBattery.capacityFade.value"
+        v-bind:unit="parametersOfTheBattery.capacityFade.unit"
+      />
+      <Field
+        label="Power capability at 80% state of charger"
+        v-bind:value="
+          parametersOfTheBattery.powerCapabilityAt80StateOfCharge.value
+        "
+        v-bind:unit="
+          parametersOfTheBattery.powerCapabilityAt80StateOfCharge.unit
+        "
+      />
+      <Field
+        label="Power capability at 20% state of charge"
+        v-bind:value="
+          parametersOfTheBattery.powerCapabilityAt20StateOfCharge.value
+        "
+        v-bind:unit="
+          parametersOfTheBattery.powerCapabilityAt20StateOfCharge.unit
+        "
+      />
+      <Field
+        label="Power capability at 20% state of charge"
+        v-bind:tempRangeMin="parametersOfTheBattery.temperatureRanges.min.value"
+        v-bind:tempRangeMax="parametersOfTheBattery.temperatureRanges.max.value"
+        v-bind:tempUnit="parametersOfTheBattery.temperatureRanges.min.unit"
+      />
+    </div>
+    <!-- Subsection -->
+    <div class="sub-section-container">
+      <Field
+        label="Power fade"
+        v-bind:value="parametersOfTheBattery.powerFade.value"
+        v-bind:unit="parametersOfTheBattery.powerFade.unit"
+      />
+      <Field
+        label="Maximum allowed battery energy"
+        v-bind:value="parametersOfTheBattery.maximumAllowedBatteryEnergy.value"
+        v-bind:unit="parametersOfTheBattery.maximumAllowedBatteryEnergy.unit"
+      />
+      <Field
+        label="Ratio between maximum allowed battery power (W) and battery energy
+          (Wh)"
+        v-bind:value="
+          parametersOfTheBattery
+            .ratioBetweenMaximumAllowedBatteryPowerWAndBatteryEnergyWh.value
+        "
+        v-bind:unit="
+          parametersOfTheBattery
+            .ratioBetweenMaximumAllowedBatteryPowerWAndBatteryEnergyWh.unit
+        "
+      />
+      <Field
+        label="Internal Resistance: Cell"
+        v-bind:value="parametersOfTheBattery.internalResistanceCell.value"
+        v-bind:unit="parametersOfTheBattery.internalResistanceCell.unit"
+      />
+      <Field
+        label="Internal Resistance: Pack"
+        v-bind:value="parametersOfTheBattery.internalResistancePack.value"
+        v-bind:unit="parametersOfTheBattery.internalResistancePack.unit"
+      />
+
+      <Field
+        label="Internal Resistance Increase: Pack"
+        v-bind:value="
+          parametersOfTheBattery.internalResistanceIncreasePack.value
+        "
+        v-bind:unit="parametersOfTheBattery.internalResistanceIncreasePack.unit"
+      />
+      <Field
+        label="Expected Lifetime"
+        v-bind:value="parametersOfTheBattery.expectedLifetime.value"
+      />
+      <Field
+        label="Depth of discharge in the cycle-life test"
+        v-bind:value="
+          parametersOfTheBattery.depthOfDischargeInTheCycleLifeTest.value
+        "
+        v-bind:unit="
+          parametersOfTheBattery.depthOfDischargeInTheCycleLifeTest.unit
+        "
+      />
     </div>
   </div>
 </template>
@@ -405,6 +285,7 @@
 <script>
 import SectionHeader from "./SectionHeader.vue";
 import SectionContent from "./SectionContent.vue";
+import Field from "./Field.vue";
 
 export default {
   name: "ParametersOfTheBattery",
@@ -413,6 +294,7 @@ export default {
     parametersOfTheBattery: {},
   },
   components: {
+    Field,
     SectionHeader,
     SectionContent,
   },
@@ -420,20 +302,6 @@ export default {
 </script>
 
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
 .section-content {
   width: 100%;
   border: solid 1px #b3cb2d;
@@ -445,30 +313,5 @@ a {
   display: flex;
   flex-wrap: wrap;
   border-bottom: solid 1px #edefe5;
-}
-.field-container {
-  display: flex;
-  flex-direction: column;
-  width: 33%;
-  min-height: 120px;
-}
-.field-label {
-  padding: 30px 0px 10px 40px;
-  font-size: 12px;
-  color: #777777;
-}
-.field-value {
-  padding-left: 40px;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: bold;
-}
-.longer {
-  padding-bottom: 50px;
-}
-.test {
-  font-size: 12px;
-
-  padding: 4px 0 4px 40px;
 }
 </style>

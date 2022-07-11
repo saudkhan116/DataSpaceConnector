@@ -1,50 +1,114 @@
 <template>
-<div class="container">
-    <div class="main">
-    <h5 class="center">Step # 1: Load contract offers from the battery provider</h5><br />
+  <Header />
   <div class="container">
-    <label class="center" for="Provider"><strong>Battery Provider:</strong></label> <br />
-    <select class="form-select center ddl" id="selectProvider" v-model="selectedProvider" placeholder="Select Battery Provider">
-      <option value="" disabled selected>Select Battery Provider...</option>
-      <option v-for="provider in listProviders" :value="provider.name" v-bind:key="provider.id">{{ provider.name }}</option>
-    </select>
+    <div class="main">
+      <h5 class="center">
+        Step # 1: Load contract offers from the battery provider
+      </h5>
+      <br />
+      <div class="container">
+        <label class="center" for="Provider"
+          ><strong>Battery Provider:</strong></label
+        >
+        <br />
+        <select
+          class="form-select center ddl"
+          id="selectProvider"
+          v-model="selectedProvider"
+          placeholder="Select Battery Provider"
+        >
+          <option value="" disabled selected>Select Battery Provider...</option>
+          <option
+            v-for="provider in listProviders"
+            :value="provider.name"
+            v-bind:key="provider.id"
+          >
+            {{ provider.name }}
+          </option>
+        </select>
+      </div>
+      <br />
+      <div class="container">
+        <button
+          type="button"
+          class="btn btn-success center success-btn"
+          :disabled="isDisabled"
+          v-on:click="GetProviderInfo"
+        >
+          Load Contract Offers
+        </button>
+        <span
+          class="container"
+          style="margin-left: 20px"
+          id="loadContracts"
+        ></span>
+      </div>
 
-  </div>
-  <br />
-    <div class="container">
-        <button type="button" class="btn btn-success center success-btn"  :disabled="isDisabled"  v-on:click="GetProviderInfo">Load Contract Offers</button>
-    <span class="container" style="margin-left: 20px" id="loadContracts"></span>
-    </div>
-   
-  <br />
-  <h5 class="center">Step # 2: Negotiate the edc contract</h5><br />
-   <div class="container">
-      <label class="center" for="contractOffer"><strong>Contract Offers:</strong></label><br />
-      <select required class="form-select center ddl" id="selectOffer" v-model="selectedContract" placeholder="Select Offer" @change="setSelectedContract($event)">
-        <option value="" disabled selected>Select an Offer...</option>
-        <option v-for="(offer, index) in provider.contractOffers"
-                v-bind:key="index">{{ offer }}
-        </option>
-      </select>
-      <!-- <span id="selectedBatt"></span> -->
-    </div>
-    <br />
-    <div class="container">
-      <label class="center" for="Battery"><strong>Battery:</strong></label><br />
-    <select required class="form-select center ddl"  id="selectBattery" v-model="selectedBattery" placeholder="Select Battery" @change="setSelectedBattery($event)">
-      <option value="" disabled selected >Select Battery...</option>
-      <option v-for="(battery, id) in provider.batteries" :value="battery.id"
-              v-bind:key="id">{{ battery.name }}
-      </option>
-    </select>
-  </div>
-    <br />
+      <br />
+      <h5 class="center">Step # 2: Negotiate the edc contract</h5>
+      <br />
+      <div class="container">
+        <label class="center" for="contractOffer"
+          ><strong>Contract Offers:</strong></label
+        ><br />
+        <select
+          required
+          class="form-select center ddl"
+          id="selectOffer"
+          v-model="selectedContract"
+          placeholder="Select Offer"
+          @change="setSelectedContract($event)"
+        >
+          <option value="" disabled selected>Select an Offer...</option>
+          <option
+            v-for="(offer, index) in provider.contractOffers"
+            v-bind:key="index"
+          >
+            {{ offer }}
+          </option>
+        </select>
+        <!-- <span id="selectedBatt"></span> -->
+      </div>
+      <br />
+      <div class="container">
+        <label class="center" for="Battery"><strong>Battery:</strong></label
+        ><br />
+        <select
+          required
+          class="form-select center ddl"
+          id="selectBattery"
+          v-model="selectedBattery"
+          placeholder="Select Battery"
+          @change="setSelectedBattery($event)"
+        >
+          <option value="" disabled selected>Select Battery...</option>
+          <option
+            v-for="(battery, id) in provider.batteries"
+            :value="battery.id"
+            v-bind:key="id"
+          >
+            {{ battery.name }}
+          </option>
+        </select>
+      </div>
+      <br />
 
-    <div class="container">
-        <button type="button" class="btn btn-success center success-btn" :disabled="isDisabled"  v-on:click="doNegotiation">Start Negotiation</button>
-        <span class="container" style="margin-left: 20px" id="negotiateContract"></span>
-    </div>
-  <!-- <div class="container" style="width:25%;">
+      <div class="container">
+        <button
+          type="button"
+          class="btn btn-success center success-btn"
+          :disabled="isDisabled"
+          v-on:click="doNegotiation"
+        >
+          Start Negotiation
+        </button>
+        <span
+          class="container"
+          style="margin-left: 20px"
+          id="negotiateContract"
+        ></span>
+      </div>
+      <!-- <div class="container" style="width:25%;">
       <label for="Battery"><strong>Battery:</strong></label>
     <select required class="form-select" id="selectBattery" placeholder="Select Battery" @change="setSelectedBattery($event)">
       <option value="" disabled selected >Select Battery...</option>
@@ -53,38 +117,50 @@
       </option>
     </select>
   </div> -->
-    <!-- <br />
+      <!-- <br />
     <div class="container" style="width:25%;">
       <label for="connectorURL"><strong>Connector URL:</strong></label>
       <input type="text" class="form-control" v-model="this.provider.providerConnector" disabled id="txtConnectorURL" placeholder="Connector URL">
     </div> -->
-    <br />
-    <h5 class="center">Step # 3: Get battery passport from the provider</h5><br />
-    <div class="container">
-        <button type="button" class="btn btn-success center success-btn" :disabled="isDisabled"  v-on:click="initiateTransfer">Get Battery Passport</button>
-    </div>
-    <br />
+      <br />
+      <h5 class="center">Step # 3: Get battery passport from the provider</h5>
+      <br />
+      <div class="container">
+        <button
+          type="button"
+          class="btn btn-success center success-btn"
+          :disabled="isDisabled"
+          v-on:click="initiateTransfer"
+        >
+          Get Battery Passport
+        </button>
+      </div>
+      <br />
 
-  <div v-if="isLoading" class="center" style="margin-top: -50px;">
-  <div style="width: 3rem; height: 3rem;" role="status" >
-    <span><img src="../assets/loading.gif" height="200" width="250"></span>
-  </div>
-  <br />
-  <div class="h5" style="margin: 75px 0px 0px 10px;">{{currentStatus}}</div>
-</div>
-  </div>
-  <div v-if="isPassportVisible" class="container margin-top">
-    <span>
-      {{productPassport}}
-    </span>
-  </div>
-  <!-- <div v-if="isPassportVisible" class="container margin-top">
+      <div v-if="isLoading" class="center" style="margin-top: -50px">
+        <div style="width: 3rem; height: 3rem" role="status">
+          <span
+            ><img src="../assets/loading.gif" height="200" width="250"
+          /></span>
+        </div>
+        <br />
+        <div class="h5" style="margin: 75px 0px 0px 10px">
+          {{ currentStatus }}
+        </div>
+      </div>
+    </div>
+    <div v-if="isPassportVisible" class="container margin-top">
+      <span>
+        {{ productPassport }}
+      </span>
+    </div>
+    <!-- <div v-if="isPassportVisible" class="container margin-top">
     <table v-bind="productPassport" class="table table-bordered table-striped" style="border:1px ghostwhite; text-align:left;">
       <thead>
         <th colspan="6" class="h3 table-heading">Battery Passport</th>
       </thead>
       <tbody> -->
-      <!-- <tr v-for="(value, key) in this.productPassport" v-bind:key="key">
+    <!-- <tr v-for="(value, key) in this.productPassport" v-bind:key="key">
           <th scope="col">{{key}}</th>
           <td v-if="typeof value == 'object'">
             <table class="table table-bordered table-striped"><tr scope="row" v-for="(k,val) in value" v-bind:key="k"><th>{{val}}</th>
@@ -94,7 +170,7 @@
     <!-- <template v-for="(value1, key1) in this.productPassport" v-bind:key="key1">
     <tr scope="row" v-if="typeof value1 != 'object'">
       <th scope="col">{{key1}}</th>
-      <td>{{value1}}</td> 
+      <td>{{value1}}</td>
     </tr>
       <template v-if="typeof value1 == 'object'">
         <tr>
@@ -106,7 +182,7 @@
         <tr scope="row" v-if="typeof value2 != 'object'">
           <th style="padding-left: 50px;">{{key2}}</th>
           <td>
-            {{value2}} 
+            {{value2}}
           </td>
         </tr>
         <template v-if="typeof value2 == 'object'">
@@ -117,7 +193,7 @@
           <tr v-for="(value3,key3) in value2" v-bind:key="key3">
             <th style="padding-left: 100px;">{{key3}}</th>
           <td>
-            {{value3}} 
+            {{value3}}
           </td>
           </tr>
           </template>
@@ -127,19 +203,23 @@
   </tbody>
     </table>
   </div> -->
-  <br />
-</div>
+    <br />
+  </div>
 </template>
 
 <script type="text/jsx">
 import axios from 'axios';
 //import 'bootstrap/dist/css/bootstrap.min.css'
+import Header from '@/components/Header.vue'
 
 let listBatteryProviders = require('../assets/providers.json');
 
 export default {
   name: 'batteryPassport',
   created(){
+    },
+    components: {
+  Header
   },
   mounted(){
 
@@ -461,7 +541,7 @@ export default {
 }
 
 .table-heading{
-  background: #E9ECEC;
+  background: #e9ecec;
   text-align: center;
 }
 
