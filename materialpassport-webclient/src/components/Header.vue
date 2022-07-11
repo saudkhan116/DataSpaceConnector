@@ -20,9 +20,9 @@
             <div class="profile-menu" v-if="hover" @mouseleave="hover = false">
               <div class="menu-btn">
                 <img :src="Profile" alt="profile" class="menu-profile" />
-                <!--TODO: It would be nice to have it not hardcoded-->
+                <!--TODO: Profile page onClick-->
                 <h3>
-                  mustermann@test-recycler.de
+                  {{ username }}
                   <p>Manage your account</p>
                 </h3>
               </div>
@@ -68,6 +68,8 @@ export default {
   data() {
     return {
       hover: false,
+      username: "",
+      role: "",
     };
   },
   setup() {
@@ -92,7 +94,7 @@ export default {
   mounted() {
     let user = localStorage.getItem("user-info");
     if (user) {
-      this.username = JSON.parse(user).name;
+      this.username = JSON.parse(user).email;
       this.role = JSON.parse(user).role;
     }
   },
@@ -176,7 +178,7 @@ export default {
   background-color: #f8f9fa;
 }
 h3 {
-  padding-left: 12px;
+  padding: 0 16px 0 12px;
 }
 p {
   color: #cccccc;

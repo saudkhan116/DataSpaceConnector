@@ -1,115 +1,96 @@
 <template>
   <Header />
   <div class="container">
-    <div class="main">
-      <h5 class="center">
-        Step # 1: Load contract offers from the battery provider
-      </h5>
-      <br />
-      <div class="container">
-        <label class="center" for="Provider"
-          ><strong>Battery Provider:</strong></label
-        >
-        <br />
-        <select
-          class="form-select center ddl"
-          id="selectProvider"
-          v-model="selectedProvider"
-          placeholder="Select Battery Provider"
-        >
-          <option value="" disabled selected>Select Battery Provider...</option>
-          <option
-            v-for="provider in listProviders"
-            :value="provider.name"
-            v-bind:key="provider.id"
-          >
-            {{ provider.name }}
-          </option>
-        </select>
-      </div>
-      <br />
-      <div class="container">
-        <button
-          type="button"
-          class="btn btn-success center success-btn"
-          :disabled="isDisabled"
-          v-on:click="GetProviderInfo"
-        >
-          Load Contract Offers
-        </button>
-        <span
-          class="container"
-          style="margin-left: 20px"
-          id="loadContracts"
-        ></span>
-      </div>
+    <h5>Step # 1: Load contract offers from the battery provider</h5>
 
-      <br />
-      <h5 class="center">Step # 2: Negotiate the edc contract</h5>
-      <br />
-      <div class="container">
-        <label class="center" for="contractOffer"
-          ><strong>Contract Offers:</strong></label
-        ><br />
-        <select
-          required
-          class="form-select center ddl"
-          id="selectOffer"
-          v-model="selectedContract"
-          placeholder="Select Offer"
-          @change="setSelectedContract($event)"
-        >
-          <option value="" disabled selected>Select an Offer...</option>
-          <option
-            v-for="(offer, index) in provider.contractOffers"
-            v-bind:key="index"
-          >
-            {{ offer }}
-          </option>
-        </select>
-        <!-- <span id="selectedBatt"></span> -->
-      </div>
-      <br />
-      <div class="container">
-        <label class="center" for="Battery"><strong>Battery:</strong></label
-        ><br />
-        <select
-          required
-          class="form-select center ddl"
-          id="selectBattery"
-          v-model="selectedBattery"
-          placeholder="Select Battery"
-          @change="setSelectedBattery($event)"
-        >
-          <option value="" disabled selected>Select Battery...</option>
-          <option
-            v-for="(battery, id) in provider.batteries"
-            :value="battery.id"
-            v-bind:key="id"
-          >
-            {{ battery.name }}
-          </option>
-        </select>
-      </div>
-      <br />
+    <label class="label" for="Provider">Battery Provider:</label>
 
-      <div class="container">
-        <button
-          type="button"
-          class="btn btn-success center success-btn"
-          :disabled="isDisabled"
-          v-on:click="doNegotiation"
-        >
-          Start Negotiation
-        </button>
-        <span
-          class="container"
-          style="margin-left: 20px"
-          id="negotiateContract"
-        ></span>
-      </div>
-      <!-- <div class="container" style="width:25%;">
-      <label for="Battery"><strong>Battery:</strong></label>
+    <select
+      class="select"
+      id="selectProvider"
+      v-model="selectedProvider"
+      placeholder="Select Battery Provider"
+    >
+      <option value="" disabled selected>Select Battery Provider...</option>
+      <option
+        v-for="provider in listProviders"
+        :value="provider.name"
+        v-bind:key="provider.id"
+      >
+        {{ provider.name }}
+      </option>
+    </select>
+
+    <button
+      type="button"
+      class="success-btn"
+      :disabled="isDisabled"
+      v-on:click="GetProviderInfo"
+    >
+      Load Contract Offers
+    </button>
+    <span
+      class="snackbar"
+      :class="contractInfo ? 'show' : ''"
+      id="loadContracts"
+    />
+
+    <h5 class="center">Step # 2: Negotiate the edc contract</h5>
+
+    <label class="label" for="contractOffer">Contract Offers:</label>
+    <select
+      required
+      class="form-select select"
+      id="selectOffer"
+      v-model="selectedContract"
+      placeholder="Select Offer"
+      @change="setSelectedContract($event)"
+    >
+      <option value="" disabled selected>Select an Offer...</option>
+      <option
+        v-for="(offer, index) in provider.contractOffers"
+        v-bind:key="index"
+      >
+        {{ offer }}
+      </option>
+    </select>
+    <!-- <span id="selectedBatt"></span> -->
+
+    <label class="label" for="Battery">Battery:</label>
+    <select
+      required
+      class="form-select select"
+      id="selectBattery"
+      v-model="selectedBattery"
+      placeholder="Select Battery"
+      @change="setSelectedBattery($event)"
+    >
+      <option value="" disabled selected>Select Battery...</option>
+      <option
+        v-for="(battery, id) in provider.batteries"
+        :value="battery.id"
+        v-bind:key="id"
+      >
+        {{ battery.name }}
+      </option>
+    </select>
+
+    <button
+      type="button"
+      class="btn btn-success center success-btn"
+      :disabled="isDisabled"
+      v-on:click="doNegotiation"
+    >
+      Start Negotiation
+    </button>
+    <span
+      class="snackbar"
+      :class="negotiationInfo ? 'show' : ''"
+      id="negotiateContract"
+    ></span>
+
+    <!-- <div class="container" style="width:25%;">
+      <label for="Battery">Battery:</label>
     <select required class="form-select" id="selectBattery" placeholder="Select Battery" @change="setSelectedBattery($event)">
       <option value="" disabled selected >Select Battery...</option>
       <option v-for="(battery, id) in provider.batteries" :value="battery.id"
@@ -117,39 +98,36 @@
       </option>
     </select>
   </div> -->
-      <!-- <br />
+    <!-- <br />
     <div class="container" style="width:25%;">
-      <label for="connectorURL"><strong>Connector URL:</strong></label>
+      <label for="connectorURL">Connector URL:</label>
       <input type="text" class="form-control" v-model="this.provider.providerConnector" disabled id="txtConnectorURL" placeholder="Connector URL">
     </div> -->
-      <br />
-      <h5 class="center">Step # 3: Get battery passport from the provider</h5>
-      <br />
-      <div class="container">
-        <button
-          type="button"
-          class="btn btn-success center success-btn"
-          :disabled="isDisabled"
-          v-on:click="initiateTransfer"
-        >
-          Get Battery Passport
-        </button>
-      </div>
-      <br />
 
-      <div v-if="isLoading" class="center" style="margin-top: -50px">
-        <div style="width: 3rem; height: 3rem" role="status">
-          <span
-            ><img src="../assets/loading.gif" height="200" width="250"
-          /></span>
-        </div>
-        <br />
-        <div class="h5" style="margin: 75px 0px 0px 10px">
-          {{ currentStatus }}
-        </div>
+    <h5 class="center">Step # 3: Get battery passport from the provider</h5>
+
+    <button
+      type="button"
+      class="btn btn-success center success-btn"
+      :disabled="isDisabled"
+      v-on:click="initiateTransfer"
+    >
+      Get Battery Passport
+    </button>
+
+    <div v-if="isLoading" class="center" style="margin-top: -50px">
+      <div style="width: 3rem; height: 3rem" role="status">
+        <span
+          ><img src="../assets/loading.gif" height="200" width="250"
+        /></span>
+      </div>
+
+      <div class="h5" style="margin: 75px 0px 0px 10px">
+        {{ currentStatus }}
       </div>
     </div>
-    <div v-if="isPassportVisible" class="container margin-top">
+
+    <div v-if="isPassportVisible" class="margin-top">
       <span>
         {{ productPassport }}
       </span>
@@ -203,7 +181,6 @@
   </tbody>
     </table>
   </div> -->
-    <br />
   </div>
 </template>
 
@@ -236,8 +213,8 @@ Header
         }
         else{
           let user = localStorage.getItem("user-info")
-          let role = JSON.parse(user).role
-
+          let role = JSON.parse(user).role;
+console.log("CurrentUser: ",user, role);
           // check query params for QR code scanning
           this.selectedProvider = this.$route.query.provider
           this.selectedBattery = this.$route.query.battery
@@ -271,10 +248,16 @@ Header
       isLoading:'',
       isDisabled: false,
       isPassportVisible: false,
-      errors: []
+      contractInfo: false,
+      negotiationInfo: false,
+      errors: [],
+       username: '',
+      role: '',
+
     }
   },
   methods:{
+
     GetProviderInfo() {
        let user = localStorage.getItem("user-info")
        let role = JSON.parse(user).role
@@ -291,8 +274,14 @@ Header
           else{
             document.getElementById('loadContracts').innerHTML='No contract offers'
             this.resetFields()
-          }
+          };
+           this.contractInfo = !this.contractInfo;
+           setTimeout(() => {
+             this.contractInfo = false;
+        }, 2000);
+
       })
+
       .catch(e => {
         this.errors.push(e)
         document.getElementById('loadContracts').innerHTML='Something went wrong!..'
@@ -527,39 +516,103 @@ Header
 </script>
 
 <style scoped>
-.center {
-  margin-left: 33%;
-  margin-top: inherit;
-}
-.md-dialog-container {
-  padding: 20px;
-}
-.md-content.md-table.md-theme-default {
-  width: 95%;
-  margin: 0 auto;
-}
+.container {
+  display: flex;
+  flex-direction: column;
 
-.table-heading {
-  background: #e9ecec;
-  text-align: center;
+  width: 22%;
+  margin: 0 39% 0 39%;
 }
-
-.main {
-  text-align: left;
-  padding: 50px 0px 0px 10%;
-}
-.ddl {
-  width: 20%;
-  margin-top: 10px;
-  padding: 6px 6px 6px 6px;
-  border-radius: 4px;
-}
-
 .success-btn {
-  width: 20%;
-  padding: 6px 6px 6px 6px;
+  width: 340px;
+  height: 48px;
+  margin: 12px 0 60px 0;
   background: #b3cb2d;
   color: white;
+  font-size: 16px;
   font-weight: bolder;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.label {
+  padding: 12px 0 12px 0;
+  font-weight: bold;
+}
+.select {
+  width: 340px;
+  height: 48px;
+  border: solid 1px #b3cb2c;
+  border-radius: 4px;
+}
+/* The snackbar - position it at the top and in the middle of the screen */
+.snackbar {
+  visibility: hidden; /* Hidden by default. Visible on click */
+  min-width: 250px; /* Set a default minimum width */
+  margin-left: -125px; /* Divide value of min-width by 2 */
+  background-color: #b3cb2d; /* Black background color */
+  color: #fff; /* White text color */
+  text-align: center; /* Centered text */
+  border-radius: 4px; /* Rounded borders */
+  padding: 16px; /* Padding */
+  position: fixed; /* Sit on top of the screen */
+  z-index: 1; /* Add a z-index if needed */
+  left: 50%; /* Center the snackbar */
+  top: 30px; /* 30px from the top */
+  font-weight: bold;
+}
+
+/* Show the snackbar when clicking on a button (class added with JavaScript) */
+.snackbar.show {
+  visibility: visible; /* Show the snackbar */
+  /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+  However, delay the fade out process for 2.5 seconds */
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* Animations to fade the snackbar in and out */
+@-webkit-keyframes fadein {
+  from {
+    top: 0;
+    opacity: 0;
+  }
+  to {
+    top: 30px;
+    opacity: 1;
+  }
+}
+
+@keyframes fadein {
+  from {
+    top: 0;
+    opacity: 0;
+  }
+  to {
+    top: 30px;
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes fadeout {
+  from {
+    top: 30px;
+    opacity: 1;
+  }
+  to {
+    top: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes fadeout {
+  from {
+    top: 30px;
+    opacity: 1;
+  }
+  to {
+    top: 0;
+    opacity: 0;
+  }
 }
 </style>
