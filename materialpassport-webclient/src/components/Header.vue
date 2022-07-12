@@ -53,7 +53,7 @@ import CatenaLogo from "../assets/logotype.png";
 import Profile from "../assets/profile.svg";
 import Notifications from "../assets/notifications.svg";
 import Settings from "../assets/settings.svg";
-import QrCode from "../assets/qrcode.svg";
+import QrCode from "../assets/provider_BMW&battery_test_battery_1.png";
 import Logout from "../assets/logout.png";
 
 export default {

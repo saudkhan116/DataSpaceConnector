@@ -5,7 +5,7 @@
       <img :src="CatenaLogo" alt="logo" class="logo" />
     </div>
     <div class="sign-in-wrapper">
-      <div class="sign-in-container">
+      <div class="sign-in-container" data-cy="sign-in-container">
         <h1>Sign In</h1>
         <h3>
           New user?<span
