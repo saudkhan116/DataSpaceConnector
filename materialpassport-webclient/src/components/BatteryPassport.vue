@@ -1,8 +1,6 @@
 <template>
   <Header />
   <div class="container">
-    <h5>Step # 1: Load contract offers from the battery provider</h5>
-
     <label class="label" for="Provider">Battery Provider:</label>
 
     <select
@@ -29,11 +27,10 @@
     >
       Load Contract Offers
     </button>
-    <span style="margin-left: 20px" id="loadContracts" />
+    <span style="margin-left: 20px" id="loadMetaData" />
 
-    <h5 class="center">Step # 2: Negotiate the edc contract</h5>
 
-    <label class="label" for="contractOffer">Contract Offers:</label>
+    <!-- <label class="label" for="contractOffer">Contract Offers:</label>
     <select
       required
       class="form-select select"
@@ -49,7 +46,7 @@
       >
         {{ offer }}
       </option>
-    </select>
+    </select> -->
     <!-- <span id="selectedBatt"></span> -->
 
     <label class="label" for="Battery">Battery:</label>
@@ -71,15 +68,15 @@
       </option>
     </select>
 
-    <button
+    <!-- <button
       type="button"
       class="btn btn-success center success-btn"
       :disabled="isDisabled"
       v-on:click="doNegotiation"
     >
       Start Negotiation
-    </button>
-    <span style="margin-left: 20px" id="negotiateContract"></span>
+    </button> -->
+    <!-- <span style="margin-left: 20px" id="negotiateContract"></span> -->
 
     <!-- <div class="container" style="width:25%;">
       <label for="Battery">Battery:</label>
@@ -96,18 +93,18 @@
       <input type="text" class="form-control" v-model="this.provider.providerConnector" disabled id="txtConnectorURL" placeholder="Connector URL">
     </div> -->
 
-    <h5 class="center">Step # 3: Get battery passport from the provider</h5>
+    <!-- <h5 class="center">Step # 3: Get battery passport from the provider</h5> -->
 
     <button
       type="button"
       class="btn btn-success center success-btn"
       :disabled="isDisabled"
-      v-on:click="initiateTransfer"
+      v-on:click="requestProductPassport"
     >
       Get Battery Passport
     </button>
 
-    <div v-if="isLoading" class="center" style="margin-top: -50px">
+    <!-- <div v-if="isLoading" class="center" style="margin-top: -50px">
       <div style="width: 3rem; height: 3rem" role="status">
         <span
           ><img src="../assets/loading.gif" height="200" width="250"
@@ -117,13 +114,13 @@
       <div class="h5" style="margin: 75px 0px 0px 10px">
         {{ currentStatus }}
       </div>
-    </div>
+    </div> -->
 
-    <div v-if="isPassportVisible" class="margin-top">
+    <!-- <div v-if="isPassportVisible" class="margin-top">
       <span>
         {{ productPassport }}
       </span>
-    </div>
+    </div> -->
     <!-- <div v-if="isPassportVisible" class="container margin-top">
     <table v-bind="productPassport" class="table table-bordered table-striped" style="border:1px ghostwhite; text-align:left;">
       <thead>
@@ -259,16 +256,20 @@ console.log("CurrentUser: ",user, role);
       .then(response => {
           this.provider = response.data
           this.getContractOfferByLoggedInRole()
-          if (this.provider != '' )
-            document.getElementById('loadContracts').innerHTML='Contract offers loaded successfully..'
+          var element = document.getElementById("loadMetaData");
+          if (this.provider != '' ){
+            // Check if html element does not exist and current page is a Passport view.
+          if(typeof(element) != 'undefined' && element != null)
+              element.innerHTML='Meta data loaded successfully..' 
+          }
           else{
-            document.getElementById('loadContracts').innerHTML='No contract offers'
+            document.getElementById('loadMetaData').innerHTML='No meta data exists...'
             this.resetFields()
           };
       })
       .catch(e => {
         this.errors.push(e)
-        document.getElementById('loadContracts').innerHTML='Something went wrong!..'
+        document.getElementById('loadMetaData').innerHTML='Something went wrong!..'
       })
     },
     getContractOfferByLoggedInRole: function(){
@@ -378,17 +379,19 @@ console.log("CurrentUser: ",user, role);
     async GetBatteryDataUsingQRCode(){
 
       // load provider dropdown to fill the relevant dropdown values i.e., contract offer and battery
-       await this.GetProviderInfo()
+       await this.GetProviderInfo();
        // provider drondown is not auto fill because this.selectedProvider is loaded before the provider dropdown.
 
 
       // check if the selected provider has contract offer.
 
       // negotiate contract
-      await this.doNegotiation()
+      //await this.doNegotiation()
 
       // get battery passport
-      await this.initiateTransfer()
+      //await this.initiateTransfer()
+
+      await this.requestProductPassport();
     },
     negotiateContract(){
 
@@ -432,7 +435,7 @@ console.log("CurrentUser: ",user, role);
         });
     })
     },
-  getProductPassport(asset, destinationPath, contractId){
+    getProductPassport(asset, destinationPath, contractId){
 
     return new Promise(resolve => {
 
@@ -474,8 +477,8 @@ console.log("CurrentUser: ",user, role);
         });
     })
 
-  },
-  displayProductPassport(filename){
+    },
+    displayProductPassport(filename){
 
      return new Promise(resolve => {
 
@@ -494,8 +497,11 @@ console.log("CurrentUser: ",user, role);
           resolve('rejected');
         });
     })
+    },
+    requestProductPassport(){
+    this.$router.replace({ name: "Passport", query:{ provider: this.selectedProvider, battery: this.selectedBattery } });
+    }
   }
-}
 }
 </script>
 
