@@ -42,7 +42,7 @@
         </h1>
       </div>
       <div class="code-container">
-        <img :src="QrCode" alt="profile" class="code" />
+        <img :src="QrCode" alt="profile" class="code"  width="140" height="140"/>
       </div>
     </div>
   </div>
@@ -53,7 +53,7 @@ import CatenaLogo from "../assets/logotype.png";
 import Profile from "../assets/profile.svg";
 import Notifications from "../assets/notifications.svg";
 import Settings from "../assets/settings.svg";
-import QrCode from "../assets/provider_BMW&battery_test_battery_1.png";
+import QrCode from "../assets/BMW_test-battery-1.svg";
 import Logout from "../assets/logout.png";
 
 export default {
