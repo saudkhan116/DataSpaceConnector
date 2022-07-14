@@ -1,0 +1,3 @@
+[submodule "aas"]
+	path = aas
+	url = https://github.com/catenax-ng/catenax-at-home.git

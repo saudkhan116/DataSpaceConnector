@@ -1,5 +1,9 @@
 <template>
-  <div v-if="loading">Spinner</div>
+  <div v-if="loading" style="padding: 18% 42% 18% 42%">
+    <span>
+      <img src="../assets/loading.gif" height="200" width="250" />
+    </span>
+  </div>
   <div v-else>
     <Header :batteryId="data.generalInformation" />
     <div class="container">
@@ -80,6 +84,9 @@ export default {
     return {
       data: null,
       loading: true,
+      errors: [],
+      twinRegistryUrl: "http://localhost:4243",
+      aasProxyUrl: "http://localhost:4245",
     };
   },
   methods: {
@@ -89,37 +96,11 @@ export default {
       console.log(data);
       return data;
     },
-    getProductPassport(asset, destinationPath, contractId) {
+    getDigitalTwinId: function (assetIds) {
       return new Promise((resolve) => {
-        var jsonData = {
-          protocol: "ids-multipart",
-          assetId: asset,
-          contractId: contractId,
-          dataDestination: {
-            properties: {
-              path: destinationPath + "/" + asset + ".json",
-              keyName: "keyName",
-              type: "File",
-            },
-          },
-          transferType: {
-            contentType: "application/octet-stream",
-            isFinite: true,
-          },
-          managedResources: false,
-          connectorAddress: "http://edc-provider:8282/api/v1/ids/data",
-          connectorId: "consumer",
-        };
-
-        // "connectorAddress": "http://edc-provider:8282/api/v1/ids/data",
-
-        //axios.post('/consumer/data/transferprocess', jsonData, {
+        let encodedAssetIds = encodeURIComponent(assetIds);
         axios
-          .post("/consumer/data/transferprocess", jsonData, {
-            headers: {
-              "X-Api-Key": "password",
-            },
-          })
+          .get(this.aasProxyUrl + "/lookup/shells?assetIds=" + encodedAssetIds)
           .then((response) => {
             console.log(response.data);
             resolve(response.data);
@@ -130,15 +111,39 @@ export default {
           });
       });
     },
-    displayProductPassport(filename) {
+    getDigitalTwinObjectById: function (digitalTwinId) {
+      //const res =  axios.get("http://localhost:4243/registry/shell-descriptors/urn:uuid:365e6fbe-bb34-11ec-8422-0242ac120001"); // Without AAS Proxy
       return new Promise((resolve) => {
-        //axios.get('/consumer/data/contractnegotiations/passport/display/' + filename, {
         axios
           .get(
-            "/consumer/data/contractnegotiations/passport/display/" + filename,
+            this.aasProxyUrl + "/registry/shell-descriptors/" + digitalTwinId
+          ) //Calling with AAS Proxy
+          .then((response) => {
+            console.log(response.data);
+            resolve(response.data);
+          })
+          .catch((e) => {
+            this.errors.push(e);
+            resolve("rejected");
+          });
+      });
+    },
+    getSubmodelData: function (digitalTwin) {
+      //const res =  axios.get("http://localhost:8193/api/service/urn:uuid:365e6fbe-bb34-11ec-8422-0242ac120001-urn:uuid:61125dc3-5e6f-4f4b-838d-447432b97919/submodel?provider-connector-url=http://provider-control-plane:8282"); // Without AAS Proxy
+      //Calling with AAS Proxy
+      return new Promise((resolve) => {
+        axios
+          .get(
+            this.aasProxyUrl +
+              "/shells/" +
+              digitalTwin.identification +
+              "/aas/" +
+              digitalTwin.submodelDescriptors[0].identification +
+              "/submodel?content=value&extent=withBlobValue",
             {
-              headers: {
-                "X-Api-Key": "password",
+              auth: {
+                username: "someuser",
+                password: "somepassword",
               },
             }
           )
@@ -152,33 +157,19 @@ export default {
           });
       });
     },
+    async getPassport(assetIds) {
+      const digitalTwinId = await this.getDigitalTwinId(assetIds);
+      const digitalTwin = await this.getDigitalTwinObjectById(digitalTwinId);
+      const response = await this.getSubmodelData(digitalTwin);
+      return response;
+    },
   },
   async created() {
     //this.data = await this.fetchData();
     //console.log(data);
-    let contractId = this.$route.params.contractId;
-    const destinationPath = "/app/samples/04.0-file-transfer/data"; // set different path for containers
-    let asset = "";
-    let user = localStorage.getItem("user-info");
-    let role = JSON.parse(user).role;
-    if (role.toLowerCase() == "dismantler") asset = "test-document_dismantler";
-    else if (role.toLowerCase() == "oem") asset = "test-document_oem";
-    else if (role.toLowerCase() == "recycler") asset = "test-document_recycler";
-    else if (role.toLowerCase() == "Battery Producer")
-      asset = "test-document_battery_producer";
-    let uuid = await this.getProductPassport(
-      asset,
-      destinationPath,
-      contractId
-    );
-    if (uuid == null)
-      alert("Something went wrong in finalizing product process");
-    else {
-      // Display the product passport //
-      let response = await this.displayProductPassport(asset + ".json");
-      this.data = response;
-      this.loading = false;
-    }
+    let assetIds = this.$route.params.assetIds;
+    this.data = await this.getPassport(assetIds);
+    this.loading = false;
   },
 };
 </script>

@@ -42,7 +42,7 @@
         </h1>
       </div>
       <div class="code-container">
-        <img :src="QrCode" alt="profile" class="code" />
+        <img :src="QrCode" alt="profile" class="code"  width="140" height="140"/>
       </div>
     </div>
   </div>

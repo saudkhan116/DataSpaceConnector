@@ -1,16 +1,37 @@
 # materialpass-webclient
 
-## Cloning repository
+This battery pass consumer application is used with the Asset Administration Shell (AAS).
+
+
+### Cloning repository
 
 ```bash
 git clone https://github.com/saudkhan116/DataSpaceConnector.git
 ```
-## Navigate to the materialpassport-webclient directory
+## Update submodule
 ```bash
-cd materialpassport-webclient/
+cd materialpassport-webclient/aas/
+git submodule update
 ```
+
+
+### Launch docker containers for the Asset Administration Shell (AAS)
+```bash
+cd materialpassport-webclient/aas/getting-started-guide/
+docker compose up -d
+```
+
+### Init Data Provider
+```bash
+cd ../../aas-int-provider/
+
+# Executing this script will create a sample battery passport data, create EDC asset, policies, contract definitions and register it as a digital twin inside registry.
+./init-provider.sh
+```
+
 ## Project setup
 ```
+cd ..
 npm install --legacy-peer-deps
 ```
 
