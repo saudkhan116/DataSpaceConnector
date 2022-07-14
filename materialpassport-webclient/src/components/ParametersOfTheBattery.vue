@@ -1,4 +1,4 @@
-<template>
+<template v-if="additionalInformation">
   <SectionHeader title="4. Parameters of the battery" />
 
   <div class="section-content">
@@ -7,6 +7,7 @@
         label="State of charge"
         v-bind:value="parametersOfTheBattery.stateOfCharge.value"
         v-bind:unit="parametersOfTheBattery.stateOfCharge.unit"
+        data-cy="state-of-charge"
       />
       <Field
         label="Maximum Allowed Battery Power"

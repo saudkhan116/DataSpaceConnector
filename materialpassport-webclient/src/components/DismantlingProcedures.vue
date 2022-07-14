@@ -1,12 +1,14 @@
-<template>
+<template v-if="dismantlingProcedures">
   <SectionHeader title="5. Dismantling Procedures" />
 
   <div class="section-content">
     <div class="sub-section-container">
       <a
+        v-if="dismantlingProcedures.vehicleDismantlingProcedure.url"
         :href="dismantlingProcedures.vehicleDismantlingProcedure.url"
         target="_blank"
         class="field-container"
+        data-cy="dismantling-procedures"
       >
         <img :src="Pdf" alt="settings" class="icon" />
         <span class="field-value">{{
@@ -14,6 +16,7 @@
         }}</span>
       </a>
       <a
+        v-if="dismantlingProcedures.batteryDismantlingProcedure.url"
         :href="dismantlingProcedures.batteryDismantlingProcedure.url"
         target="_blank"
         class="field-container"

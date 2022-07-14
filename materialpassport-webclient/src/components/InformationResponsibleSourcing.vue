@@ -1,12 +1,14 @@
-<template>
+<template v-if="informationResponsibleSourcing">
   <SectionHeader title="7. Information responsible sourcing" />
 
   <div class="section-content">
     <div class="sub-section-container">
       <a
+        v-if="informationResponsibleSourcing.responsibleRawMaterialsReport.url"
         :href="informationResponsibleSourcing.responsibleRawMaterialsReport.url"
         target="_blank"
         class="field-container"
+        data-cy="responsible-raw-materials-report"
       >
         <img :src="Pdf" alt="settings" class="icon" />
         <span class="field-value">{{

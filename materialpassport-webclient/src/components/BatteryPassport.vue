@@ -1,6 +1,6 @@
 <template>
   <Header />
-  <div class="container">
+  <div class="container" data-cy="battery-pass-container">
     <h5>Step # 1: Load contract offers from the battery provider</h5>
 
     <label class="label" for="Provider">Battery Provider:</label>
@@ -10,6 +10,7 @@
       id="selectProvider"
       v-model="selectedProvider"
       placeholder="Select Battery Provider"
+      data-cy="provider-select"
     >
       <option value="" disabled selected>Select Battery Provider...</option>
       <option
@@ -26,6 +27,7 @@
       class="success-btn"
       :disabled="isDisabled"
       v-on:click="GetProviderInfo"
+      data-cy="provider-btn"
     >
       Load Contract Offers
     </button>
@@ -41,6 +43,7 @@
       v-model="selectedContract"
       placeholder="Select Offer"
       @change="setSelectedContract($event)"
+      data-cy="contract-select"
     >
       <option value="" disabled selected>Select an Offer...</option>
       <option
@@ -60,6 +63,7 @@
       v-model="selectedBattery"
       placeholder="Select Battery"
       @change="setSelectedBattery($event)"
+      data-cy="battery-select"
     >
       <option value="" disabled selected>Select Battery...</option>
       <option
@@ -76,6 +80,7 @@
       class="btn btn-success center success-btn"
       :disabled="isDisabled"
       v-on:click="doNegotiation"
+      data-cy="negotiation-btn"
     >
       Start Negotiation
     </button>
@@ -103,6 +108,7 @@
       class="btn btn-success center success-btn"
       :disabled="isDisabled"
       v-on:click="initiateTransfer"
+      data-cy="passport-btn"
     >
       Get Battery Passport
     </button>
@@ -241,13 +247,11 @@ console.log("CurrentUser: ",user, role);
       isDisabled: false,
       isPassportVisible: false,
       errors: [],
-       username: '',
+      username: '',
       role: '',
-
     }
   },
   methods:{
-
     GetProviderInfo() {
        let user = localStorage.getItem("user-info")
        let role = JSON.parse(user).role

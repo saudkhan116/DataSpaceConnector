@@ -25,7 +25,7 @@
       />
       <SafetyInformation
         sectionTitle="Safety information"
-        :safetyInformation="data.safetyInformation"
+        :safetyMeasures="data.safetyMeasures"
       />
       <InformationResponsibleSourcing
         sectionTitle="Information responsible sourcing"

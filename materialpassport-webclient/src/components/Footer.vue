@@ -1,7 +1,7 @@
 <template>
   <div class="footer-container">
     <div class="footer-wrapper">
-      <div class="logo-wrapper">
+      <div class="logo-wrapper" data-cy="footer-logo-wrapper">
         <img :src="CatenaLogo" alt="logo" class="logo" />
       </div>
       <div class="links-wrapper">

@@ -1,9 +1,13 @@
-<template>
+<template v-if="generalInformation">
   <SectionHeader title="1. General information" />
 
   <div class="section-content">
     <div class="sub-section-container">
-      <Field label="Battery ID" v-bind:value="generalInformation.batteryId" />
+      <Field
+        label="Battery ID"
+        v-bind:value="generalInformation.batteryId"
+        data-cy="battery-id"
+      />
       <Field
         label="Battery Type"
         v-bind:value="generalInformation.batteryType"

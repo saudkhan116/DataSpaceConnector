@@ -1,4 +1,4 @@
-<template>
+<template v-if="stateOfHealth">
   <SectionHeader title="3. State of Health" />
 
   <div class="section-content">
@@ -10,6 +10,7 @@
         label="Remaining capacity"
         v-bind:value="stateOfHealth.remainingCapacity.value"
         v-bind:unit="stateOfHealth.remainingCapacity.unit"
+        data-cy="remaining-capacity"
       />
       <Field
         label="Overall capacity fade"

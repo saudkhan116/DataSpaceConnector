@@ -21,6 +21,7 @@
             v-model="email"
             type="text"
             placeholder="Username or email"
+            data-cy="email-input"
           />
         </div>
 
@@ -30,11 +31,16 @@
             v-model="password"
             type="password"
             placeholder="Password"
+            data-cy="password-input"
           />
         </div>
 
         <div class="col-md-4">
-          <button class="btn btn-success btn-login" v-on:click="login">
+          <button
+            class="btn btn-success btn-login"
+            v-on:click="login"
+            data-cy="sign-in-btn"
+          >
             Sign In
           </button>
         </div>

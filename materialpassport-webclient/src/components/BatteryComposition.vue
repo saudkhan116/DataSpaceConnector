@@ -1,4 +1,4 @@
-<template>
+<template v-if="batteryComposition">
   <SectionHeader title="2. Battery composition"> </SectionHeader>
   <!-- Composition of Electrolyte -->
   <div class="section-content">
@@ -6,12 +6,16 @@
       <div class="sub-title-container">
         <span class="sub-title">Composition of Electrolyte</span>
       </div>
-      <div class="list-container">
+      <div
+        class="list-container"
+        v-if="batteryComposition.electrolyteComposition"
+      >
         <ul>
           <span class="list-label"></span>
           <li
             :key="electrolytes"
             v-for="electrolytes in batteryComposition.electrolyteComposition"
+            data-cy="electrolyte-composition"
           >
             {{ electrolytes }}
           </li>
@@ -32,7 +36,10 @@
           batteryComposition.anodeContent.naturalGraphiteContent.unit
         "
       />
-      <div class="list-container">
+      <div
+        class="list-container"
+        v-if="batteryComposition.anodeContent.anodeComposition"
+      >
         <ul>
           <span class="list-label">Recyclate Content Ni</span>
           <li
@@ -65,7 +72,10 @@
         v-bind:value="batteryComposition.cathodeComposition.coContent.value"
         v-bind:unit="batteryComposition.cathodeComposition.coContent.unit"
       />
-      <div class="list-container">
+      <div
+        class="list-container"
+        v-if="batteryComposition.cathodeComposition.otherCathodeComposition"
+      >
         <ul>
           <span class="list-label">Recyclate Content Ni</span>
           <li
@@ -85,7 +95,7 @@
       <div class="sub-title-container">
         <span class="sub-title">Critical Raw Materials</span>
       </div>
-      <div class="list-container">
+      <div class="list-container" v-if="batteryComposition.crm">
         <ul>
           <span class="list-label">List of CRM</span>
           <li
