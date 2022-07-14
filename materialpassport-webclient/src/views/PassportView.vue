@@ -84,8 +84,7 @@ export default {
     return {
       data: null,
       loading: true,
-      digitalTwinId: "urn:uuid:365e6fbe-bb34-11ec-8422-0242ac120001",
-      digitalTwinSubmodelId: "urn:uuid:61125dc3-5e6f-4f4b-838d-447432b97919",
+      errors: [],
       twinRegistryUrl: "http://localhost:4243",
       aasProxyUrl: "http://localhost:4245",
     };
@@ -97,51 +96,9 @@ export default {
       console.log(data);
       return data;
     },
-    getProductPassport(asset, destinationPath, contractId) {
+    getDigitalTwinId: function(assetIds){
       return new Promise((resolve) => {
-        var jsonData = {
-          protocol: "ids-multipart",
-          assetId: asset,
-          contractId: contractId,
-          dataDestination: {
-            properties: {
-              path: destinationPath + "/" + asset + ".json",
-              keyName: "keyName",
-              type: "File",
-            },
-          },
-          transferType: {
-            contentType: "application/octet-stream",
-            isFinite: true,
-          },
-          managedResources: false,
-          connectorAddress: "http://edc-provider:8282/api/v1/ids/data",
-          connectorId: "consumer",
-        };
-
-        // "connectorAddress": "http://edc-provider:8282/api/v1/ids/data",
-
-        //axios.post('/consumer/data/transferprocess', jsonData, {
-        axios
-          .post("/consumer/data/transferprocess", jsonData, {
-            headers: {
-              "X-Api-Key": "password",
-            },
-          })
-          .then((response) => {
-            console.log(response.data);
-            resolve(response.data);
-          })
-          .catch((e) => {
-            this.errors.push(e);
-            resolve("rejected");
-          });
-      });
-    },
-    getDigitalTwinId: function(){
-      return new Promise((resolve) => {
-        let specificAssetIds = '[{ "key": "batteryId", "value": "334593247" },{ "key": "passportNumber", "value": "12345" }]'
-        let encodedAssetIds = encodeURIComponent(specificAssetIds);
+        let encodedAssetIds = encodeURIComponent(assetIds);
         axios
           .get( this.aasProxyUrl + '/lookup/shells?assetIds=' + encodedAssetIds )
           .then((response) => {
@@ -153,13 +110,6 @@ export default {
             resolve("rejected");
           });
       });
-      
-      // let specificAssetIds = '[{ "key": "batteryId", "value": "334593247" },{ "key": "passportNumber", "value": "12345" }]'
-      // let encodedAssetIds = encodeURIComponent(specificAssetIds);
-      // const res =  axios.get( this.aasProxyUrl + '/lookup/shells?assetIds=' + encodedAssetIds );
-      // const uuid = res.json();
-      // console.log('Digital Twin uuid' + uuid);
-      // return uuid;
     },
     getDigitalTwinObjectById: function(digitalTwinId){
       //const res =  axios.get("http://localhost:4243/registry/shell-descriptors/urn:uuid:365e6fbe-bb34-11ec-8422-0242ac120001"); // Without AAS Proxy
@@ -175,16 +125,6 @@ export default {
             resolve("rejected");
           });
       });
-      
-      
-      
-      
-      // //const res =  axios.get("http://localhost:4243/registry/shell-descriptors/urn:uuid:365e6fbe-bb34-11ec-8422-0242ac120001"); // Without AAS Proxy
-      // //Calling with AAS Proxy
-      // const res =  axios.get( this.aasProxyUrl + '/registry/shell-descriptors/' + digitalTwinId );
-      // const digitalTwin = res.json();
-      // console.log(digitalTwin);
-      // return digitalTwin;
     },
     getSubmodelData: function(digitalTwin){
       //const res =  axios.get("http://localhost:8193/api/service/urn:uuid:365e6fbe-bb34-11ec-8422-0242ac120001-urn:uuid:61125dc3-5e6f-4f4b-838d-447432b97919/submodel?provider-connector-url=http://provider-control-plane:8282"); // Without AAS Proxy
@@ -206,63 +146,19 @@ export default {
           });
       });
     },
-    async getPassport(){
-      const digitalTwinId = await this.getDigitalTwinId();
+    async getPassport(assetIds){
+      const digitalTwinId = await this.getDigitalTwinId(assetIds);
       const digitalTwin = await this.getDigitalTwinObjectById(digitalTwinId);
       const response = await this.getSubmodelData(digitalTwin);
       return response;
-    },
-    displayProductPassport(filename) {
-      return new Promise((resolve) => {
-        //axios.get('/consumer/data/contractnegotiations/passport/display/' + filename, {
-        axios
-          .get(
-            "/consumer/data/contractnegotiations/passport/display/" + filename,
-            {
-              headers: {
-                "X-Api-Key": "password",
-              },
-            }
-          )
-          .then((response) => {
-            console.log(response.data);
-            resolve(response.data);
-          })
-          .catch((e) => {
-            this.errors.push(e);
-            resolve("rejected");
-          });
-      });
     },
   },
   async created() {
     //this.data = await this.fetchData();
     //console.log(data);
-    let contractId = this.$route.params.contractId;
-    const destinationPath = "/app/samples/04.0-file-transfer/data"; // set different path for containers
-    let asset = "";
-    let user = localStorage.getItem("user-info");
-    let role = JSON.parse(user).role;
-    if (role.toLowerCase() == "dismantler") asset = "test-document_dismantler";
-    else if (role.toLowerCase() == "oem") asset = "test-document_oem";
-    else if (role.toLowerCase() == "recycler") asset = "test-document_recycler";
-    else if (role.toLowerCase() == "Battery Producer")
-      asset = "test-document_battery_producer";
-    //let uuid = await this.getProductPassport(
-    // asset,
-    // destinationPath,
-    // contractId
-    //);
-    const response = await this.getPassport();
-    this.data = response;
+    let assetIds = this.$route.params.assetIds;
+    this.data = await this.getPassport(assetIds);
     this.loading = false;
-    // if (uuid == null)
-    //  alert("Something went wrong in finalizing product process");
-    // else {
-    //   //Display the product passport //
-    //   let response = await this.displayProductPassport(asset + ".json");
-    //   this.data = response;
-  // }
   },
 };
 </script>
