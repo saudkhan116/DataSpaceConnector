@@ -1,6 +1,6 @@
 <template>
   <Header />
-  <div class="container">
+  <div class="container" data-cy="battery-pass-container">
     <label class="label" for="Provider">Battery Provider:</label>
 
     <select
@@ -9,6 +9,7 @@
       v-model="selectedProvider"
       placeholder="Select Battery Provider"
       @change="getBatteriesbyProvider()"
+      data-cy="provider-select"
     >
       <option value="" disabled selected>Select Battery Provider...</option>
       <option
@@ -29,6 +30,7 @@
       placeholder="Select Battery"
       :disabled="selectedProvider != '' ? disabled : ''"
       @change="getAssetIdsByBattery()"
+      data-cy="battery-select"
     >
       <option value="" disabled selected>Select Battery...</option>
       <option
@@ -55,6 +57,7 @@
       class="btn btn-success center success-btn"
       :disabled="isDisabled"
       v-on:click="getProductPassport"
+      data-cy="passport-btn"
     >
       Get Battery Passport
     </button>

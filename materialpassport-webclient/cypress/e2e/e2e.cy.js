@@ -11,10 +11,7 @@ describe("e2e test", () => {
     cy.get('[data-cy="sign-in-btn"]').click();
     cy.get('[data-cy="battery-pass-container"]');
     cy.get('[data-cy="provider-select"]').select("BMW");
-    cy.get('[data-cy="provider-btn"]').click();
-    cy.get('[data-cy="contract-select"]').select("test-battery-1_recycler");
-    cy.get('[data-cy="battery-select"]').select("test-battery 1");
-    cy.get('[data-cy="negotiation-btn"]').click();
+    cy.get('[data-cy="battery-select"]').select("test-battery 1 (work)");
     cy.get('[data-cy="passport-btn"]').click();
   });
   it("Read passport details", () => {
