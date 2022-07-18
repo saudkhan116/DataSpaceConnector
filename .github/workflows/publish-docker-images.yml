@@ -13,12 +13,12 @@ on:
 
 env:
   # Use docker.io for Docker Hub if empty
-  REGISTRY: docker.io
+  REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   EDC_CONSUMER_IMAGE_NAME: "edc-consumer"
   EDC_PROVIDER_IMAGE_NAME: "edc-provider"
   CONSUMER_UI_IMAGE_NAME: "consumer-ui"
-  REPOSITORY_NAME: "muhammadsaudkhan"
+  REPOSITORY_NAME: "batterypass"
   IMAGE_TAG: "v1.PI4.S4"
   #COMMIT_SHA: ${{ github.sha }}
     
@@ -51,7 +51,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.GHCR_PAT }}
 
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
@@ -71,7 +71,6 @@ jobs:
           push: true
           tags: ${{ env.REPOSITORY_NAME }}/${{ env.EDC_CONSUMER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           labels: labels
-
       - name: Build and push Docker image - edc-provider
         id: build-and-push-provider
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
