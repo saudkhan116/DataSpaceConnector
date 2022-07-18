@@ -86,7 +86,7 @@ jobs:
         with:
           context: docker/consumer-ui
           push: true
-          tags: ${{ env.REPOSITORY_NAME }}/${{ env.CONSUMER_UI_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          tags: ${{ env.REGISTRY }}/${{ env.CONSUMER_UI_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           labels: labels
           #tags: ${{ steps.meta.outputs.tags }}
           #labels: ${{ steps.meta.outputs.labels }}
