@@ -18,7 +18,7 @@ env:
   EDC_CONSUMER_IMAGE_NAME: "edc-consumer"
   EDC_PROVIDER_IMAGE_NAME: "edc-provider"
   CONSUMER_UI_IMAGE_NAME: "consumer-ui"
-  REPOSITORY_NAME: "batterypass"
+  REPOSITORY_NAME: "saudkhan116"
   IMAGE_TAG: "v1.PI4.S4"
   #COMMIT_SHA: ${{ github.sha }}
     
