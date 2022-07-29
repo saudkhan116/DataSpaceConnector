@@ -1,66 +1,69 @@
 <template>
-  <Header />
-  <div class="container" data-cy="battery-pass-container">
-    <label class="label" for="Provider">Battery Provider:</label>
+  <Spinner v-if="loading" class="spinner-container" />
+  <div v-else>
+    <Header />
+    <div class="container" data-cy="battery-pass-container">
+      <label class="label" for="Provider">Battery Provider:</label>
 
-    <select
-      class="select"
-      id="selectProvider"
-      v-model="selectedProvider"
-      placeholder="Select Battery Provider"
-      @change="getBatteriesbyProvider()"
-      data-cy="provider-select"
-    >
-      <option value="" disabled selected>Select Battery Provider...</option>
-      <option
-        v-for="provider in listProviders"
-        :value="provider.name"
-        v-bind:key="provider.id"
+      <select
+        class="select"
+        id="selectProvider"
+        v-model="selectedProvider"
+        placeholder="Select Battery Provider"
+        @change="getBatteriesbyProvider()"
+        data-cy="provider-select"
       >
-        {{ provider.name }}
-      </option>
-    </select>
+        <option value="" disabled selected>Select Battery Provider...</option>
+        <option
+          v-for="provider in listProviders"
+          :value="provider.name"
+          v-bind:key="provider.id"
+        >
+          {{ provider.name }}
+        </option>
+      </select>
 
-    <label class="label" for="Battery">Battery:</label>
-    <select
-      required
-      class="form-select select"
-      id="selectBattery"
-      v-model="selectedBattery"
-      placeholder="Select Battery"
-      :disabled="selectedProvider != '' ? disabled : ''"
-      @change="getAssetIdsByBattery()"
-      data-cy="battery-select"
-    >
-      <option value="" disabled selected>Select Battery...</option>
-      <option
-        v-for="(battery, id) in provider.batteries"
-        :value="battery.id"
-        v-bind:key="id"
+      <label class="label" for="Battery">Battery:</label>
+      <select
+        required
+        class="form-select select"
+        id="selectBattery"
+        v-model="selectedBattery"
+        placeholder="Select Battery"
+        :disabled="selectedProvider != '' ? disabled : ''"
+        @change="getAssetIdsByBattery()"
+        data-cy="battery-select"
       >
-        {{ battery.name }}
-      </option>
-    </select>
-    <br />
-    <div v-if="assetIdsVisible">
-      <label class="label" for="Search criteria">Search Criteria:</label
-      ><br /><br />
-      <textarea
-        v-model="assetIds"
-        disabled
-        style="height: 120px; width: 340px"
-      ></textarea>
+        <option value="" disabled selected>Select Battery...</option>
+        <option
+          v-for="(battery, id) in provider.batteries"
+          :value="battery.id"
+          v-bind:key="id"
+        >
+          {{ battery.name }}
+        </option>
+      </select>
+      <br />
+      <div v-if="assetIdsVisible">
+        <label class="label" for="Search criteria">Search Criteria:</label
+        ><br /><br />
+        <textarea
+          v-model="assetIds"
+          disabled
+          style="height: 120px; width: 340px"
+        ></textarea>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-success center success-btn"
+        :disabled="isDisabled"
+        v-on:click="getProductPassport"
+        data-cy="passport-btn"
+      >
+        Get Battery Passport
+      </button>
     </div>
-
-    <button
-      type="button"
-      class="btn btn-success center success-btn"
-      :disabled="isDisabled"
-      v-on:click="getProductPassport"
-      data-cy="passport-btn"
-    >
-      Get Battery Passport
-    </button>
   </div>
 </template>
 
@@ -73,6 +76,7 @@ let listBatteryProviders = require('../assets/providers.json');
 export default {
   name: 'batteryPassport',
   created(){
+    this.loading = false;
   },
   components: {
 Header
@@ -115,6 +119,7 @@ Header
   },
   data() {
     return {
+      loading: true,
       listProviders: listBatteryProviders,
       provider: {},
       selectedProvider:'',
@@ -169,7 +174,8 @@ Header
     },
     getProductPassport: function(){
       if (this.validateFields(this.selectedProvider, this.selectedBattery))
-        this.$router.replace({ name: "Passport", params:{ assetIds: this.assetIds }, query:{ provider: this.selectedProvider, battery: this.selectedBattery } });
+        this.$router.replace({ name: "Passport", params:{ assetIds: this.assetIds }, query:{ provider: this.selectedProvider, battery: this.selectedBattery,  },  });
+
     else
       alert('Battery provider and battery name are required...!')
     }

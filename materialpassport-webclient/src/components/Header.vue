@@ -21,13 +21,13 @@
               <div class="menu-btn">
                 <img :src="Profile" alt="profile" class="menu-profile" />
                 <!--TODO: Profile page onClick-->
-                <h3>
+                <span class="profile-text">
                   {{ username }}
                   <p>Manage your account</p>
-                </h3>
+                </span>
               </div>
               <div class="menu-btn">
-                <h3 v-on:click="logout">Sign out</h3>
+                <span class="profile-text" @click="logout">Sign out</span>
               </div>
             </div>
           </span>
@@ -42,7 +42,13 @@
         </h1>
       </div>
       <div class="code-container">
-        <img :src="QrCode" alt="profile" class="code"  width="140" height="140"/>
+        <img
+          :src="QrCode"
+          alt="profile"
+          class="code"
+          width="170"
+          height="170"
+        />
       </div>
     </div>
   </div>
@@ -85,6 +91,7 @@ export default {
   methods: {
     logout() {
       localStorage.clear();
+
       this.$router.push({ name: "Login" });
     },
     scanQRCode() {
@@ -93,10 +100,8 @@ export default {
   },
   mounted() {
     let user = localStorage.getItem("user-info");
-    if (user) {
-      this.username = JSON.parse(user).email;
-      this.role = JSON.parse(user).role;
-    }
+    this.username = JSON.parse(user).email;
+    this.role = JSON.parse(user).role;
   },
   props: {
     batteryId: {},
@@ -105,6 +110,9 @@ export default {
 </script>
 
 <style scoped>
+h1 {
+  font-weight: bold;
+}
 .header-container {
   display: flex;
 
@@ -132,7 +140,6 @@ export default {
 .code {
   padding: 0;
   margin: 0;
-  width: 170px;
 }
 .id-container {
   display: flex;
@@ -178,8 +185,10 @@ export default {
 .menu-btn:hover {
   background-color: #f8f9fa;
 }
-h3 {
+.profile-text {
   padding: 0 16px 0 12px;
+  font-size: 18px;
+  font-weight: bold;
 }
 p {
   color: #cccccc;

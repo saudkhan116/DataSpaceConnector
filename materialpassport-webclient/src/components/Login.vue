@@ -6,14 +6,14 @@
     </div>
     <div class="sign-in-wrapper">
       <div class="sign-in-container" data-cy="sign-in-container">
-        <h1>Sign In</h1>
-        <h3>
+        <div class="sign-in-title">Sign In</div>
+        <div class="new-user-title">
           New user?<span
             ><router-link to="/sign-up" class="sign-up"
               >Sign Up</router-link
             ></span
           >
-        </h3>
+        </div>
 
         <div class="col-md-4">
           <input
@@ -44,7 +44,7 @@
             Sign In
           </button>
         </div>
-        <div class="col-md-4">
+        <div>
           <span>
             <router-link to="#" class="public-data"
               >See public data</router-link
@@ -161,8 +161,14 @@ LogoBG
   margin-left: 10px;
   text-decoration: none;
 }
-h3 {
+.new-user-title {
+  font-size: 16px;
+  font-weight: bold;
   margin: 20px 0 20px 0px;
+}
+.sign-in-title {
+  font-size: 32px;
+  font-weight: bold;
 }
 .public-data {
   margin: 30px 0 0 78px;
@@ -170,7 +176,6 @@ h3 {
   color: #7a7a7a;
   font-weight: bold;
 }
-
 .input {
   width: 280px;
   height: 48px;

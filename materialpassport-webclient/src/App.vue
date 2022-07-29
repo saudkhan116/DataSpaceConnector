@@ -25,16 +25,23 @@ export default {
 
 <style>
 #app {
-  font-family: "Libre Franklin", sans-serif;
+  font-family: "Libre Franklin", sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   background-color: #f8f9fa;
   display: flex;
   flex-direction: column;
-
   min-height: 100vh;
 }
+.table-borderless > :not(caption) > * > * {
+  border-bottom-width: 0;
+  padding-left: 40px !important;
+}
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f4f5f0;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

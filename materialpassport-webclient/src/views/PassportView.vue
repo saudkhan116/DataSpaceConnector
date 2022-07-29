@@ -1,12 +1,8 @@
 <template>
-  <div v-if="loading" style="padding: 18% 42% 18% 42%">
-    <span>
-      <img src="../assets/loading.gif" height="200" width="250" />
-    </span>
-  </div>
+  <Spinner v-if="loading" class="spinner-container" />
   <div v-else>
     <Header :batteryId="data.generalInformation" />
-    <div class="container">
+    <div class="pass-container">
       <GeneralInformation
         sectionTitle="General information"
         :generalInformation="data.generalInformation"
@@ -60,6 +56,7 @@ import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
 import axios from "axios";
 import { reactive } from "vue";
+import Spinner from "@/components/Spinner.vue";
 
 export default {
   name: "PassportView",
@@ -74,6 +71,7 @@ export default {
     InformationResponsibleSourcing,
     AdditionalInformation,
     Footer,
+    Spinner,
   },
   provide() {
     return {
@@ -174,9 +172,29 @@ export default {
 };
 </script>
 
-<style scoped>
-.container {
+<style>
+.pass-container {
   width: 76%;
   margin: 0 12% 0 12%;
+}
+.spinner-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.spinner {
+  margin: auto;
+
+  width: 8vh;
+
+  animation: rotate 3s infinite;
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

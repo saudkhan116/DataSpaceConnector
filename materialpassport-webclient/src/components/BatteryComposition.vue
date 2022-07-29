@@ -90,6 +90,10 @@
     </div>
     <!-- TODO: Part Numbers for Components TABLE
  -->
+    <div class="sub-title-container">
+      <span class="sub-title"> Part Numbers for Components</span>
+    </div>
+    <b-table borderless striped :items="items" />
     <!-- Critical Raw Materials -->
     <div class="sub-section-container">
       <div class="sub-title-container">
@@ -150,6 +154,43 @@ export default {
     sectionTitle: String,
     batteryComposition: {},
   },
+  methods: {},
+  data() {
+    return {
+      items: [
+        {
+          part_name: "Battery modules",
+          serial_number: null,
+          phone_number: "+49 345879349",
+          email: "john@spp01.de",
+        },
+        {
+          part_name: "BMS",
+          serial_number: "23494511/45",
+          phone_number: "+49 345879349",
+          email: "john@spp01.de",
+        },
+        {
+          part_name: "Voltage cables",
+          serial_number: "23494511/45",
+          phone_number: "+49 345879349",
+          email: "john@spp01.de",
+        },
+        {
+          part_name: "Thermal control",
+          serial_number: null,
+          phone_number: "+49 345879349",
+          email: "john@spp01.de",
+        },
+        {
+          part_name: "Casing",
+          serial_number: "23494511/45",
+          phone_number: "+49 345879349",
+          email: "john@spp01.de",
+        },
+      ],
+    };
+  },
   components: {
     Field,
     SectionHeader,
@@ -199,9 +240,13 @@ export default {
 ul {
   display: flex;
   flex-direction: column;
+  padding: 0;
 }
 li {
   margin-left: 20px;
   font-weight: bold;
+}
+.table-striped tbody tr {
+  padding-left: 40px !important;
 }
 </style>
