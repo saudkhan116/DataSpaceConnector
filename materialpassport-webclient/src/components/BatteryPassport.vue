@@ -64,12 +64,53 @@
         Get Battery Passport
       </button>
     </div>
+    <div class="dashboard-container">
+      <div class="titles-container">
+        <div class="title">Welcome back {{ name }}!</div>
+        <div class="sub-title">See batteries scanned today</div>
+        <div class="sub-title orange">See full history</div>
+      </div>
+      <b-col lg="6" class="my-1">
+        <b-form-group
+          label="Search"
+          label-for="filter-input"
+          label-cols-sm="3"
+          label-align-sm="right"
+          label-size="sm"
+          class="mb-0"
+        >
+          <b-input-group size="sm">
+            <b-form-input
+              id="filter-input"
+              v-model="filter"
+              type="search"
+              placeholder="Type to Search"
+            ></b-form-input>
+
+            <b-input-group-append>
+              <b-button :disabled="!filter" @click="filter = ''"
+                >Clear</b-button
+              >
+            </b-input-group-append>
+          </b-input-group>
+        </b-form-group>
+      </b-col>
+      <b-table
+        borderless
+        striped
+        :filter="filter"
+        :fields="fields"
+        sort-icon-left
+        :items="batteriesList"
+      />
+    </div>
   </div>
 </template>
 
 <script type="text/jsx">
 import axios from 'axios';
 import Header from '@/components/Header.vue'
+import Spinner from "@/components/Spinner.vue";
 
 let listBatteryProviders = require('../assets/providers.json');
 
@@ -79,8 +120,10 @@ export default {
     this.loading = false;
   },
   components: {
+     Spinner,
 Header
   },
+
   mounted(){
 
     let user = localStorage.getItem("user-info");
@@ -97,12 +140,14 @@ Header
         else{
           let user = localStorage.getItem("user-info")
           let role = JSON.parse(user).role;
+          let name = JSON.parse(user).name;
           console.log("CurrentUser: ",user, role);
+
           // check query params for QR code scanning
           this.selectedProvider = this.$route.query.provider
           this.selectedBattery = this.$route.query.battery
           this.selectedContract = this.$route.query.battery + '_' + role.toLowerCase()
-
+          this.name = name
           if (this.$route.query.provider === undefined && this.$route.query.battery === undefined) {
             // do manual selection of fields
             console.log('INFO: provider and battery are not defined')
@@ -119,6 +164,62 @@ Header
   },
   data() {
     return {
+       fields: [
+          {
+            key: 'serial_number',
+            label: 'Serial number',
+            sortable: true
+          },
+          {
+            key: 'car_producer',
+            label: 'Car producer',
+            sortable: true
+          },
+          {
+            key: 'date_of_admission',
+            label: 'Date of admission',
+            sortable: true,
+
+          },
+           {
+            key: 'status',
+            label: 'Status',
+            sortable: true,
+
+          }
+        ],
+      batteriesList: [
+        {
+          serial_number: "11194511/45",
+          car_producer: "BMW",
+          date_of_admission: "21.07.2022",
+          status: "1",
+        },
+        {
+          serial_number: "22294511/45",
+          car_producer: "Volkswagen",
+          date_of_admission: "21.07.2022",
+          status: "2",
+        },
+        {
+          serial_number: "33394511/45",
+          car_producer: "Volvo",
+          date_of_admission: "21.07.2022",
+          status: "3",
+        },
+        {
+          serial_number: "44494511/45",
+          car_producer: "Tesla",
+          date_of_admission: "21.07.2022",
+          status: "1",
+        },
+        {
+          serial_number: "55594511/45",
+          car_producer: "Lada",
+          date_of_admission: "21.07.2022",
+          status: "2",
+        },
+      ],
       loading: true,
       listProviders: listBatteryProviders,
       provider: {},
@@ -127,6 +228,7 @@ Header
       assetIds: {},
       isDisabled: false,
       assetIdsVisible: false,
+      name: ""
     }
   },
   methods:{
@@ -136,7 +238,6 @@ Header
       let role = JSON.parse(user).role
       const offer = this.provider.contractOffers.filter( h => h.includes(role.toLowerCase()) );
       this.provider.contractOffers = offer
-
       // to handle filling the battery provider dropdown here because this.provider is loaded before provider dropdown and get emplty value.
       this.selectedProvider = this.provider.name
     },
@@ -187,7 +288,6 @@ Header
 .container {
   display: flex;
   flex-direction: column;
-
   width: 22%;
   margin: 0 39% 0 39%;
 }
@@ -212,5 +312,26 @@ Header
   height: 48px;
   border: solid 1px #b3cb2c;
   border-radius: 4px;
+}
+.dashboard-container {
+  width: 54%;
+  margin: 0 23% 0 23%;
+}
+.titles-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 24px;
+}
+.title {
+  font-size: 32px;
+  font-weight: bold;
+}
+.sub-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+.orange {
+  color: #ffa600;
 }
 </style>

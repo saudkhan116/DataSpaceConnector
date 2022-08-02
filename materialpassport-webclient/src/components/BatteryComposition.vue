@@ -88,8 +88,7 @@
         </ul>
       </div>
     </div>
-    <!-- TODO: Part Numbers for Components TABLE
- -->
+    <!-- Part Numbers for Components TABLE -->
     <div class="sub-title-container">
       <span class="sub-title"> Part Numbers for Components</span>
     </div>
@@ -245,8 +244,5 @@ ul {
 li {
   margin-left: 20px;
   font-weight: bold;
-}
-.table-striped tbody tr {
-  padding-left: 40px !important;
 }
 </style>

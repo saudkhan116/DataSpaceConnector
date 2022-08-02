@@ -24,6 +24,11 @@ export default {
 </script>
 
 <style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 #app {
   font-family: "Libre Franklin", sans-serif !important;
   -webkit-font-smoothing: antialiased;
@@ -39,13 +44,16 @@ export default {
   padding-left: 40px !important;
 }
 .table-striped tbody tr:nth-of-type(odd) {
-  background-color: #f4f5f0;
+  background-color: rgba(179, 203, 44, 0.15);
+}
+.table-striped tbody tr:nth-of-type(even) {
+  background-color: rgba(179, 203, 44, 0.05);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+.table > thead {
+  vertical-align: bottom;
+  color: gray;
+  font-size: 12px;
 }
 
 nav {
